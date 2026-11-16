@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Sparkles,
@@ -15,17 +15,67 @@ import {
   ChevronDown,
   Compass,
   Laptop,
-  Menu
+  Menu,
+  Check,
+  X,
+  Target,
+  Bot
 } from 'lucide-react'
 import { ThemeToggle } from '../components/ui/ThemeToggle'
 import { Button } from '../components/ui/Button'
 import { cn } from '../utils/cn'
+
+// Animated number counter hook/component
+function AnimatedCounter({
+  end,
+  duration = 1800,
+  suffix = '',
+  decimals = 0
+}: {
+  end: number
+  duration?: number
+  suffix?: string
+  decimals?: number
+}) {
+  const [count, setCount] = useState(0)
+
+  useEffect(() => {
+    let startTimestamp: number | null = null
+    let animationFrameId: number
+
+    const step = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1)
+      // Ease out cubic
+      const ease = 1 - Math.pow(1 - progress, 3)
+      setCount(ease * end)
+
+      if (progress < 1) {
+        animationFrameId = requestAnimationFrame(step)
+      }
+    }
+
+    animationFrameId = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(animationFrameId)
+  }, [end, duration])
+
+  return (
+    <span>
+      {decimals > 0 ? count.toFixed(decimals) : Math.floor(count).toLocaleString()}
+      {suffix}
+    </span>
+  )
+}
 
 export function LandingPage() {
   const router = useRouter()
   const [activeRole, setActiveRole] = useState<'student' | 'lecturer'>('student')
   const [openFaq, setOpenFaq] = useState<number | null>(0)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  // Interactive Live Demo in Hero Mockup
+  const [heroTab, setHeroTab] = useState<'rag' | 'quiz' | 'radar'>('rag')
+  const [quizAnswer, setQuizAnswer] = useState<number | null>(null)
 
   const scrollToSection = (id: string) => {
     setMobileMenuOpen(false)
@@ -34,6 +84,18 @@ export function LandingPage() {
       el.scrollIntoView({ behavior: 'smooth' })
     }
   }
+
+  const tickerItems = [
+    '⚡ Multimodal RAG Học Thuật',
+    '📑 Giáo Trình PDF & Slide PPTX',
+    '🎬 Video Bài Giảng MP4 Có Timestamp',
+    '📊 Khai Phá Dữ Liệu & BI',
+    '🧠 Sinh Quiz 4 Lựa Chọn Sau 5s',
+    '🛡️ Chuẩn Thị Giác WCAG AAA',
+    '🎯 Chẩn Đoán Lỗ Hổng Kiến Thức',
+    '💡 Spaced Repetition Flashcards',
+    '📈 Chấm Tự Luận Theo Rubric'
+  ]
 
   const faqs = [
     {
@@ -53,34 +115,31 @@ export function LandingPage() {
       a: 'Learning Hub hỗ trợ đa định dạng: Tài liệu văn bản (PDF, DOCX, TXT), hình ảnh biểu đồ tài liệu, video bài giảng MP4, audio podcast (chuyển ngữ âm thanh bằng Whisper) và các liên kết bài giảng trực tuyến.'
     },
     {
-      q: 'Đây là dự án của nhóm nào và thuộc học phần nào?',
-      a: 'Đây là sản phẩm "Multimodal AI Learning Hub" do Nhóm 07 – Lớp 65HTTT phát triển trong học phần Hệ Thống Kinh Doanh Thông Minh, dưới sự hướng dẫn của Giảng viên Đỗ Oanh Cường.'
+      q: 'Hệ thống có thể dùng được trên điện thoại và máy tính bảng không?',
+      a: 'Hoàn toàn được. Toàn bộ giao diện được thiết kế Responsive 100%, có thanh điều hướng Mobile Drawer tiện lợi, giúp bạn vừa học trên laptop vừa ôn bài qua điện thoại bất cứ lúc nào.'
     }
   ]
 
   return (
     <div className="min-h-screen bg-background text-foreground font-body selection:bg-primary/20 selection:text-foreground">
-      {/* 1. STICKY NAVBAR */}
+      {/* 1. STICKY NAVBAR (Sạch sẽ, thương mại, bỏ badge nhóm trường học) */}
       <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/85 backdrop-blur-md transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          {/* Brand Logo */}
+          {/* Brand Logo - Chuyên nghiệp, hiện đại */}
           <div 
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="flex items-center gap-3 cursor-pointer group"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-sm shadow-primary/25 group-hover:scale-105 transition-transform">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary via-indigo-600 to-accent text-primary-foreground shadow-sm shadow-primary/25 group-hover:scale-105 transition-transform">
               <Zap className="h-5 w-5 fill-current" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-lg font-black tracking-tight text-foreground">Learning Hub</span>
-                <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-3xs font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
-                  Nhóm 07 · 65HTTT
+                <span className="text-xl font-black tracking-tight text-foreground">Learning Hub</span>
+                <span className="px-2 py-0.5 rounded-full text-3xs font-extrabold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+                  AI v2.0
                 </span>
               </div>
-              <p className="text-3xs text-muted-foreground font-medium hidden md:block">
-                Hệ Thống Kinh Doanh Thông Minh
-              </p>
             </div>
           </div>
 
@@ -153,16 +212,17 @@ export function LandingPage() {
       </header>
 
       {/* 2. HERO SECTION */}
-      <section className="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-28">
+      <section className="relative overflow-hidden pt-12 pb-16 md:pt-18 md:pb-24">
         {/* Glow ambient background orbs */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-primary/15 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute top-1/3 right-10 w-[300px] h-[250px] bg-accent/15 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[380px] bg-primary/15 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute top-1/3 right-10 w-[350px] h-[280px] bg-accent/15 rounded-full blur-[110px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-6 sm:space-y-8">
-          {/* Top Pill Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/25 text-primary text-xs font-bold animate-fade-in shadow-2xs">
+          {/* Top Sleek Pill Badge (Đã thay badge học phần cũ) */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-primary/15 via-accent/10 to-primary/15 border border-primary/30 text-primary text-xs font-bold animate-fade-in shadow-2xs backdrop-blur-md">
             <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-            <span>Nền tảng Đào tạo Thông minh Đa phương thức AI · Học phần HTKDTM</span>
+            <span>Nền tảng Học tập Đa phương thức AI Thế Hệ Mới</span>
+            <span className="flex h-1.5 w-1.5 rounded-full bg-primary animate-ping ml-1" />
           </div>
 
           {/* Main Hero Headline */}
@@ -198,7 +258,7 @@ export function LandingPage() {
           </div>
 
           {/* Trust Highlights */}
-          <div className="pt-4 flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs font-semibold text-muted-foreground">
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs font-semibold text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-success" />
               <span>Chuẩn thị giác WCAG AAA</span>
@@ -209,13 +269,36 @@ export function LandingPage() {
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-success" />
-              <span>Đề tài Nhóm 07 - Lớp 65HTTT</span>
+              <span>Zero-Hallucination Verified</span>
             </div>
           </div>
 
-          {/* HERO PREVIEW MOCKUP */}
-          <div className="pt-8 sm:pt-12 max-w-5xl mx-auto">
-            <div className="rounded-3xl border border-border/80 bg-surface-elevated/90 p-2 sm:p-3 shadow-lift backdrop-blur-xl transition-all">
+          {/* HERO PREVIEW MOCKUP WITH DYNAMIC INTERACTION & FLOATING BADGES */}
+          <div className="pt-8 sm:pt-12 max-w-5xl mx-auto relative">
+            {/* Floating Dynamic Badge 1: Top Right */}
+            <div className="hidden md:flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-surface-elevated border border-primary/30 shadow-lift absolute -top-4 -right-4 z-20 animate-float backdrop-blur-md">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                <Laptop className="h-4 w-4" />
+              </div>
+              <div className="text-left">
+                <p className="text-2xs font-extrabold text-foreground">Chuẩn WCAG AAA</p>
+                <p className="text-3xs text-success font-semibold">Giảm 40% mỏi mắt</p>
+              </div>
+            </div>
+
+            {/* Floating Dynamic Badge 2: Bottom Left */}
+            <div className="hidden md:flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-surface-elevated border border-success/30 shadow-lift absolute -bottom-5 -left-4 z-20 animate-float-delayed backdrop-blur-md">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-success/15 text-success">
+                <Target className="h-4 w-4" />
+              </div>
+              <div className="text-left">
+                <p className="text-2xs font-extrabold text-foreground">Trích Dẫn Nguồn RAG</p>
+                <p className="text-3xs text-primary font-semibold">Khớp 100% tài liệu gốc</p>
+              </div>
+            </div>
+
+            {/* Window Container */}
+            <div className="rounded-3xl border border-border/80 bg-surface-elevated/95 p-2.5 sm:p-4 shadow-lift backdrop-blur-xl transition-all">
               {/* Window Header */}
               <div className="flex items-center justify-between px-3 py-2 border-b border-border/60">
                 <div className="flex items-center gap-2">
@@ -223,88 +306,230 @@ export function LandingPage() {
                   <div className="h-3 w-3 rounded-full bg-amber-500/80" />
                   <div className="h-3 w-3 rounded-full bg-emerald-500/80" />
                 </div>
-                <div className="px-4 py-1 rounded-full bg-muted/60 border border-border/40 text-3xs font-mono text-muted-foreground">
-                  learninghub.local/app/student/dashboard
+                {/* Interactive Demo Tabs inside Mockup */}
+                <div className="flex items-center p-1 rounded-xl bg-muted/60 border border-border/40 gap-1 text-3xs font-semibold">
+                  <button
+                    onClick={() => setHeroTab('rag')}
+                    className={cn(
+                      'px-3 py-1 rounded-lg transition-all',
+                      heroTab === 'rag' ? 'bg-surface-elevated text-primary shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    1. Gia sư RAG
+                  </button>
+                  <button
+                    onClick={() => setHeroTab('quiz')}
+                    className={cn(
+                      'px-3 py-1 rounded-lg transition-all',
+                      heroTab === 'quiz' ? 'bg-surface-elevated text-accent shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    2. Trắc nghiệm AI (Bấm thử)
+                  </button>
+                  <button
+                    onClick={() => setHeroTab('radar')}
+                    className={cn(
+                      'px-3 py-1 rounded-lg transition-all',
+                      heroTab === 'radar' ? 'bg-surface-elevated text-warning shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    3. Radar điểm yếu
+                  </button>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-success animate-ping" />
-                  <span className="text-3xs font-semibold text-success">Live Workspace</span>
+                  <span className="text-3xs font-bold text-success hidden sm:inline">Interactive Demo</span>
                 </div>
               </div>
 
               {/* Window Content Simulation */}
-              <div className="p-4 sm:p-6 text-left space-y-4 bg-background/50 rounded-2xl">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-br from-surface-elevated to-surface border border-border">
-                  <div>
-                    <h3 className="text-lg font-black text-foreground">
-                      Chào buổi tối, Sinh viên Khoa HTTT 👋
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Gia sư AI đã lập chỉ mục xong 4 giáo trình học phần Hệ Thống Kinh Doanh Thông Minh.
-                    </p>
-                  </div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-success/10 border border-success/30 text-success text-xs font-bold shrink-0">
-                    <CheckCircle2 className="h-4 w-4" />
-                    <span>0 lỗ hổng kiến thức</span>
-                  </div>
-                </div>
+              <div className="p-4 sm:p-6 text-left bg-background/50 rounded-2xl min-h-[220px]">
+                {heroTab === 'rag' && (
+                  <div className="space-y-4 animate-fade-in">
+                    {/* User Question */}
+                    <div className="flex items-start gap-3 justify-end">
+                      <div className="p-3 rounded-2xl bg-primary text-primary-foreground text-xs font-medium max-w-md shadow-xs">
+                        Giải thích cơ chế Lan truyền ngược (Backpropagation) trong mạng nơ-ron?
+                      </div>
+                      <div className="flex h-7 w-7 rounded-full bg-muted items-center justify-center font-bold text-2xs">
+                        Bạn
+                      </div>
+                    </div>
 
-                {/* Simulated RAG Chat Card */}
-                <div className="p-4 rounded-2xl border border-primary/20 bg-surface-elevated space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-xs">
-                      AI
-                    </div>
-                    <div className="space-y-1.5 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-foreground">Gia sư AI Tutor (Multimodal RAG)</span>
-                        <span className="text-3xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-                          Trích dẫn chuẩn xác
-                        </span>
-                      </div>
-                      <p className="text-xs text-foreground/90 leading-relaxed">
-                        Thuật toán Lan truyền ngược (Backpropagation) sử dụng quy tắc chuỗi vi phân (Chain Rule) để tính đạo hàm của hàm mất mát đối với từng trọng số trong mạng nơ-ron...
-                      </p>
-                      <div className="pt-1 flex flex-wrap items-center gap-2 text-3xs font-semibold">
-                        <span className="px-2 py-1 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-300 border border-blue-500/20">
-                          📄 Trích dẫn: Trang 42 · Slide_Chuong3_NeuralNet.pdf
-                        </span>
-                        <span className="px-2 py-1 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20">
-                          ⏱️ Mốc video: 14:25s · BaiGiang_Buoi5.mp4
-                        </span>
+                    {/* AI Response with page citations */}
+                    <div className="p-4 rounded-2xl border border-primary/20 bg-surface-elevated space-y-3">
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-primary-foreground font-bold text-xs shadow-xs">
+                          <Bot className="h-4 w-4" />
+                        </div>
+                        <div className="space-y-2 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-foreground">Gia sư AI Tutor</span>
+                            <span className="inline-flex items-center gap-1 text-3xs font-bold px-2 py-0.5 rounded-full bg-success/15 text-success">
+                              <CheckCircle2 className="h-3 w-3" /> Đã kiểm chứng tài liệu
+                            </span>
+                          </div>
+                          <p className="text-xs text-foreground/90 leading-relaxed">
+                            Thuật toán Lan truyền ngược (Backpropagation) tính đạo hàm của hàm mất mát đối với từng trọng số nhờ quy tắc chuỗi vi phân (Chain Rule), sau đó cập nhật trọng số bằng Gradient Descent từ tầng đầu ra ngược về tầng đầu vào.
+                          </p>
+                          <div className="pt-1 flex flex-wrap items-center gap-2 text-3xs font-semibold">
+                            <span className="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-300 border border-blue-500/20">
+                              📄 Trang 42 · Slide_Chuong3_NeuralNet.pdf
+                            </span>
+                            <span className="px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20">
+                              ⏱️ Mốc video: 14:25s · BaiGiang_Buoi5.mp4
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
+
+                {heroTab === 'quiz' && (
+                  <div className="space-y-3 animate-fade-in">
+                    <div className="flex items-center justify-between pb-1 border-b border-border/50">
+                      <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                        <Sparkles className="h-3.5 w-3.5 text-accent animate-pulse" />
+                        Câu hỏi do AI sinh tức thì từ giáo trình:
+                      </span>
+                      <span className="text-3xs font-semibold text-muted-foreground">Bấm chọn để kiểm tra</span>
+                    </div>
+                    <p className="text-xs font-bold text-foreground">
+                      Độ phức tạp thời gian trung bình (Average Time Complexity) của giải thuật QuickSort là gì?
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                      {[
+                        { id: 0, text: 'A. O(N²)', correct: false },
+                        { id: 1, text: 'B. O(N log N)', correct: true },
+                        { id: 2, text: 'C. O(N)', correct: false },
+                        { id: 3, text: 'D. O(log N)', correct: false }
+                      ].map((opt) => (
+                        <button
+                          key={opt.id}
+                          onClick={() => setQuizAnswer(opt.id)}
+                          className={cn(
+                            'p-2.5 rounded-xl border text-left font-medium transition-all cursor-pointer flex items-center justify-between',
+                            quizAnswer === null && 'bg-surface hover:bg-muted border-border text-foreground',
+                            quizAnswer === opt.id && opt.correct && 'bg-success/15 border-success text-success font-bold scale-[1.02]',
+                            quizAnswer === opt.id && !opt.correct && 'bg-destructive/15 border-destructive text-destructive font-bold',
+                            quizAnswer !== null && quizAnswer !== opt.id && opt.correct && 'bg-success/10 border-success/30 text-success',
+                            quizAnswer !== null && quizAnswer !== opt.id && !opt.correct && 'bg-surface border-border opacity-50'
+                          )}
+                        >
+                          <span>{opt.text}</span>
+                          {quizAnswer === opt.id && (opt.correct ? <Check className="h-4 w-4 text-success" /> : <X className="h-4 w-4 text-destructive" />)}
+                        </button>
+                      ))}
+                    </div>
+                    {quizAnswer !== null && (
+                      <div className="p-2.5 rounded-xl bg-surface border border-border text-2xs text-muted-foreground flex items-center gap-2">
+                        {quizAnswer === 1 ? (
+                          <span className="text-success font-bold">🎉 Chính xác! QuickSort có thời gian trung bình O(N log N).</span>
+                        ) : (
+                          <span className="text-amber-500 font-bold">💡 Chưa chính xác. Đáp án đúng là B: O(N log N). Hãy xem lại slide phân tích thuật toán!</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {heroTab === 'radar' && (
+                  <div className="space-y-3 animate-fade-in">
+                    <div className="flex items-center justify-between pb-1 border-b border-border/50">
+                      <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                        <Award className="h-3.5 w-3.5 text-warning" />
+                        Chẩn đoán mức độ nắm bắt kiến thức:
+                      </span>
+                      <span className="text-3xs font-bold text-success">Đã hoàn thành 85%</span>
+                    </div>
+                    <div className="space-y-2 text-xs">
+                      <div>
+                        <div className="flex justify-between text-2xs font-semibold mb-1">
+                          <span className="text-foreground">Chuẩn hóa CSDL (3NF, BCNF)</span>
+                          <span className="text-success">95% (Vững chắc)</span>
+                        </div>
+                        <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-success rounded-full" style={{ width: '95%' }} />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-2xs font-semibold mb-1">
+                          <span className="text-foreground">Kiến trúc Big Data & MapReduce</span>
+                          <span className="text-amber-500 font-bold">58% (Cần ôn tập thêm)</span>
+                        </div>
+                        <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-amber-500 rounded-full" style={{ width: '58%' }} />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-2xs text-foreground/80 flex items-center justify-between">
+                      <span>AI đã tạo bộ 5 câu ôn bù đắp cho phần MapReduce</span>
+                      <button 
+                        onClick={() => router.push('/app/student/quiz')}
+                        className="px-2 py-1 rounded bg-amber-500 text-white font-bold hover:bg-amber-600 transition"
+                      >
+                        Làm ngay →
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3. METRICS BAR (GIÁ TRỊ ĐỊNH LƯỢNG) */}
-      <section className="border-y border-border/80 bg-surface/50 py-10 sm:py-14">
+      {/* 2.5 INFINITE MARQUEE TICKER (Dải băng chuyền chuyển động liên tục) */}
+      <div className="w-full overflow-hidden border-y border-border/60 bg-surface/40 py-3">
+        <div className="animate-marquee flex items-center gap-8 whitespace-nowrap text-xs font-bold text-muted-foreground/80">
+          {tickerItems.concat(tickerItems).map((item, idx) => (
+            <span key={idx} className="flex items-center gap-2 hover:text-primary transition-colors cursor-default">
+              <span>{item}</span>
+              <span className="text-border text-base">•</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. METRICS BAR VỚI CON SỐ CHẠY ĐỘNG (ANIMATED NUMBERS) */}
+      <section className="bg-surface/50 py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
-            <div className="space-y-1">
-              <p className="text-3xl sm:text-4xl font-black text-primary tabular-nums">5x</p>
-              <p className="text-xs sm:text-sm font-semibold text-foreground">Tốc độ tiếp thu giáo trình</p>
+            {/* Stat 1 */}
+            <div className="space-y-1 p-4 rounded-2xl bg-surface-elevated/50 border border-border/40 hover:border-primary/40 hover:-translate-y-1 transition-all">
+              <p className="text-3xl sm:text-5xl font-black text-primary tabular-nums">
+                <AnimatedCounter end={5} suffix="x" />
+              </p>
+              <p className="text-xs sm:text-sm font-bold text-foreground">Tốc độ tiếp thu giáo trình</p>
               <p className="text-3xs text-muted-foreground">Tóm tắt & bóc tách trọng tâm tức thì</p>
             </div>
-            <div className="space-y-1">
-              <p className="text-3xl sm:text-4xl font-black text-accent tabular-nums">99.2%</p>
-              <p className="text-xs sm:text-sm font-semibold text-foreground">Độ chính xác trích dẫn RAG</p>
+
+            {/* Stat 2 */}
+            <div className="space-y-1 p-4 rounded-2xl bg-surface-elevated/50 border border-border/40 hover:border-accent/40 hover:-translate-y-1 transition-all">
+              <p className="text-3xl sm:text-5xl font-black text-accent tabular-nums">
+                <AnimatedCounter end={99.2} decimals={1} suffix="%" />
+              </p>
+              <p className="text-xs sm:text-sm font-bold text-foreground">Độ chính xác trích dẫn RAG</p>
               <p className="text-3xs text-muted-foreground">Đối chiếu sách gốc, loại bỏ bịa đặt</p>
             </div>
-            <div className="space-y-1">
-              <p className="text-3xl sm:text-4xl font-black text-success tabular-nums">10,000+</p>
-              <p className="text-xs sm:text-sm font-semibold text-foreground">Quiz & Flashcard tự động</p>
+
+            {/* Stat 3 */}
+            <div className="space-y-1 p-4 rounded-2xl bg-surface-elevated/50 border border-border/40 hover:border-success/40 hover:-translate-y-1 transition-all">
+              <p className="text-3xl sm:text-5xl font-black text-success tabular-nums">
+                <AnimatedCounter end={10000} suffix="+" />
+              </p>
+              <p className="text-xs sm:text-sm font-bold text-foreground">Quiz & Flashcard tự động</p>
               <p className="text-3xs text-muted-foreground">Sinh trắc nghiệm 4 lựa chọn có giải thích</p>
             </div>
-            <div className="space-y-1">
-              <p className="text-3xl sm:text-4xl font-black text-warning tabular-nums">WCAG AAA</p>
-              <p className="text-xs sm:text-sm font-semibold text-foreground">Công thái học thị giác</p>
-              <p className="text-3xs text-muted-foreground">Giảm 40% mỏi mắt khi học lâu</p>
+
+            {/* Stat 4 */}
+            <div className="space-y-1 p-4 rounded-2xl bg-surface-elevated/50 border border-border/40 hover:border-warning/40 hover:-translate-y-1 transition-all">
+              <p className="text-3xl sm:text-5xl font-black text-warning tabular-nums">
+                <AnimatedCounter end={40} suffix="%" />
+              </p>
+              <p className="text-xs sm:text-sm font-bold text-foreground">Giảm mỏi mắt khi học lâu</p>
+              <p className="text-3xs text-muted-foreground">Chuẩn công thái học thị giác WCAG AAA</p>
             </div>
           </div>
         </div>
@@ -324,7 +549,7 @@ export function LandingPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {/* Card 1: Large Multimodal RAG */}
-          <div className="md:col-span-2 rounded-3xl border border-border/80 bg-surface-elevated p-6 sm:p-8 space-y-4 hover:border-primary/40 hover:shadow-soft transition-all">
+          <div className="md:col-span-2 rounded-3xl border border-border/80 bg-surface-elevated p-6 sm:p-8 space-y-4 hover:border-primary/50 hover:shadow-soft hover:-translate-y-0.5 transition-all">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <BrainCircuit className="h-6 w-6" />
             </div>
@@ -340,7 +565,7 @@ export function LandingPage() {
           </div>
 
           {/* Card 2: AI Quiz Generator */}
-          <div className="rounded-3xl border border-border/80 bg-surface-elevated p-6 sm:p-8 space-y-4 hover:border-accent/40 hover:shadow-soft transition-all">
+          <div className="rounded-3xl border border-border/80 bg-surface-elevated p-6 sm:p-8 space-y-4 hover:border-accent/50 hover:shadow-soft hover:-translate-y-0.5 transition-all">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/10 text-accent">
               <Sparkles className="h-6 w-6" />
             </div>
@@ -352,7 +577,7 @@ export function LandingPage() {
           </div>
 
           {/* Card 3: Adaptive Remediation */}
-          <div className="rounded-3xl border border-border/80 bg-surface-elevated p-6 sm:p-8 space-y-4 hover:border-warning/40 hover:shadow-soft transition-all">
+          <div className="rounded-3xl border border-border/80 bg-surface-elevated p-6 sm:p-8 space-y-4 hover:border-warning/50 hover:shadow-soft hover:-translate-y-0.5 transition-all">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-warning/10 text-warning">
               <Award className="h-6 w-6" />
             </div>
@@ -364,7 +589,7 @@ export function LandingPage() {
           </div>
 
           {/* Card 4: Essay Grading */}
-          <div className="rounded-3xl border border-border/80 bg-surface-elevated p-6 sm:p-8 space-y-4 hover:border-success/40 hover:shadow-soft transition-all">
+          <div className="rounded-3xl border border-border/80 bg-surface-elevated p-6 sm:p-8 space-y-4 hover:border-success/50 hover:shadow-soft hover:-translate-y-0.5 transition-all">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-success/10 text-success">
               <FileText className="h-6 w-6" />
             </div>
@@ -376,7 +601,7 @@ export function LandingPage() {
           </div>
 
           {/* Card 5: Eye-Care Technology */}
-          <div className="rounded-3xl border border-border/80 bg-surface-elevated p-6 sm:p-8 space-y-4 hover:border-primary/40 hover:shadow-soft transition-all">
+          <div className="rounded-3xl border border-border/80 bg-surface-elevated p-6 sm:p-8 space-y-4 hover:border-primary/50 hover:shadow-soft hover:-translate-y-0.5 transition-all">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <Laptop className="h-6 w-6" />
             </div>
@@ -404,8 +629,8 @@ export function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
             {/* Step 1 */}
-            <div className="rounded-3xl border border-border bg-surface-elevated p-6 sm:p-8 space-y-4 relative shadow-xs">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground font-black text-sm">
+            <div className="rounded-3xl border border-border bg-surface-elevated p-6 sm:p-8 space-y-4 relative shadow-xs hover:-translate-y-1 transition-transform">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground font-black text-sm shadow-md shadow-primary/20">
                 01
               </div>
               <h3 className="text-lg font-bold text-foreground">Nạp Tài Liệu Học Phần</h3>
@@ -415,8 +640,8 @@ export function LandingPage() {
             </div>
 
             {/* Step 2 */}
-            <div className="rounded-3xl border border-border bg-surface-elevated p-6 sm:p-8 space-y-4 relative shadow-xs">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent text-accent-foreground font-black text-sm">
+            <div className="rounded-3xl border border-border bg-surface-elevated p-6 sm:p-8 space-y-4 relative shadow-xs hover:-translate-y-1 transition-transform">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent text-accent-foreground font-black text-sm shadow-md shadow-accent/20">
                 02
               </div>
               <h3 className="text-lg font-bold text-foreground">AI Phân Tách & Lập Chỉ Mục</h3>
@@ -426,8 +651,8 @@ export function LandingPage() {
             </div>
 
             {/* Step 3 */}
-            <div className="rounded-3xl border border-border bg-surface-elevated p-6 sm:p-8 space-y-4 relative shadow-xs">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-success text-success-foreground font-black text-sm">
+            <div className="rounded-3xl border border-border bg-surface-elevated p-6 sm:p-8 space-y-4 relative shadow-xs hover:-translate-y-1 transition-transform">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-success text-success-foreground font-black text-sm shadow-md shadow-success/20">
                 03
               </div>
               <h3 className="text-lg font-bold text-foreground">Tương Tác & Bứt Phá</h3>
@@ -453,11 +678,11 @@ export function LandingPage() {
 
         {/* Tab Switcher */}
         <div className="flex justify-center mb-8">
-          <div className="p-1 rounded-2xl bg-surface border border-border flex items-center gap-1">
+          <div className="p-1 rounded-2xl bg-surface border border-border flex items-center gap-1 shadow-2xs">
             <button
               onClick={() => setActiveRole('student')}
               className={cn(
-                'flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all',
+                'flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer',
                 activeRole === 'student'
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -469,7 +694,7 @@ export function LandingPage() {
             <button
               onClick={() => setActiveRole('lecturer')}
               className={cn(
-                'flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all',
+                'flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer',
                 activeRole === 'lecturer'
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -484,7 +709,7 @@ export function LandingPage() {
         {/* Tab Content */}
         <div className="rounded-3xl border border-border/80 bg-surface-elevated p-6 sm:p-10 shadow-lift">
           {activeRole === 'student' ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center animate-fade-in">
               <div className="space-y-5">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold">
                   <span>Trải nghiệm Học tập Chủ động</span>
@@ -509,7 +734,7 @@ export function LandingPage() {
                 <div className="pt-2">
                   <Button
                     onClick={() => router.push('/register?role=student')}
-                    className="h-11 px-6 rounded-xl font-bold bg-primary text-primary-foreground shadow-sm"
+                    className="h-11 px-6 rounded-xl font-bold bg-primary text-primary-foreground shadow-sm hover:opacity-95 transition-all"
                   >
                     <span>Vào Không gian Học viên</span>
                     <ArrowRight className="h-4 w-4 ml-2" />
@@ -534,7 +759,7 @@ export function LandingPage() {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center animate-fade-in">
               <div className="space-y-5">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs font-bold">
                   <span>Quản lý & Giảng dạy Thông minh</span>
@@ -559,7 +784,7 @@ export function LandingPage() {
                 <div className="pt-2">
                   <Button
                     onClick={() => router.push('/register?role=lecturer')}
-                    className="h-11 px-6 rounded-xl font-bold bg-primary text-primary-foreground shadow-sm"
+                    className="h-11 px-6 rounded-xl font-bold bg-primary text-primary-foreground shadow-sm hover:opacity-95 transition-all"
                   >
                     <span>Vào Không gian Giảng viên</span>
                     <ArrowRight className="h-4 w-4 ml-2" />
@@ -569,7 +794,7 @@ export function LandingPage() {
               <div className="p-6 rounded-2xl bg-surface border border-border space-y-3">
                 <div className="flex items-center justify-between text-xs font-bold text-muted-foreground pb-2 border-b border-border">
                   <span>Báo cáo tiến độ lớp học phần</span>
-                  <span className="text-primary">85 học viên</span>
+                  <span className="text-primary font-bold">85 học viên</span>
                 </div>
                 <div className="space-y-2 text-xs text-foreground/80">
                   <div className="p-2.5 rounded-lg bg-background border border-border flex items-center justify-between">
@@ -596,7 +821,7 @@ export function LandingPage() {
               Học Tập Truyền Thống vs Multimodal Learning Hub
             </h2>
             <p className="text-sm text-muted-foreground">
-              So sánh hiệu quả học tập khi áp dụng Hệ Thống Kinh Doanh Thông Minh.
+              So sánh hiệu quả học tập khi áp dụng nền tảng đào tạo AI thông minh.
             </p>
           </div>
 
@@ -656,7 +881,7 @@ export function LandingPage() {
             >
               <button
                 onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                className="w-full flex items-center justify-between p-4 sm:p-5 text-left font-bold text-foreground hover:text-primary transition-colors gap-4"
+                className="w-full flex items-center justify-between p-4 sm:p-5 text-left font-bold text-foreground hover:text-primary transition-colors gap-4 cursor-pointer"
               >
                 <span className="text-sm sm:text-base">{faq.q}</span>
                 <ChevronDown
@@ -667,7 +892,7 @@ export function LandingPage() {
                 />
               </button>
               {openFaq === idx && (
-                <div className="px-4 pb-5 sm:px-5 sm:pb-6 text-xs sm:text-sm text-muted-foreground leading-relaxed border-t border-border/40 pt-3">
+                <div className="px-4 pb-5 sm:px-5 sm:pb-6 text-xs sm:text-sm text-muted-foreground leading-relaxed border-t border-border/40 pt-3 animate-fade-in">
                   {faq.a}
                 </div>
               )}
@@ -676,7 +901,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* 9. FINAL CTA & FOOTER */}
+      {/* 9. FINAL CTA */}
       <section className="py-16 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/15 via-surface-elevated to-accent/15 p-8 sm:p-14 text-center space-y-6 shadow-lift relative overflow-hidden">
           <div className="max-w-2xl mx-auto space-y-4">
@@ -716,13 +941,13 @@ export function LandingPage() {
           </div>
 
           <div className="flex flex-wrap justify-center gap-6 text-xs font-semibold">
-            <button onClick={() => router.push('/welcome')} className="hover:text-foreground transition-colors">
+            <button onClick={() => router.push('/welcome')} className="hover:text-foreground transition-colors cursor-pointer">
               Chọn vai trò
             </button>
-            <button onClick={() => router.push('/login')} className="hover:text-foreground transition-colors">
+            <button onClick={() => router.push('/login')} className="hover:text-foreground transition-colors cursor-pointer">
               Đăng nhập
             </button>
-            <button onClick={() => router.push('/register')} className="hover:text-foreground transition-colors">
+            <button onClick={() => router.push('/register')} className="hover:text-foreground transition-colors cursor-pointer">
               Đăng ký
             </button>
             <span className="text-muted-foreground/60">Nhóm 07 © 2026</span>
