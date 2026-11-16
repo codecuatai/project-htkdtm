@@ -85,18 +85,6 @@ export function LandingPage() {
     }
   }
 
-  const tickerItems = [
-    '⚡ Multimodal RAG Học Thuật',
-    '📑 Giáo Trình PDF & Slide PPTX',
-    '🎬 Video Bài Giảng MP4 Có Timestamp',
-    '📊 Khai Phá Dữ Liệu & BI',
-    '🧠 Sinh Quiz 4 Lựa Chọn Sau 5s',
-    '🛡️ Chuẩn Thị Giác WCAG AAA',
-    '🎯 Chẩn Đoán Lỗ Hổng Kiến Thức',
-    '💡 Spaced Repetition Flashcards',
-    '📈 Chấm Tự Luận Theo Rubric'
-  ]
-
   const faqs = [
     {
       q: 'AI của Learning Hub có bịa đặt (hallucination) kiến thức không?',
@@ -480,52 +468,33 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* 2.5 INFINITE MARQUEE TICKER (Dải băng chuyền chuyển động liên tục) */}
-      <div className="w-full overflow-hidden border-y border-border/60 bg-surface/40 py-3">
-        <div className="animate-marquee flex items-center gap-8 whitespace-nowrap text-xs font-bold text-muted-foreground/80">
-          {tickerItems.concat(tickerItems).map((item, idx) => (
-            <span key={idx} className="flex items-center gap-2 hover:text-primary transition-colors cursor-default">
-              <span>{item}</span>
-              <span className="text-border text-base">•</span>
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* 3. METRICS BAR VỚI CON SỐ CHẠY ĐỘNG (ANIMATED NUMBERS) */}
-      <section className="bg-surface/50 py-12 sm:py-16">
+      {/* 3. METRICS BAR (GIÁ TRỊ ĐỊNH LƯỢNG) */}
+      <section className="border-y border-border/80 bg-surface/50 py-10 sm:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
-            {/* Stat 1 */}
-            <div className="space-y-1 p-4 rounded-2xl bg-surface-elevated/50 border border-border/40 hover:border-primary/40 hover:-translate-y-1 transition-all">
-              <p className="text-3xl sm:text-5xl font-black text-primary tabular-nums">
+            <div className="space-y-1">
+              <p className="text-3xl sm:text-4xl font-black text-primary tabular-nums">
                 <AnimatedCounter end={5} suffix="x" />
               </p>
               <p className="text-xs sm:text-sm font-bold text-foreground">Tốc độ tiếp thu giáo trình</p>
               <p className="text-3xs text-muted-foreground">Tóm tắt & bóc tách trọng tâm tức thì</p>
             </div>
-
-            {/* Stat 2 */}
-            <div className="space-y-1 p-4 rounded-2xl bg-surface-elevated/50 border border-border/40 hover:border-accent/40 hover:-translate-y-1 transition-all">
-              <p className="text-3xl sm:text-5xl font-black text-accent tabular-nums">
+            <div className="space-y-1">
+              <p className="text-3xl sm:text-4xl font-black text-accent tabular-nums">
                 <AnimatedCounter end={99.2} decimals={1} suffix="%" />
               </p>
               <p className="text-xs sm:text-sm font-bold text-foreground">Độ chính xác trích dẫn RAG</p>
               <p className="text-3xs text-muted-foreground">Đối chiếu sách gốc, loại bỏ bịa đặt</p>
             </div>
-
-            {/* Stat 3 */}
-            <div className="space-y-1 p-4 rounded-2xl bg-surface-elevated/50 border border-border/40 hover:border-success/40 hover:-translate-y-1 transition-all">
-              <p className="text-3xl sm:text-5xl font-black text-success tabular-nums">
+            <div className="space-y-1">
+              <p className="text-3xl sm:text-4xl font-black text-success tabular-nums">
                 <AnimatedCounter end={10000} suffix="+" />
               </p>
               <p className="text-xs sm:text-sm font-bold text-foreground">Quiz & Flashcard tự động</p>
               <p className="text-3xs text-muted-foreground">Sinh trắc nghiệm 4 lựa chọn có giải thích</p>
             </div>
-
-            {/* Stat 4 */}
-            <div className="space-y-1 p-4 rounded-2xl bg-surface-elevated/50 border border-border/40 hover:border-warning/40 hover:-translate-y-1 transition-all">
-              <p className="text-3xl sm:text-5xl font-black text-warning tabular-nums">
+            <div className="space-y-1">
+              <p className="text-3xl sm:text-4xl font-black text-warning tabular-nums">
                 <AnimatedCounter end={40} suffix="%" />
               </p>
               <p className="text-xs sm:text-sm font-bold text-foreground">Giảm mỏi mắt khi học lâu</p>

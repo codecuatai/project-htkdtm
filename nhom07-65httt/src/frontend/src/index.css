@@ -276,21 +276,6 @@
     100% { transform: translateY(0px) translateX(0px) scale(1); }
   }
 
-  @keyframes marquee {
-    0% { transform: translateX(0%); }
-    100% { transform: translateX(-50%); }
-  }
-
-  .animate-marquee {
-    display: flex;
-    width: max-content;
-    animation: marquee 35s linear infinite;
-  }
-
-  .animate-marquee:hover {
-    animation-play-state: paused;
-  }
-
   @keyframes float-slow {
     0%, 100% { transform: translateY(0px); }
     50% { transform: translateY(-8px); }
