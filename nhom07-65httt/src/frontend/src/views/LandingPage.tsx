@@ -19,11 +19,56 @@ import {
   Check,
   X,
   Target,
-  Bot
+  Bot,
+  Volume2,
+  Play,
+  Pause,
+  Search,
+  RotateCcw
 } from 'lucide-react'
 import { ThemeToggle } from '../components/ui/ThemeToggle'
 import { Button } from '../components/ui/Button'
 import { cn } from '../utils/cn'
+
+// Morphing keywords for dynamic headline
+const morphKeywords = [
+  { text: 'Giáo Trình PDF', icon: '📑', color: 'from-blue-600 via-indigo-600 to-primary dark:from-blue-400 dark:via-indigo-300 dark:to-cyan-400' },
+  { text: 'Video Bài Giảng', icon: '🎬', color: 'from-purple-600 via-fuchsia-600 to-pink-600 dark:from-purple-400 dark:via-pink-300 dark:to-rose-300' },
+  { text: 'Slide Thuyết Trình', icon: '📊', color: 'from-amber-500 via-orange-500 to-amber-600 dark:from-amber-400 dark:via-orange-300 dark:to-amber-200' },
+  { text: 'Đề Thi & Bài Tập', icon: '🧠', color: 'from-emerald-600 via-teal-600 to-green-600 dark:from-emerald-400 dark:via-teal-300 dark:to-green-300' }
+]
+
+// Quick sample prompts for "Try It Live" command bar
+const samplePrompts = [
+  {
+    id: 'rag',
+    icon: '⚡',
+    label: 'Tóm tắt Lan truyền ngược',
+    query: 'Giải thích cơ chế Lan truyền ngược (Backpropagation) trong mạng nơ-ron?',
+    tab: 'rag' as const
+  },
+  {
+    id: 'quiz',
+    icon: '🧠',
+    label: 'Sinh câu hỏi QuickSort',
+    query: 'Sinh câu hỏi trắc nghiệm đánh giá thuật toán QuickSort',
+    tab: 'quiz' as const
+  },
+  {
+    id: 'audio',
+    icon: '🎧',
+    label: 'Nghe AI Podcast bài giảng',
+    query: 'Chuyển bài giảng video buổi 5 thành podcast giọng đọc AI',
+    tab: 'audio' as const
+  },
+  {
+    id: 'radar',
+    icon: '🎯',
+    label: 'Chẩn đoán lỗ hổng CSDL',
+    query: 'Phân tích điểm mạnh yếu học phần Hệ Thống Kinh Doanh Thông Minh',
+    tab: 'radar' as const
+  }
+]
 
 // Animated number counter hook/component
 function AnimatedCounter({
@@ -73,9 +118,28 @@ export function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  // Interactive Live Demo in Hero Mockup
-  const [heroTab, setHeroTab] = useState<'rag' | 'quiz' | 'radar'>('rag')
+  // Morphing Headline & "Try It Live" States
+  const [keywordIndex, setKeywordIndex] = useState(0)
+  const [promptInput, setPromptInput] = useState('')
+  const [activeScenario, setActiveScenario] = useState<'rag' | 'quiz' | 'audio' | 'radar'>('rag')
   const [quizAnswer, setQuizAnswer] = useState<number | null>(null)
+  const [audioPlaying, setAudioPlaying] = useState(false)
+  const [audioProgress, setAudioProgress] = useState(42)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setKeywordIndex((prev) => (prev + 1) % morphKeywords.length)
+    }, 2800)
+    return () => clearInterval(timer)
+  }, [])
+
+  const handleSelectPrompt = (prompt: typeof samplePrompts[0]) => {
+    setPromptInput(prompt.query)
+    setActiveScenario(prompt.tab)
+    if (prompt.tab === 'quiz') {
+      setQuizAnswer(null)
+    }
+  }
 
   const scrollToSection = (id: string) => {
     setMobileMenuOpen(false)
@@ -199,24 +263,42 @@ export function LandingPage() {
         )}
       </header>
 
-      {/* 2. HERO SECTION */}
-      <section className="relative overflow-hidden pt-12 pb-16 md:pt-18 md:pb-24">
-        {/* Glow ambient background orbs */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[380px] bg-primary/15 rounded-full blur-[140px] pointer-events-none" />
+      {/* 2. HERO SECTION - WOW REDESIGN */}
+      <section className="relative overflow-hidden pt-12 pb-16 md:pt-20 md:pb-28">
+        {/* Subtle Cyber Grid Background with Radial Mask */}
+        <div className="absolute inset-0 bg-grid-pattern mask-radial-faded pointer-events-none opacity-50 dark:opacity-25" />
+
+        {/* Ambient Spotlight Glow Beams */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[360px] bg-gradient-to-b from-primary/20 via-accent/10 to-transparent blur-[140px] pointer-events-none" />
         <div className="absolute top-1/3 right-10 w-[350px] h-[280px] bg-accent/15 rounded-full blur-[110px] pointer-events-none" />
+        <div className="absolute top-1/2 left-10 w-[300px] h-[250px] bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-6 sm:space-y-8">
-          {/* Top Sleek Pill Badge (Đã thay badge học phần cũ) */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-primary/15 via-accent/10 to-primary/15 border border-primary/30 text-primary text-xs font-bold animate-fade-in shadow-2xs backdrop-blur-md">
+          {/* Top Sleek Pill Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface-elevated/80 border border-primary/30 text-primary text-xs font-bold animate-fade-in shadow-2xs backdrop-blur-md">
             <Sparkles className="h-4 w-4 text-primary animate-pulse" />
             <span>Nền tảng Học tập Đa phương thức AI Thế Hệ Mới</span>
             <span className="flex h-1.5 w-1.5 rounded-full bg-primary animate-ping ml-1" />
           </div>
 
-          {/* Main Hero Headline */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-foreground max-w-4xl mx-auto leading-[1.15]">
-            Biến Mọi Giáo Trình Phức Tạp Thành{' '}
-            <span className="bg-gradient-to-r from-primary via-blue-600 to-accent dark:from-primary dark:via-blue-400 dark:to-cyan-300 bg-clip-text text-transparent">
+          {/* Morphing Dynamic Headline */}
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-foreground max-w-4xl mx-auto leading-[1.2]">
+            Biến Mọi{' '}
+            <span className="inline-block relative">
+              <span
+                key={keywordIndex}
+                className={cn(
+                  'inline-flex items-center gap-2 bg-gradient-to-r bg-clip-text text-transparent animate-fade-in underline decoration-primary/30 decoration-wavy underline-offset-8',
+                  morphKeywords[keywordIndex].color
+                )}
+              >
+                <span>{morphKeywords[keywordIndex].icon}</span>
+                <span>{morphKeywords[keywordIndex].text}</span>
+              </span>
+            </span>
+            <br />
+            Thành{' '}
+            <span className="bg-gradient-to-r from-primary via-indigo-600 to-accent dark:from-primary dark:via-blue-400 dark:to-cyan-300 bg-clip-text text-transparent">
               Tri Thức Tương Tác Sâu
             </span>
           </h1>
@@ -226,8 +308,63 @@ export function LandingPage() {
             Đột phá hiệu suất học tập với Gia sư AI đối chiếu chính xác số trang tài liệu gốc, bộ sinh trắc nghiệm tự động và bảng màu công thái học bảo vệ mắt suốt 6 giờ liên tục.
           </p>
 
+          {/* "Try It Live" Prompt Command Bar (Perplexity / Cursor style) */}
+          <div className="max-w-2xl mx-auto w-full pt-1">
+            <div className="p-2 rounded-2xl bg-surface-elevated/90 border border-primary/30 shadow-lift backdrop-blur-xl transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+              <div className="flex items-center gap-2 px-3 py-1.5">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/15 text-primary shrink-0">
+                  <Search className="h-4 w-4" />
+                </div>
+                <input
+                  type="text"
+                  value={promptInput}
+                  onChange={(e) => setPromptInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && promptInput) {
+                      setActiveScenario('rag')
+                    }
+                  }}
+                  placeholder="Gõ câu hỏi bất kỳ từ giáo trình hoặc chọn thử kịch bản bên dưới..."
+                  className="w-full bg-transparent text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none"
+                />
+                <Button
+                  onClick={() => {
+                    if (!promptInput) setPromptInput('Giải thích cơ chế Lan truyền ngược trong mạng nơ-ron?')
+                    setActiveScenario('rag')
+                  }}
+                  className="h-8 px-3.5 rounded-xl text-xs font-bold bg-primary text-primary-foreground shrink-0 shadow-xs hover:opacity-90 transition"
+                >
+                  <span>Chạy AI</span>
+                  <ArrowRight className="h-3 w-3 ml-1" />
+                </Button>
+              </div>
+
+              {/* Quick Sample Prompts */}
+              <div className="pt-2 px-1 border-t border-border/40 flex items-center gap-1.5 overflow-x-auto text-2xs scrollbar-none">
+                <span className="text-muted-foreground font-semibold shrink-0 flex items-center gap-1 pl-1">
+                  <Zap className="h-3 w-3 text-amber-500 fill-current" /> Thử nhanh:
+                </span>
+                {samplePrompts.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => handleSelectPrompt(p)}
+                    className={cn(
+                      'px-2.5 py-1 rounded-lg border text-left shrink-0 font-medium transition-all cursor-pointer flex items-center gap-1.5',
+                      activeScenario === p.tab && promptInput === p.query
+                        ? 'bg-primary/20 border-primary text-primary font-bold shadow-2xs'
+                        : 'bg-surface hover:bg-muted/80 border-border/60 text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    <span>{p.icon}</span>
+                    <span>{p.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* CTA Group */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-1">
             <Button
               onClick={() => router.push('/welcome')}
               className="h-12 px-7 rounded-2xl text-base font-bold bg-primary text-primary-foreground shadow-md hover:shadow-glow hover:opacity-95 transition-all w-full sm:w-auto"
@@ -246,7 +383,7 @@ export function LandingPage() {
           </div>
 
           {/* Trust Highlights */}
-          <div className="pt-2 flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs font-semibold text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs font-semibold text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-success" />
               <span>Chuẩn thị giác WCAG AAA</span>
@@ -261,10 +398,10 @@ export function LandingPage() {
             </div>
           </div>
 
-          {/* HERO PREVIEW MOCKUP WITH DYNAMIC INTERACTION & FLOATING BADGES */}
-          <div className="pt-8 sm:pt-12 max-w-5xl mx-auto relative">
+          {/* HERO STUDIO MOCKUP WITH SPLIT VIEW & FLOATING BADGES */}
+          <div className="pt-6 sm:pt-10 max-w-5xl mx-auto relative">
             {/* Floating Dynamic Badge 1: Top Right */}
-            <div className="hidden md:flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-surface-elevated border border-primary/30 shadow-lift absolute -top-4 -right-4 z-20 animate-float backdrop-blur-md">
+            <div className="hidden md:flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-surface-elevated/90 border border-primary/30 shadow-lift absolute -top-4 -right-4 z-20 animate-float backdrop-blur-md">
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/15 text-primary">
                 <Laptop className="h-4 w-4" />
               </div>
@@ -275,7 +412,7 @@ export function LandingPage() {
             </div>
 
             {/* Floating Dynamic Badge 2: Bottom Left */}
-            <div className="hidden md:flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-surface-elevated border border-success/30 shadow-lift absolute -bottom-5 -left-4 z-20 animate-float-delayed backdrop-blur-md">
+            <div className="hidden md:flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-surface-elevated/90 border border-success/30 shadow-lift absolute -bottom-5 -left-4 z-20 animate-float-delayed backdrop-blur-md">
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-success/15 text-success">
                 <Target className="h-4 w-4" />
               </div>
@@ -285,183 +422,330 @@ export function LandingPage() {
               </div>
             </div>
 
-            {/* Window Container */}
-            <div className="rounded-3xl border border-border/80 bg-surface-elevated/95 p-2.5 sm:p-4 shadow-lift backdrop-blur-xl transition-all">
-              {/* Window Header */}
-              <div className="flex items-center justify-between px-3 py-2 border-b border-border/60">
+            {/* Mac Studio Window Container */}
+            <div className="rounded-3xl border border-primary/25 bg-surface-elevated/95 p-3 sm:p-5 shadow-2xl shadow-primary/10 backdrop-blur-xl transition-all relative overflow-hidden">
+              {/* Glowing Top Edge Reflection */}
+              <div className="absolute -top-px left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+
+              {/* Mac Window Header */}
+              <div className="flex items-center justify-between px-3 py-2 border-b border-border/70 mb-4 bg-muted/30 rounded-xl">
                 <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-rose-500/80" />
-                  <div className="h-3 w-3 rounded-full bg-amber-500/80" />
-                  <div className="h-3 w-3 rounded-full bg-emerald-500/80" />
+                  <div className="h-3 w-3 rounded-full bg-[#ff5f56] border border-[#e0443e]/40 shadow-xs" />
+                  <div className="h-3 w-3 rounded-full bg-[#ffbd2e] border border-[#dea123]/40 shadow-xs" />
+                  <div className="h-3 w-3 rounded-full bg-[#27c93f] border border-[#1aab29]/40 shadow-xs" />
+                  <span className="ml-2 text-2xs font-bold text-muted-foreground hidden lg:inline">
+                    Learning Hub AI Studio · Học phần: Hệ Thống Kinh Doanh Thông Minh (IS334)
+                  </span>
                 </div>
-                {/* Interactive Demo Tabs inside Mockup */}
-                <div className="flex items-center p-1 rounded-xl bg-muted/60 border border-border/40 gap-1 text-3xs font-semibold">
+
+                {/* Studio Live Tabs */}
+                <div className="flex items-center p-1 rounded-lg bg-surface border border-border/60 gap-1 text-3xs font-bold">
                   <button
-                    onClick={() => setHeroTab('rag')}
+                    onClick={() => setActiveScenario('rag')}
                     className={cn(
-                      'px-3 py-1 rounded-lg transition-all',
-                      heroTab === 'rag' ? 'bg-surface-elevated text-primary shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground'
+                      'px-2.5 py-1 rounded-md transition-all cursor-pointer flex items-center gap-1',
+                      activeScenario === 'rag' ? 'bg-primary text-primary-foreground shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground'
                     )}
                   >
-                    1. Gia sư RAG
+                    <span>📄 1. Trích dẫn RAG</span>
                   </button>
                   <button
-                    onClick={() => setHeroTab('quiz')}
+                    onClick={() => setActiveScenario('quiz')}
                     className={cn(
-                      'px-3 py-1 rounded-lg transition-all',
-                      heroTab === 'quiz' ? 'bg-surface-elevated text-accent shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground'
+                      'px-2.5 py-1 rounded-md transition-all cursor-pointer flex items-center gap-1',
+                      activeScenario === 'quiz' ? 'bg-primary text-primary-foreground shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground'
                     )}
                   >
-                    2. Trắc nghiệm AI (Bấm thử)
+                    <span>🧠 2. Trắc nghiệm AI</span>
                   </button>
                   <button
-                    onClick={() => setHeroTab('radar')}
+                    onClick={() => setActiveScenario('audio')}
                     className={cn(
-                      'px-3 py-1 rounded-lg transition-all',
-                      heroTab === 'radar' ? 'bg-surface-elevated text-warning shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground'
+                      'px-2.5 py-1 rounded-md transition-all cursor-pointer flex items-center gap-1',
+                      activeScenario === 'audio' ? 'bg-primary text-primary-foreground shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground'
                     )}
                   >
-                    3. Radar điểm yếu
+                    <span>🎧 3. AI Podcast</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveScenario('radar')}
+                    className={cn(
+                      'px-2.5 py-1 rounded-md transition-all cursor-pointer flex items-center gap-1',
+                      activeScenario === 'radar' ? 'bg-primary text-primary-foreground shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    <span>🎯 4. Radar</span>
                   </button>
                 </div>
+
                 <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-success animate-ping" />
-                  <span className="text-3xs font-bold text-success hidden sm:inline">Interactive Demo</span>
+                  <span className="flex h-2 w-2 rounded-full bg-success animate-ping" />
+                  <span className="text-3xs font-extrabold text-success hidden sm:inline">LIVE RAG v2.4</span>
                 </div>
               </div>
 
-              {/* Window Content Simulation */}
-              <div className="p-4 sm:p-6 text-left bg-background/50 rounded-2xl min-h-[220px]">
-                {heroTab === 'rag' && (
-                  <div className="space-y-4 animate-fade-in">
-                    {/* User Question */}
-                    <div className="flex items-start gap-3 justify-end">
-                      <div className="p-3 rounded-2xl bg-primary text-primary-foreground text-xs font-medium max-w-md shadow-xs">
-                        Giải thích cơ chế Lan truyền ngược (Backpropagation) trong mạng nơ-ron?
-                      </div>
-                      <div className="flex h-7 w-7 rounded-full bg-muted items-center justify-center font-bold text-2xs">
-                        Bạn
-                      </div>
+              {/* Split Screen Canvas */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 text-left">
+                {/* LEFT PANEL: Live Interactive Document Viewer (5 cols) */}
+                <div className="lg:col-span-5 rounded-2xl bg-surface/90 border border-border/80 p-4 space-y-3 relative overflow-hidden flex flex-col justify-between shadow-2xs">
+                  <div>
+                    {/* Document Header */}
+                    <div className="flex items-center justify-between pb-2 border-b border-border/60 text-2xs">
+                      <span className="font-bold text-foreground flex items-center gap-1.5 truncate">
+                        <FileText className="h-3.5 w-3.5 text-primary shrink-0" />
+                        GiaoTrinh_KhaiPhaDuLieu.pdf
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full bg-muted font-bold text-3xs text-muted-foreground shrink-0">
+                        Trang 42 / 186
+                      </span>
                     </div>
 
-                    {/* AI Response with page citations */}
-                    <div className="p-4 rounded-2xl border border-primary/20 bg-surface-elevated space-y-3">
-                      <div className="flex items-start gap-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-primary-foreground font-bold text-xs shadow-xs">
-                          <Bot className="h-4 w-4" />
+                    {/* Document Content Simulation with AI Highlight */}
+                    <div className="pt-3 space-y-2 text-2xs text-muted-foreground leading-relaxed">
+                      <p className="font-extrabold text-xs text-foreground">
+                        3.2 Kỹ thuật phân lớp cây quyết định & Mạng nơ-ron
+                      </p>
+                      <p>
+                        Các giải thuật phổ biến bao gồm ID3, C4.5, CART và Multilayer Perceptron. Mục tiêu là phân tách tập dữ liệu thành các tập con thuần nhất dựa trên các thước đo entropy hoặc hàm mất mát.
+                      </p>
+                      {/* AI Laser Highlight Box */}
+                      <div className="p-3 rounded-xl bg-amber-500/10 border-l-4 border-amber-500 text-foreground space-y-1 relative">
+                        <div className="flex items-center justify-between text-3xs font-bold text-amber-600 dark:text-amber-400">
+                          <span className="flex items-center gap-1">
+                            <Sparkles className="h-3 w-3 animate-pulse" /> Đoạn được AI trích dẫn
+                          </span>
+                          <span>Khớp 99.4%</span>
                         </div>
-                        <div className="space-y-2 flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-foreground">Gia sư AI Tutor</span>
-                            <span className="inline-flex items-center gap-1 text-3xs font-bold px-2 py-0.5 rounded-full bg-success/15 text-success">
-                              <CheckCircle2 className="h-3 w-3" /> Đã kiểm chứng tài liệu
-                            </span>
-                          </div>
-                          <p className="text-xs text-foreground/90 leading-relaxed">
-                            Thuật toán Lan truyền ngược (Backpropagation) tính đạo hàm của hàm mất mát đối với từng trọng số nhờ quy tắc chuỗi vi phân (Chain Rule), sau đó cập nhật trọng số bằng Gradient Descent từ tầng đầu ra ngược về tầng đầu vào.
-                          </p>
-                          <div className="pt-1 flex flex-wrap items-center gap-2 text-3xs font-semibold">
-                            <span className="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-300 border border-blue-500/20">
-                              📄 Trang 42 · Slide_Chuong3_NeuralNet.pdf
-                            </span>
-                            <span className="px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20">
-                              ⏱️ Mốc video: 14:25s · BaiGiang_Buoi5.mp4
-                            </span>
-                          </div>
-                        </div>
+                        <p className="text-2xs font-semibold text-foreground/95 italic">
+                          "Thuật toán Backpropagation kết hợp Gradient Descent để giảm thiểu hàm tổn thất (Loss Function) qua từng epoch huấn luyện mô hình mạng nơ-ron sâu..."
+                        </p>
                       </div>
+                      <p className="text-3xs text-muted-foreground/80">
+                        ...Công thức cập nhật trọng số: w_new = w_old - η * (∂L/∂w) theo chuỗi vi phân đạo hàm riêng (Chain Rule).
+                      </p>
                     </div>
                   </div>
-                )}
 
-                {heroTab === 'quiz' && (
-                  <div className="space-y-3 animate-fade-in">
-                    <div className="flex items-center justify-between pb-1 border-b border-border/50">
-                      <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                        <Sparkles className="h-3.5 w-3.5 text-accent animate-pulse" />
-                        Câu hỏi do AI sinh tức thì từ giáo trình:
-                      </span>
-                      <span className="text-3xs font-semibold text-muted-foreground">Bấm chọn để kiểm tra</span>
-                    </div>
-                    <p className="text-xs font-bold text-foreground">
-                      Độ phức tạp thời gian trung bình (Average Time Complexity) của giải thuật QuickSort là gì?
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                      {[
-                        { id: 0, text: 'A. O(N²)', correct: false },
-                        { id: 1, text: 'B. O(N log N)', correct: true },
-                        { id: 2, text: 'C. O(N)', correct: false },
-                        { id: 3, text: 'D. O(log N)', correct: false }
-                      ].map((opt) => (
+                  {/* Document Footer AI Scan Status */}
+                  <div className="pt-2 border-t border-border/50 flex items-center justify-between text-3xs font-semibold text-muted-foreground">
+                    <span className="flex items-center gap-1.5 text-primary font-bold">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-success" /> 1,420 Chunks Vector
+                    </span>
+                    <span className="text-3xs text-muted-foreground">BAAI/bge-m3</span>
+                  </div>
+                </div>
+
+                {/* RIGHT PANEL: Dynamic AI Studio Output (7 cols) */}
+                <div className="lg:col-span-7 rounded-2xl bg-surface/90 border border-primary/20 p-4 space-y-3 flex flex-col justify-between shadow-2xs">
+                  {activeScenario === 'rag' && (
+                    <div className="space-y-3 animate-fade-in">
+                      {/* User Question */}
+                      <div className="flex items-start gap-2.5 justify-end">
+                        <div className="p-2.5 rounded-2xl bg-primary text-primary-foreground text-xs font-medium max-w-sm shadow-xs">
+                          {promptInput || 'Giải thích cơ chế Lan truyền ngược (Backpropagation) trong mạng nơ-ron?'}
+                        </div>
+                        <div className="flex h-7 w-7 rounded-full bg-muted items-center justify-center font-bold text-2xs shrink-0">
+                          Bạn
+                        </div>
+                      </div>
+
+                      {/* AI Response with page citations */}
+                      <div className="p-3.5 rounded-2xl border border-primary/20 bg-surface-elevated space-y-2.5">
+                        <div className="flex items-start gap-2.5">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-primary-foreground font-bold text-xs shadow-xs">
+                            <Bot className="h-4 w-4" />
+                          </div>
+                          <div className="space-y-2 flex-1">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-foreground">Gia sư AI Tutor</span>
+                              <span className="inline-flex items-center gap-1 text-3xs font-bold px-2 py-0.5 rounded-full bg-success/15 text-success">
+                                <CheckCircle2 className="h-3 w-3" /> Đã kiểm chứng tài liệu gốc
+                              </span>
+                            </div>
+                            <p className="text-xs text-foreground/90 leading-relaxed">
+                              Thuật toán Lan truyền ngược (Backpropagation) tính đạo hàm riêng của hàm mất mát theo từng trọng số nhờ quy tắc chuỗi (Chain Rule), sau đó lan truyền sai số từ tầng ra ngược về các tầng ẩn để tối ưu trọng số qua Gradient Descent.
+                            </p>
+                            <div className="pt-1 flex flex-wrap items-center gap-2 text-3xs font-semibold">
+                              <span className="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-300 border border-blue-500/20">
+                                📄 Trang 42 · GiaoTrinh_KhaiPhaDuLieu.pdf
+                              </span>
+                              <span className="px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20">
+                                ⏱️ Mốc video: 14:25s · BaiGiang_Buoi5.mp4
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Follow-up Hint */}
+                      <div className="flex items-center justify-between pt-1 text-3xs text-muted-foreground">
+                        <span>💡 Gợi ý câu hỏi tiếp theo: "Công thức toán học của Chain Rule?"</span>
                         <button
-                          key={opt.id}
-                          onClick={() => setQuizAnswer(opt.id)}
-                          className={cn(
-                            'p-2.5 rounded-xl border text-left font-medium transition-all cursor-pointer flex items-center justify-between',
-                            quizAnswer === null && 'bg-surface hover:bg-muted border-border text-foreground',
-                            quizAnswer === opt.id && opt.correct && 'bg-success/15 border-success text-success font-bold scale-[1.02]',
-                            quizAnswer === opt.id && !opt.correct && 'bg-destructive/15 border-destructive text-destructive font-bold',
-                            quizAnswer !== null && quizAnswer !== opt.id && opt.correct && 'bg-success/10 border-success/30 text-success',
-                            quizAnswer !== null && quizAnswer !== opt.id && !opt.correct && 'bg-surface border-border opacity-50'
-                          )}
+                          onClick={() => setPromptInput('Công thức toán học của Chain Rule trong Backprop?')}
+                          className="text-primary font-bold hover:underline cursor-pointer"
                         >
-                          <span>{opt.text}</span>
-                          {quizAnswer === opt.id && (opt.correct ? <Check className="h-4 w-4 text-success" /> : <X className="h-4 w-4 text-destructive" />)}
+                          Hỏi ngay →
                         </button>
-                      ))}
-                    </div>
-                    {quizAnswer !== null && (
-                      <div className="p-2.5 rounded-xl bg-surface border border-border text-2xs text-muted-foreground flex items-center gap-2">
-                        {quizAnswer === 1 ? (
-                          <span className="text-success font-bold">🎉 Chính xác! QuickSort có thời gian trung bình O(N log N).</span>
-                        ) : (
-                          <span className="text-amber-500 font-bold">💡 Chưa chính xác. Đáp án đúng là B: O(N log N). Hãy xem lại slide phân tích thuật toán!</span>
-                        )}
                       </div>
-                    )}
-                  </div>
-                )}
+                    </div>
+                  )}
 
-                {heroTab === 'radar' && (
-                  <div className="space-y-3 animate-fade-in">
-                    <div className="flex items-center justify-between pb-1 border-b border-border/50">
-                      <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                        <Award className="h-3.5 w-3.5 text-warning" />
-                        Chẩn đoán mức độ nắm bắt kiến thức:
-                      </span>
-                      <span className="text-3xs font-bold text-success">Đã hoàn thành 85%</span>
-                    </div>
-                    <div className="space-y-2 text-xs">
-                      <div>
-                        <div className="flex justify-between text-2xs font-semibold mb-1">
-                          <span className="text-foreground">Chuẩn hóa CSDL (3NF, BCNF)</span>
-                          <span className="text-success">95% (Vững chắc)</span>
+                  {activeScenario === 'quiz' && (
+                    <div className="space-y-3 animate-fade-in">
+                      <div className="flex items-center justify-between pb-1 border-b border-border/50">
+                        <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                          <Sparkles className="h-3.5 w-3.5 text-accent animate-pulse" />
+                          Câu hỏi do AI sinh tức thì từ giáo trình:
+                        </span>
+                        <span className="text-3xs font-semibold text-muted-foreground">Bấm chọn thử</span>
+                      </div>
+                      <p className="text-xs font-bold text-foreground">
+                        Độ phức tạp thời gian trung bình (Average Time Complexity) của giải thuật QuickSort là gì?
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        {[
+                          { id: 0, text: 'A. O(N²)', correct: false },
+                          { id: 1, text: 'B. O(N log N)', correct: true },
+                          { id: 2, text: 'C. O(N)', correct: false },
+                          { id: 3, text: 'D. O(log N)', correct: false }
+                        ].map((opt) => (
+                          <button
+                            key={opt.id}
+                            onClick={() => setQuizAnswer(opt.id)}
+                            className={cn(
+                              'p-2.5 rounded-xl border text-left font-medium transition-all cursor-pointer flex items-center justify-between',
+                              quizAnswer === null && 'bg-surface hover:bg-muted border-border text-foreground',
+                              quizAnswer === opt.id && opt.correct && 'bg-success/15 border-success text-success font-bold scale-[1.02]',
+                              quizAnswer === opt.id && !opt.correct && 'bg-destructive/15 border-destructive text-destructive font-bold',
+                              quizAnswer !== null && quizAnswer !== opt.id && opt.correct && 'bg-success/10 border-success/30 text-success',
+                              quizAnswer !== null && quizAnswer !== opt.id && !opt.correct && 'bg-surface border-border opacity-50'
+                            )}
+                          >
+                            <span>{opt.text}</span>
+                            {quizAnswer === opt.id && (opt.correct ? <Check className="h-4 w-4 text-success" /> : <X className="h-4 w-4 text-destructive" />)}
+                          </button>
+                        ))}
+                      </div>
+                      {quizAnswer !== null ? (
+                        <div className="p-2.5 rounded-xl bg-surface border border-border text-2xs text-muted-foreground flex items-center gap-2">
+                          {quizAnswer === 1 ? (
+                            <span className="text-success font-bold">🎉 Chính xác! QuickSort có thời gian trung bình O(N log N).</span>
+                          ) : (
+                            <span className="text-amber-500 font-bold">💡 Chưa chính xác. Đáp án đúng là B: O(N log N). Hãy xem lại slide phân tích thuật toán!</span>
+                          )}
                         </div>
-                        <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                          <div className="h-full bg-success rounded-full" style={{ width: '95%' }} />
+                      ) : (
+                        <p className="text-3xs text-muted-foreground italic">
+                          * AI tự động phân tích đáp án sai và gợi ý tài liệu ôn tập bù đắp kiến thức.
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {activeScenario === 'audio' && (
+                    <div className="space-y-4 animate-fade-in">
+                      <div className="flex items-center justify-between pb-1 border-b border-border/50">
+                        <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                          <Volume2 className="h-3.5 w-3.5 text-primary" />
+                          AI Podcast & Giọng đọc tóm tắt bài giảng:
+                        </span>
+                        <span className="text-3xs font-bold text-primary">Tốc độ: 1.25x</span>
+                      </div>
+
+                      {/* Audio Card */}
+                      <div className="p-4 rounded-2xl bg-surface-elevated border border-primary/20 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-bold text-foreground">
+                              Tóm tắt bài học: Mạng Nơ-ron & Lan truyền ngược
+                            </p>
+                            <p className="text-3xs text-muted-foreground">Giọng đọc AI Studio · Nguồn: BaiGiang_Buoi5.mp4</p>
+                          </div>
+                          {/* Animated Soundwave Visualizer */}
+                          <div className="flex items-center gap-1 h-6">
+                            <span className={cn("w-1 rounded-full bg-primary", audioPlaying ? "animate-soundwave-1" : "h-2")} />
+                            <span className={cn("w-1 rounded-full bg-accent", audioPlaying ? "animate-soundwave-2" : "h-3")} />
+                            <span className={cn("w-1 rounded-full bg-primary", audioPlaying ? "animate-soundwave-3" : "h-4")} />
+                            <span className={cn("w-1 rounded-full bg-indigo-400", audioPlaying ? "animate-soundwave-4" : "h-2")} />
+                          </div>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="space-y-1">
+                          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-primary to-accent rounded-full" style={{ width: `${audioProgress}%` }} />
+                          </div>
+                          <div className="flex justify-between text-3xs font-semibold text-muted-foreground">
+                            <span>01:14</span>
+                            <span>02:58</span>
+                          </div>
+                        </div>
+
+                        {/* Player Controls */}
+                        <div className="flex items-center justify-between pt-1">
+                          <button
+                            onClick={() => setAudioProgress(10)}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                            title="Tua lại"
+                          >
+                            <RotateCcw className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setAudioPlaying(!audioPlaying)}
+                            className="h-9 px-4 rounded-xl bg-primary text-primary-foreground font-bold text-xs flex items-center gap-1.5 shadow-sm hover:opacity-90 transition cursor-pointer"
+                          >
+                            {audioPlaying ? <Pause className="h-3.5 w-3.5 fill-current" /> : <Play className="h-3.5 w-3.5 fill-current" />}
+                            <span>{audioPlaying ? 'Tạm dừng' : 'Nghe ngay'}</span>
+                          </button>
+                          <span className="text-3xs font-bold text-success bg-success/15 px-2 py-0.5 rounded-full">
+                            Whisper STT
+                          </span>
                         </div>
                       </div>
-                      <div>
-                        <div className="flex justify-between text-2xs font-semibold mb-1">
-                          <span className="text-foreground">Kiến trúc Big Data & MapReduce</span>
-                          <span className="text-amber-500 font-bold">58% (Cần ôn tập thêm)</span>
+                    </div>
+                  )}
+
+                  {activeScenario === 'radar' && (
+                    <div className="space-y-3 animate-fade-in">
+                      <div className="flex items-center justify-between pb-1 border-b border-border/50">
+                        <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                          <Award className="h-3.5 w-3.5 text-warning" />
+                          Chẩn đoán mức độ nắm bắt kiến thức:
+                        </span>
+                        <span className="text-3xs font-bold text-success">Đã hoàn thành 85%</span>
+                      </div>
+                      <div className="space-y-2 text-xs">
+                        <div>
+                          <div className="flex justify-between text-2xs font-semibold mb-1">
+                            <span className="text-foreground">Chuẩn hóa CSDL (3NF, BCNF)</span>
+                            <span className="text-success">95% (Vững chắc)</span>
+                          </div>
+                          <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                            <div className="h-full bg-success rounded-full" style={{ width: '95%' }} />
+                          </div>
                         </div>
-                        <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                          <div className="h-full bg-amber-500 rounded-full" style={{ width: '58%' }} />
+                        <div>
+                          <div className="flex justify-between text-2xs font-semibold mb-1">
+                            <span className="text-foreground">Kiến trúc Big Data & MapReduce</span>
+                            <span className="text-amber-500 font-bold">58% (Cần ôn tập thêm)</span>
+                          </div>
+                          <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                            <div className="h-full bg-amber-500 rounded-full" style={{ width: '58%' }} />
+                          </div>
                         </div>
                       </div>
+                      <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-2xs text-foreground/80 flex items-center justify-between">
+                        <span>AI đã tạo bộ 5 câu ôn bù đắp cho phần MapReduce</span>
+                        <button 
+                          onClick={() => router.push('/app/student/quiz')}
+                          className="px-2 py-1 rounded bg-amber-500 text-white font-bold hover:bg-amber-600 transition cursor-pointer"
+                        >
+                          Làm ngay →
+                        </button>
+                      </div>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-2xs text-foreground/80 flex items-center justify-between">
-                      <span>AI đã tạo bộ 5 câu ôn bù đắp cho phần MapReduce</span>
-                      <button 
-                        onClick={() => router.push('/app/student/quiz')}
-                        className="px-2 py-1 rounded bg-amber-500 text-white font-bold hover:bg-amber-600 transition"
-                      >
-                        Làm ngay →
-                      </button>
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>
