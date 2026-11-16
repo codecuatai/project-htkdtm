@@ -314,7 +314,7 @@ export function ChatPanel() {
             placeholder="Hỏi bất cứ điều gì về tài liệu học tập của bạn..."
             rows={1}
             disabled={isSending}
-            className="flex-1 resize-none bg-transparent px-2 py-1.5 text-sm text-foreground placeholder:text-muted-foreground/70 outline-none max-h-32 disabled:opacity-50"
+            className="flex-1 resize-none bg-transparent px-2 py-1.5 text-sm text-foreground placeholder:text-muted-foreground outline-none max-h-32 disabled:opacity-50"
           />
           <Button
             onClick={handleSend}
@@ -326,7 +326,7 @@ export function ChatPanel() {
             <Send className={cn('h-4 w-4', isSending && 'opacity-40')} />
           </Button>
         </div>
-        <div className="mt-1.5 flex items-center justify-between px-1 text-2xs text-muted-foreground">
+        <div className="mt-1.5 flex items-center justify-between px-1 text-xs text-muted-foreground font-medium">
           <span className="tabular-nums">{input.length} / 500</span>
           <span className="hidden sm:inline">Nhấn Enter để gửi · Shift+Enter để xuống dòng</span>
         </div>

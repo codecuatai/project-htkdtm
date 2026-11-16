@@ -4,93 +4,99 @@
 
 @layer base {
   :root {
-    --background: 240 20% 99%;
-    --foreground: 240 10% 8%;
+    /* 60% Nền trung tính công thái học dịu mắt (Light Mode - Warm Paper / Slate 50) */
+    --background: 210 40% 98%;          /* #F8FAFC - Giảm chói lóa, chống mỏi mắt khi đọc lâu */
+    --foreground: 217 33% 15%;          /* #1A2536 - Đậm sắc nét, tương phản chuẩn AAA 14:1 */
 
-    --surface: 240 16% 98%;
-    --surface-elevated: 0 0% 100%;
-    --surface-deep: 240 12% 95%;
+    --surface: 214 32% 95%;             /* #EFF4F9 - Nền thứ cấp êm dịu */
+    --surface-elevated: 0 0% 100%;       /* #FFFFFF - Thẻ nổi trên nền Canvas */
+    --surface-deep: 214 32% 90%;         /* #DFE7F1 - Vùng trũng input */
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 8%;
+    --card-foreground: 217 33% 15%;
 
-    --muted: 240 10% 94%;
-    --muted-foreground: 240 5% 42%;
+    --muted: 214 30% 94%;
+    --muted-foreground: 215 22% 38%;    /* #48586E - Chữ phụ rõ ràng, tương phản 6.2:1 (vượt chuẩn AA) */
 
-    --primary: 243 75% 59%;
+    /* 30% Cấu trúc & Thương hiệu học thuật */
+    --primary: 243 75% 59%;             /* #4F46E5 - Indigo học thuật, kích thích tập trung */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 12% 94%;
-    --secondary-foreground: 240 10% 18%;
+    --secondary: 214 30% 94%;
+    --secondary-foreground: 217 33% 15%;
 
-    --accent: 221 83% 53%;
+    --accent: 221 83% 53%;              /* #2563EB - Blue năng động cho liên kết/thao tác */
     --accent-foreground: 0 0% 100%;
 
-    --success: 151 65% 38%;
+    /* 10% Trạng thái học tập Semantic */
+    --success: 160 84% 36%;             /* #047857 - Emerald xanh mát, đáp án đúng */
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 240 10% 9%;
+    --warning: 38 92% 48%;              /* #C26604 - Amber ấm áp, cảnh báo/đang làm dở */
+    --warning-foreground: 217 33% 15%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 347 77% 48%;         /* #CF1741 - Rose đỏ dịu, giảm căng thẳng khi sai */
     --destructive-foreground: 0 0% 100%;
 
-    --info: 199 89% 48%;
+    --info: 201 96% 32%;                /* #0284C7 - Sky Blue thông tuệ cho Gia sư AI */
     --info-foreground: 0 0% 100%;
 
-    --border: 240 10% 88%;
-    --input: 240 10% 88%;
-    --ring: 244 75% 57%;
+    --border: 214 28% 88%;              /* #D5DFEB - Viền định hình rõ ràng, sắc nét */
+    --input: 214 28% 88%;
+    --ring: 243 75% 59%;
 
-    --ink: 240 10% 9%;
-    --ink-soft: 240 8% 25%;
-    --ink-mute: 240 5% 46%;
+    --ink: 222 47% 11%;                 /* #0F172A */
+    --ink-soft: 215 25% 25%;            /* #303D51 */
+    --ink-mute: 215 22% 38%;            /* #48586E */
 
-    --shadow: 240 10% 9%;
+    --shadow: 222 47% 11%;
   }
 
   .dark {
-    --background: 240 10% 5%;
-    --foreground: 0 0% 96%;
+    /* 60% Nền trung tính ban đêm công thái học (Dark Mode - Midnight Slate) */
+    --background: 222 47% 9%;           /* #0B1323 - Chiều sâu không gian vô cực, không đen tuyền */
+    --foreground: 210 40% 98%;          /* #F8FAFC - Trắng sáng sắc nét, chống nhòe thị giác */
 
-    --surface: 240 8% 8%;
-    --surface-elevated: 240 7% 11%;
-    --surface-deep: 240 7% 14%;
+    --surface: 220 38% 13%;             /* #141D2E - Nền panel / header */
+    --surface-elevated: 217 33% 16%;    /* #1B2537 - Card và sidebar tách khối rõ nét */
+    --surface-deep: 224 48% 8%;          /* #090E1A */
 
-    --card: 240 7% 11%;
-    --card-foreground: 0 0% 96%;
+    --card: 217 33% 16%;                /* #1B2537 */
+    --card-foreground: 210 40% 98%;
 
-    --muted: 240 6% 14%;
-    --muted-foreground: 240 5% 64%;
+    --muted: 217 28% 21%;               /* #253147 */
+    --muted-foreground: 215 25% 75%;    /* #B4C2D6 - Sáng rõ, tương phản 8.1:1 trên nền card */
 
-    --primary: 243 75% 68%;
-    --primary-foreground: 240 10% 9%;
+    /* 30% Cấu trúc & Thương hiệu ban đêm */
+    --primary: 239 84% 67%;             /* #6366F1 - Indigo 500 sáng dịu trên nền tối */
+    --primary-foreground: 222 47% 11%;
 
-    --secondary: 240 6% 16%;
-    --secondary-foreground: 0 0% 96%;
+    --secondary: 217 28% 21%;
+    --secondary-foreground: 210 40% 98%;
 
-    --accent: 221 83% 67%;
-    --accent-foreground: 240 10% 9%;
+    --accent: 199 89% 52%;              /* #1BB0F4 - Sky Blue thanh thoát */
+    --accent-foreground: 222 47% 11%;
 
-    --success: 142 71% 50%;
-    --success-foreground: 240 10% 9%;
+    /* 10% Trạng thái học tập Semantic ban đêm */
+    --success: 158 64% 52%;             /* #10B981 - Emerald 500 */
+    --success-foreground: 222 47% 11%;
 
-    --warning: 38 92% 55%;
-    --warning-foreground: 240 10% 9%;
+    --warning: 38 95% 58%;              /* #FBBF24 - Amber 400 sáng rõ, không xỉn nâu */
+    --warning-foreground: 222 47% 11%;
 
-    --destructive: 0 72% 58%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 349 89% 65%;         /* #FB7185 - Rose 400 nổi bật */
+    --destructive-foreground: 222 47% 11%;
 
-    --info: 199 89% 58%;
-    --info-foreground: 240 10% 9%;
+    --info: 199 89% 62%;                /* #38BDF8 - Sky 400 */
+    --info-foreground: 222 47% 11%;
 
-    --border: 240 6% 18%;
-    --input: 240 6% 18%;
-    --ring: 244 75% 67%;
+    --border: 217 30% 24%;              /* #2A374E - Viền sắc sảo, chống lẫn nền */
+    --input: 217 30% 24%;
+    --ring: 239 84% 67%;
 
-    --ink: 0 0% 96%;
-    --ink-soft: 240 5% 80%;
-    --ink-mute: 240 5% 58%;
+    --ink: 210 40% 98%;                 /* #F8FAFC */
+    --ink-soft: 214 32% 88%;            /* #E2E8F0 */
+    --ink-mute: 215 25% 75%;            /* #B4C2D6 */
 
     --shadow: 0 0% 0%;
   }

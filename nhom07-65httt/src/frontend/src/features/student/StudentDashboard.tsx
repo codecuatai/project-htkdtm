@@ -83,7 +83,7 @@ export function StudentDashboard() {
             </div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">
               {getGreeting()},{' '}
-              <span className="bg-gradient-to-r from-blue-600 via-primary to-cyan-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 dark:from-blue-300 dark:via-indigo-200 dark:to-cyan-200 bg-clip-text text-transparent">
                 {user?.name?.split(' ')[0]}
               </span>{' '}
               👋
@@ -103,12 +103,12 @@ export function StudentDashboard() {
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
                   placeholder="Hỏi trợ lý AI bất kỳ điều gì (VD: Giải thích thuật toán, tóm tắt bài học...)"
-                  className="w-full h-11 pl-10 pr-24 rounded-2xl border border-border bg-background/90 text-sm placeholder:text-muted-foreground/70 focus:outline-hidden focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all duration-200 shadow-xs"
+                  className="w-full h-11 pl-10 pr-24 rounded-2xl border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all duration-200 shadow-xs"
                 />
                 <button
                   type="submit"
                   disabled={!aiPrompt.trim()}
-                  className="absolute right-1.5 h-8 px-3 rounded-xl bg-primary text-primary-foreground text-xs font-semibold flex items-center gap-1 hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150"
+                  className="absolute right-1.5 h-8 px-3 rounded-xl bg-primary text-primary-foreground text-xs font-semibold flex items-center gap-1 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition-all duration-150"
                 >
                   <span>Hỏi AI</span>
                   <ArrowRight className="h-3 w-3" />
@@ -129,7 +129,7 @@ export function StudentDashboard() {
                     onClick={() => {
                       setAiPrompt(tag)
                     }}
-                    className="text-3xs font-medium px-2.5 py-1 rounded-lg bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/40 transition-colors"
+                    className="text-3xs font-medium px-2.5 py-1 rounded-lg bg-surface-elevated hover:bg-muted text-foreground/85 hover:text-foreground border border-border transition-colors shadow-2xs"
                   >
                     {tag}
                   </button>
@@ -151,7 +151,7 @@ export function StudentDashboard() {
               variant="outline"
               onClick={() => router.push('/app/student/browse')}
               icon={<Compass className="h-4 w-4 text-primary" />}
-              className="h-11 px-5 rounded-2xl border-border bg-background/80 hover:bg-muted w-full sm:w-auto"
+              className="h-11 px-5 rounded-2xl border-border bg-surface-elevated hover:bg-muted text-foreground w-full sm:w-auto"
             >
               Khám phá khóa học
             </Button>
@@ -174,7 +174,7 @@ export function StudentDashboard() {
           ) : (
             <div className="mt-3 flex items-baseline gap-2">
               <span className="text-2xl font-black text-foreground tabular-nums">{stats?.total_enrolled ?? 0}</span>
-              <span className="text-3xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">Đang học</span>
+              <span className="text-3xs font-semibold text-blue-600 dark:text-blue-300 bg-blue-500/10 dark:bg-blue-500/20 border border-blue-500/20 px-1.5 py-0.5 rounded">Đang học</span>
             </div>
           )}
           <p className="text-xs text-muted-foreground mt-1">Đã tham gia tích cực</p>
@@ -193,7 +193,7 @@ export function StudentDashboard() {
           ) : (
             <div className="mt-3 flex items-baseline gap-2">
               <span className="text-2xl font-black text-foreground tabular-nums">{stats?.total_completed ?? 0}</span>
-              <span className="text-3xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">Hoàn tất</span>
+              <span className="text-3xs font-semibold text-emerald-600 dark:text-emerald-300 bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/20 px-1.5 py-0.5 rounded">Hoàn tất</span>
             </div>
           )}
           <p className="text-xs text-muted-foreground mt-1">Bài giảng đã hoàn thành</p>
@@ -212,7 +212,7 @@ export function StudentDashboard() {
           ) : (
             <div className="mt-3 flex items-baseline gap-2">
               <span className="text-2xl font-black text-foreground tabular-nums">{stats?.total_materials ?? 0}</span>
-              <span className="text-3xs font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">Tài nguyên</span>
+              <span className="text-3xs font-semibold text-cyan-600 dark:text-cyan-300 bg-cyan-500/10 dark:bg-cyan-500/20 border border-cyan-500/20 px-1.5 py-0.5 rounded">Tài nguyên</span>
             </div>
           )}
           <p className="text-xs text-muted-foreground mt-1">Học liệu & bài tập</p>
@@ -231,7 +231,7 @@ export function StudentDashboard() {
           ) : (
             <div className="mt-3 flex items-baseline gap-2">
               <span className="text-2xl font-black text-foreground tabular-nums">{stats?.avg_progress ?? 0}%</span>
-              <span className="text-3xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">Tất cả khóa</span>
+              <span className="text-3xs font-semibold text-amber-600 dark:text-amber-300 bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/20 px-1.5 py-0.5 rounded">Tất cả khóa</span>
             </div>
           )}
           <p className="text-xs text-muted-foreground mt-1">Tỷ lệ hoàn thành chung</p>

@@ -81,7 +81,7 @@ export function StudentSidebar() {
           'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all duration-200',
           active
             ? 'bg-primary/10 text-primary font-semibold shadow-xs'
-            : 'text-foreground/75 hover:bg-muted/70 hover:text-foreground'
+            : 'text-foreground/85 dark:text-slate-200 hover:bg-muted/80 hover:text-foreground'
         )}
       >
         {/* Left active glow bar */}
@@ -93,7 +93,7 @@ export function StudentSidebar() {
             'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-transform duration-200 group-hover:scale-105',
             active
               ? 'bg-primary text-primary-foreground shadow-xs'
-              : 'bg-muted/60 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary'
+              : 'bg-muted/70 text-muted-foreground dark:text-slate-300 group-hover:bg-primary/15 group-hover:text-primary'
           )}
         >
           <Icon className="h-4 w-4" />
@@ -149,7 +149,7 @@ export function StudentSidebar() {
       <div className="flex-1 flex flex-col gap-5 overflow-y-auto scrollbar-thin pr-1">
         {/* Main section */}
         <div className="flex flex-col gap-1">
-          <span className="px-3 text-3xs font-bold uppercase tracking-widest text-muted-foreground/80 mb-1">
+          <span className="px-3 text-3xs font-bold uppercase tracking-widest text-muted-foreground dark:text-slate-400 mb-1">
             Học tập
           </span>
           {mainNavItems.map(renderNavButton)}
@@ -157,7 +157,7 @@ export function StudentSidebar() {
 
         {/* AI Tools section */}
         <div className="flex flex-col gap-1">
-          <span className="px-3 text-3xs font-bold uppercase tracking-widest text-muted-foreground/80 mb-1 flex items-center gap-1.5">
+          <span className="px-3 text-3xs font-bold uppercase tracking-widest text-muted-foreground dark:text-slate-400 mb-1 flex items-center gap-1.5">
             <Sparkles className="h-3 w-3 text-purple-500" />
             Công cụ AI thông minh
           </span>
@@ -208,7 +208,7 @@ export function StudentSidebar() {
       <div className="flex flex-col gap-1 pt-3 border-t border-border/80">
         <button
           onClick={() => router.push('/app/student/profile')}
-          className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted/70 hover:text-foreground transition-all duration-150"
+          className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-foreground/80 dark:text-slate-200 hover:bg-muted/70 hover:text-foreground transition-all duration-150"
         >
           <User className="h-4 w-4" />
           <span>Hồ sơ & Cài đặt</span>
@@ -218,7 +218,7 @@ export function StudentSidebar() {
             logout()
             router.push('/welcome')
           }}
-          className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all duration-150"
+          className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-foreground/80 dark:text-slate-200 hover:bg-destructive/10 hover:text-destructive transition-all duration-150"
         >
           <LogOut className="h-4 w-4" />
           <span>Đăng xuất</span>
