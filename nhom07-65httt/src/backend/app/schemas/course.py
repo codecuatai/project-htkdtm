@@ -84,6 +84,7 @@ class CourseResponse(BaseModel):
     rating_avg: float = 0
     rating_count: int = 0
     enrollment_count: int = 0
+    lesson_count: int = 0
     created_at: datetime
     updated_at: datetime
     lecturer: LecturerResponse | None = None

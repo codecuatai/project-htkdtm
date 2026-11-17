@@ -167,7 +167,11 @@ export function AdminSettings() {
     { name: 'Worker xử lý ngầm Celery', description: 'Hàng đợi và tác vụ chạy ngầm', icon: Activity, key: 'celery' as const },
   ]
 
-  const overall = health?.status === 'healthy' ? 'Tất cả hệ thống hoạt động tốt' : 'Một số dịch vụ gặp sự cố'
+  const overall = !health
+    ? 'Đang kiểm tra...'
+    : health.status === 'healthy'
+      ? 'Tất cả hệ thống hoạt động tốt'
+      : 'Một số dịch vụ gặp sự cố'
   const activeKeysCount = aiKeys.filter((k) => k.is_active).length
 
   return (
@@ -308,7 +312,7 @@ export function AdminSettings() {
           </div>
           <div className="flex items-center gap-3">
             <Badge
-              variant={health?.status === 'healthy' ? 'success' : 'error'}
+              variant={!health ? 'default' : health.status === 'healthy' ? 'success' : 'error'}
               label={overall}
               dot
             />
@@ -319,9 +323,15 @@ export function AdminSettings() {
         </div>
         <div className="grid grid-cols-1 gap-3 p-4 sm:p-5 md:grid-cols-3">
           {services.map((svc) => {
-            const status = health?.services[svc.key] ?? 'offline'
+            const status = !health ? 'checking' : (health.services[svc.key] ?? 'offline')
             const statusLabel =
-              status === 'healthy' ? 'Hoạt động tốt' : status === 'unhealthy' ? 'Gặp sự cố' : 'Ngoại tuyến'
+              status === 'healthy'
+                ? 'Hoạt động tốt'
+                : status === 'checking'
+                  ? 'Đang kiểm tra'
+                  : status === 'unhealthy'
+                    ? 'Gặp sự cố'
+                    : 'Ngoại tuyến'
             return (
               <div key={svc.key} className="flex items-center gap-3 p-3 rounded-lg border border-border">
                 <div

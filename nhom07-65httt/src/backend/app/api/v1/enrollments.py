@@ -41,6 +41,7 @@ def _to_response(enrollment: Enrollment) -> EnrollmentResponse:
         payment_method=enrollment.payment_method,
         transaction_id=enrollment.transaction_id,
         status=enrollment.status,
+        progress_percent=enrollment.progress_percent or 0,
         enrolled_at=enrollment.enrolled_at,
         completed_at=enrollment.completed_at,
     )
@@ -56,6 +57,7 @@ def _to_enrollment_with_course(enrollment: Enrollment) -> EnrollmentWithCourseRe
         payment_method=enrollment.payment_method,
         transaction_id=enrollment.transaction_id,
         status=enrollment.status,
+        progress_percent=enrollment.progress_percent or 0,
         enrolled_at=enrollment.enrolled_at,
         completed_at=enrollment.completed_at,
         course_title=enrollment.course.title if enrollment.course else None,

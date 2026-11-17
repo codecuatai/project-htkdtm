@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1.progress import _count_lessons_by_course
 from app.dependencies.auth import get_current_user
 from app.dependencies.db import get_db
 from app.models.course_content import Quiz, QuizAttempt
@@ -13,6 +14,7 @@ from app.models.material_progress import MaterialProgress
 from app.models.user import User
 from app.repositories.course_material_repo import CourseMaterialRepository
 from app.repositories.enrollment_repo import EnrollmentRepository
+from app.repositories.lesson_progress_repo import LessonProgressRepository
 from app.repositories.progress_repo import ProgressRepository
 from app.schemas.dashboard import (
     DashboardActivity,
@@ -34,6 +36,7 @@ async def get_my_dashboard(
     enrollment_repo = EnrollmentRepository(db)
     material_repo = CourseMaterialRepository(db)
     progress_repo = ProgressRepository(db)
+    lesson_progress_repo = LessonProgressRepository(db)
     progress_service = ProgressService(progress_repo, material_repo, enrollment_repo)
 
     enrollments = await enrollment_repo.list_by_student(current_user.id, status=None)
@@ -47,7 +50,13 @@ async def get_my_dashboard(
         course = enrollment.course
         total_mat = await material_repo.count_by_course(course.id) if course else 0
         completed_mat = await progress_repo.count_completed(enrollment.id)
-        completion_pct = await progress_service.get_course_completion_percent(enrollment.id)
+        total_lessons = await _count_lessons_by_course(db, course.id) if course else 0
+        completed_lessons = len(await lesson_progress_repo.get_completed_lesson_ids(enrollment.id))
+        completion_pct = await progress_service.get_course_completion_percent(
+            enrollment.id, total_lessons, completed_lessons
+        )
+        total_items = total_mat + total_lessons
+        completed_items = completed_mat + completed_lessons
 
         courses.append(DashboardCourseProgress(
             id=enrollment.id,
@@ -57,12 +66,12 @@ async def get_my_dashboard(
             lecturer_name=course.lecturer.full_name if course and course.lecturer else None,
             enrolled_at=enrollment.enrolled_at,
             completion_percent=completion_pct,
-            total_materials=total_mat,
-            completed_materials=completed_mat,
+            total_materials=total_items,
+            completed_materials=completed_items,
         ))
 
-        total_materials += total_mat
-        total_completed += completed_mat
+        total_materials += total_items
+        total_completed += completed_items
         total_progress += completion_pct
 
     num_courses = len(courses) if courses else 1

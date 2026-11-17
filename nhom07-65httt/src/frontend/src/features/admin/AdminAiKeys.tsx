@@ -437,7 +437,7 @@ export function AdminAiKeys() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Thêm API Key Đa Nhà Cung Cấp"
+        title="Thêm Gemini API Key"
       >
         <form onSubmit={handleCreateKey} className="space-y-4 pt-1">
           <div className="p-3 bg-indigo-50/70 dark:bg-indigo-950/30 rounded-lg border border-indigo-100 dark:border-indigo-900/50 text-xs text-indigo-700 dark:text-indigo-300 leading-relaxed">

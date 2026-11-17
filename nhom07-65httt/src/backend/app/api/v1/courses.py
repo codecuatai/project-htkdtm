@@ -38,7 +38,7 @@ from app.utils.pagination import build_pagination
 router = APIRouter()
 
 
-def _to_response(course) -> CourseResponse:
+def _to_response(course, enrollment_count: int = 0, lesson_count: int = 0) -> CourseResponse:
     return CourseResponse(
         id=course.id,
         lecturer_id=course.lecturer_id,
@@ -57,12 +57,39 @@ def _to_response(course) -> CourseResponse:
         view_count=course.view_count,
         rating_avg=float(course.rating_avg) if course.rating_avg else 0,
         rating_count=course.rating_count,
-        enrollment_count=0,
+        enrollment_count=enrollment_count,
+        lesson_count=lesson_count,
         created_at=course.created_at,
         updated_at=course.updated_at,
         lecturer=course.lecturer,
         category=course.category,
     )
+
+
+async def _get_course_counts(db: AsyncSession, course_ids: list[UUID]) -> tuple[dict[UUID, int], dict[UUID, int]]:
+    """Batch-fetch active/completed enrollment counts and lesson counts for a list of courses."""
+    if not course_ids:
+        return {}, {}
+
+    enroll_rows = await db.execute(
+        select(Enrollment.course_id, func.count(Enrollment.id))
+        .where(
+            Enrollment.course_id.in_(course_ids),
+            Enrollment.status.in_(["active", "completed"]),
+            Enrollment.payment_status == "paid",
+        )
+        .group_by(Enrollment.course_id)
+    )
+    enroll_counts = dict(enroll_rows.all())
+
+    lesson_rows = await db.execute(
+        select(Section.course_id, func.count(Lesson.id))
+        .join(Lesson, Lesson.section_id == Section.id)
+        .where(Section.course_id.in_(course_ids))
+        .group_by(Section.course_id)
+    )
+    lesson_counts = dict(lesson_rows.all())
+    return enroll_counts, lesson_counts
 
 
 @router.get("", response_model=CourseListResponse)
@@ -100,9 +127,10 @@ async def list_courses(
     )
 
     pagination = build_pagination(total, page, page_size)
+    enroll_counts, lesson_counts = await _get_course_counts(db, [c.id for c in courses])
 
     response = CourseListResponse(
-        items=[_to_response(c) for c in courses],
+        items=[_to_response(c, enrollment_count=enroll_counts.get(c.id, 0), lesson_count=lesson_counts.get(c.id, 0)) for c in courses],
         total=pagination["total"],
         page=pagination["page"],
         page_size=pagination["page_size"],
@@ -129,9 +157,10 @@ async def list_my_courses(
     )
 
     pagination = build_pagination(total, page, page_size)
+    enroll_counts, lesson_counts = await _get_course_counts(db, [c.id for c in courses])
 
     return CourseListResponse(
-        items=[_to_response(c) for c in courses],
+        items=[_to_response(c, enrollment_count=enroll_counts.get(c.id, 0), lesson_count=lesson_counts.get(c.id, 0)) for c in courses],
         total=pagination["total"],
         page=pagination["page"],
         page_size=pagination["page_size"],
@@ -242,6 +271,8 @@ async def get_course(
 
     materials_count = await material_repo.count_by_course(course_id)
     enrolled_count = await enrollment_repo.count_by_course(course_id)
+    _, lesson_counts = await _get_course_counts(db, [course_id])
+    lesson_count = lesson_counts.get(course_id, 0)
 
     response = CourseDetailResponse(
         id=course.id,
@@ -264,6 +295,8 @@ async def get_course(
         category=course.category,
         materials_count=materials_count if can_access else 0,
         enrolled_count=enrolled_count,
+        enrollment_count=enrolled_count,
+        lesson_count=lesson_count,
         materials=course.materials if can_access and course.materials else [],
     )
     return response

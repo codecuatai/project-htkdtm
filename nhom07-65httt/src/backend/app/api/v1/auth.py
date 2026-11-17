@@ -57,8 +57,11 @@ def _clear_refresh_cookie(response: Response) -> None:
 def _enforce_cookie_csrf(request: Request) -> None:
     """Reject cross-origin browser requests that authenticate via cookies."""
     origin = request.headers.get("origin")
-    if origin and origin.rstrip("/") not in settings.CORS_ORIGINS:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cross-origin request rejected")
+    if origin:
+        normalized_origin = origin.rstrip("/")
+        allowed = set(settings.CORS_ORIGINS) | {settings.FRONTEND_URL.rstrip("/")}
+        if normalized_origin not in allowed:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cross-origin request rejected")
 
 
 def _build_user_response(user: User) -> AuthUserResponse:

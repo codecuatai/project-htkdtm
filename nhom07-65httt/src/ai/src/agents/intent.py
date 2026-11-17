@@ -35,11 +35,13 @@ def is_greeting_query(query: str) -> bool:
     import re
     import unicodedata
 
-    text = (query or "").strip().lower()
-    if not text or len(text) > 60:
+    raw_text = (query or "").strip().lower()
+    if not raw_text or len(raw_text) > 60:
+        return False
+    if "?" in raw_text:
         return False
     # Strip punctuation / emoji, keep letters and spaces
-    text = re.sub(r"[^\w\s]", " ", text, flags=re.UNICODE)
+    text = re.sub(r"[^\w\s]", " ", raw_text, flags=re.UNICODE)
     text = re.sub(r"\s+", " ", text).strip()
     if not text:
         return False
@@ -50,12 +52,10 @@ def is_greeting_query(query: str) -> bool:
     if candidates & set(_GREETING_PATTERNS):
         return True
     # Single-word short greeting (<= 10 chars, no question words)
-    question_markers = (
-        "gì", "gi ", "nào", "sao", "thế nào", "là gì", "tại sao",
-        "bao nhiêu", "khi nào", "ở đâu", "o dau",
-        "what", "why", "how", "when", "where", "which", "who", "?",
-    )
-    if any(m in text for m in question_markers):
+    if re.search(
+        r"\b(gi|nao|sao|the nao|la gi|tai sao|bao nhieu|khi nao|o dau|what|why|how|when|where|which|who)\b",
+        ascii_text,
+    ):
         return False
     return len(text.split()) <= 3 and len(text) <= 20
 

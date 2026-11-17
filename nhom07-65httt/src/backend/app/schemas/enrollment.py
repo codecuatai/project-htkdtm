@@ -33,6 +33,7 @@ class EnrollmentResponse(BaseModel):
     payment_method: str | None = None
     transaction_id: str | None = None
     status: str
+    progress_percent: int = 0
     enrolled_at: datetime
     completed_at: datetime | None = None
 

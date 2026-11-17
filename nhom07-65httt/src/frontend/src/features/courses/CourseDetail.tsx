@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { BookOpen, ClipboardCheck, Heart, MessageSquare } from 'lucide-react'
-import { coursesApi, enrollmentsApi, wishlistApi, type Course, type Enrollment } from '../../services/api'
+import { coursesApi, enrollmentsApi, sectionsApi, wishlistApi, type Course, type Enrollment, type Section } from '../../services/api'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
@@ -46,6 +46,7 @@ export function CourseDetail() {
   const id = params?.id
   const router = useRouter()
   const [course, setCourse] = useState<Course | null>(null)
+  const [sections, setSections] = useState<Section[]>([])
   const [enrollment, setEnrollment] = useState<Enrollment | null>(null)
   const [loading, setLoading] = useState(true)
   const [enrolling, setEnrolling] = useState(false)
@@ -63,6 +64,12 @@ export function CourseDetail() {
       setCourse(courseRes.data)
       const userEnrollment = enrollRes.data.items.find((e: Enrollment) => e.course_id === id)
       setEnrollment(userEnrollment || null)
+      if (userEnrollment) {
+        const secRes = await sectionsApi.list(id).catch(() => ({ data: [] as Section[] }))
+        setSections(secRes.data || [])
+      } else {
+        setSections([])
+      }
       setIsWishlisted(wishRes.data.is_wishlisted)
     } catch (err) {
       console.error('Failed to load course:', err)
@@ -192,7 +199,7 @@ export function CourseDetail() {
                 </div>
                 <div>
                   <p className="font-medium text-foreground">{course.lecturer?.full_name || 'Giảng viên'}</p>
-                  <p className="text-sm text-muted-foreground">{course.enrollment_count} học viên</p>
+                  <p className="text-sm text-muted-foreground">{course.enrolled_count ?? course.enrollment_count ?? 0} học viên</p>
                 </div>
               </div>
             </div>
@@ -206,7 +213,34 @@ export function CourseDetail() {
           <Announcements courseId={course.id} />
 
           <div>
-            <h2 className="text-xl font-semibold mb-4 text-foreground">Nội dung khóa học ({course.materials?.length || 0} bài)</h2>
+            <h2 className="text-xl font-semibold mb-4 text-foreground">
+              Nội dung khóa học ({sections.reduce((acc, s) => acc + (s.lessons?.length || s.lesson_count || 0), 0) || course.lesson_count || course.materials?.length || 0} bài)
+            </h2>
+            {sections.length > 0 && (
+              <div className="space-y-3 mb-4">
+                {sections.map((section, sIdx) => (
+                  <Card key={section.id} padding="responsive" className="space-y-2">
+                    <div className="font-semibold text-foreground">
+                      Chương {sIdx + 1}: {section.title}
+                    </div>
+                    <div className="space-y-1.5 pl-2">
+                      {(section.lessons || []).map((lesson, lIdx) => (
+                        <div key={lesson.id} className="flex items-center justify-between gap-3 py-1.5 border-t border-border/50 first:border-t-0">
+                          <span className="text-sm text-foreground/90 truncate">
+                            {lIdx + 1}. {lesson.title}
+                          </span>
+                          {enrollment && (
+                            <Link href={`/app/student/courses/${course.id}/learn`}>
+                              <Button variant="ghost" size="sm">Học ngay</Button>
+                            </Link>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
             <div className="space-y-2">
               {course.materials?.map((material, index) => (
                 <Card key={material.id} padding="responsive" className="flex items-center gap-4">
@@ -330,11 +364,11 @@ export function CourseDetail() {
             <div className="mt-6 pt-6 border-t border-border space-y-3 text-sm">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <BookOpen className="h-4 w-4 shrink-0" />
-                <span>{course.materials?.length || 0} bài học</span>
+                <span>{sections.reduce((acc, s) => acc + (s.lessons?.length || s.lesson_count || 0), 0) || course.lesson_count || course.materials?.length || 0} bài học</span>
               </div>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <span role="img" aria-label="students">👥</span>
-                <span>{course.enrollment_count} học viên</span>
+                <span>{course.enrolled_count ?? course.enrollment_count ?? 0} học viên</span>
               </div>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <span role="img" aria-label="time">⏱️</span>

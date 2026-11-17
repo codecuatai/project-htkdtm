@@ -151,6 +151,8 @@ export interface Course {
   rating_avg: number
   rating_count: number
   enrollment_count: number
+  enrolled_count?: number
+  lesson_count?: number
   materials: CourseMaterial[]
   created_at: string
   updated_at: string

@@ -176,6 +176,10 @@ class Settings(BaseSettings):
         if not self.DEBUG and not self.AI_KEY_ENCRYPTION_KEY:
             raise ValueError("AI_KEY_ENCRYPTION_KEY must be configured separately in production")
 
+        frontend_origin = self.FRONTEND_URL.rstrip("/")
+        if frontend_origin and frontend_origin not in self.CORS_ORIGINS:
+            self.CORS_ORIGINS = sorted({*self.CORS_ORIGINS, frontend_origin})
+
         # Additional production-only checks
         if not self.DEBUG:
             if self.MINIO_ACCESS_KEY == "minioadmin" or self.MINIO_SECRET_KEY in {"", "minioadmin123"}:

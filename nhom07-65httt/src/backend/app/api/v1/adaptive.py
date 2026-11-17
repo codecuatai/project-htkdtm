@@ -12,7 +12,7 @@ from app.dependencies.auth import get_current_user
 from app.dependencies.course_auth import get_lesson_with_course, verify_lesson_access
 from app.dependencies.db import get_db
 from app.models.course import Course
-from app.models.course_content import Lesson, Quiz, QuizAttempt
+from app.models.course_content import Lesson, Quiz, QuizAttempt, Section
 from app.models.enrollment import Enrollment
 from app.models.user import User
 from app.schemas.adaptive import (
@@ -42,7 +42,8 @@ async def get_my_weaknesses(
         .join(Enrollment, Enrollment.id == QuizAttempt.enrollment_id)
         .join(Quiz, Quiz.id == QuizAttempt.quiz_id)
         .join(Lesson, Lesson.id == Quiz.lesson_id)
-        .join(Course, Course.id == Lesson.course_id)
+        .join(Section, Section.id == Lesson.section_id)
+        .join(Course, Course.id == Section.course_id)
         .where(
             Enrollment.student_id == current_user.id,
             QuizAttempt.completed_at.isnot(None),
