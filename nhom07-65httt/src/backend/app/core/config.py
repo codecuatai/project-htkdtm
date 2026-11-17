@@ -104,13 +104,14 @@ class Settings(BaseSettings):
             if v.startswith("postgresql://") and not v.startswith("postgresql+asyncpg://"):
                 v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
             
-            # Strip 'pgbouncer' query parameter as asyncpg doesn't support it
+            # Strip query parameters unsupported by asyncpg; SSL is handled via DB_SSL_MODE
             from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
             try:
                 parsed = urlparse(v)
                 if parsed.query:
                     query_params = parse_qsl(parsed.query)
-                    filtered_params = [(k, val) for k, val in query_params if k.lower() != 'pgbouncer']
+                    unsupported = {"pgbouncer", "sslmode", "channel_binding"}
+                    filtered_params = [(k, val) for k, val in query_params if k.lower() not in unsupported]
                     v = urlunparse(parsed._replace(query=urlencode(filtered_params)))
             except Exception:
                 pass
