@@ -49,7 +49,7 @@ def _safe_object_name(value: str) -> str:
     parts = raw.split("/")
     if any(part in {"", ".", ".."} for part in parts):
         raise ValueError("Invalid object storage key")
-    allowed_prefixes = ("materials/", "course_materials/", "submissions/", "temp/")
+    allowed_prefixes = ("documents/", "materials/", "course_materials/", "submissions/", "temp/")
     is_document_key = bool(re.fullmatch(r"[0-9a-fA-F-]{36}\.[A-Za-z0-9]+", raw))
     if not raw.startswith(allowed_prefixes) and not is_document_key:
         raise ValueError("Object storage key is outside the allowed namespace")

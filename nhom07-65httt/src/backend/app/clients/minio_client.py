@@ -71,6 +71,7 @@ class MinioClient:
 
         # Fallback to local storage
         file_path = LOCAL_STORAGE_DIR / key
+        file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_bytes(content)
         return f"file://{key}"
 

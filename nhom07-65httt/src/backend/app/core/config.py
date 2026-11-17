@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     MINIO_ENDPOINT: str = ""
     MINIO_ACCESS_KEY: str = ""
     MINIO_SECRET_KEY: str = ""
-    MINIO_BUCKET_NAME: str = "documents-bucket"
+    MINIO_BUCKET_NAME: str = "learninghubs"
     MINIO_SECURE: bool = False
 
     DB_POOL_SIZE: int = 5

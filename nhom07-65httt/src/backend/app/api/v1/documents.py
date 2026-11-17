@@ -114,7 +114,8 @@ async def upload(
         )
 
     # 3. Store in MinIO
-    minio_key = f"{uuid.uuid4()}.{ext}"
+    doc_id = uuid.uuid4()
+    minio_key = f"documents/{doc_id}.{ext}"
     try:
         minio_client = MinioClient()
         storage_uri = minio_client.upload_file(content, minio_key, file.content_type)
@@ -128,7 +129,7 @@ async def upload(
     # 4. Save to Database
     repo = DocumentRepository(db)
     document = Document(
-        id=UUID(minio_key.split(".")[0]),
+        id=doc_id,
         user_id=current_user.id,
         file_name=filename,
         file_type=ext,

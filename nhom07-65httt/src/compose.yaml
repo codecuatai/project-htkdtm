@@ -12,7 +12,7 @@ x-storage-env: &storage-env
   MINIO_ENDPOINT: minio:9000
   MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:?Set MINIO_ROOT_USER in .env}
   MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
-  MINIO_BUCKET_NAME: documents-bucket
+  MINIO_BUCKET_NAME: learninghubs
   MINIO_SECURE: "false"
 
 services:
