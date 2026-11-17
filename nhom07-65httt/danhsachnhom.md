@@ -13,11 +13,11 @@
 
 | STT | Họ và Tên | Mã Sinh Viên | Lớp Sinh Hoạt | Vai Trò | Nhiệm Vụ Phân Công | Tỷ Lệ Đóng Góp (%) | Email |
 | :-: | :--- | :-: | :-: | :--- | :--- | :-: | :--- |
-| 1 | Trần Văn Tài | 2351160548 | 65HTTT | Nhóm trưởng | [Chờ cập nhật] | [Chờ cập nhật] | vtai2805@gmail.com |
-| 2 | Nguyễn Việt Hoàng | 2351160522 | 65HTTT | Thành viên | [Chờ cập nhật] | [Chờ cập nhật] | [Chờ cập nhật] |
-| 3 | Phạm Quang Huy | 2351160529 | 65HTTT | Thành viên | [Chờ cập nhật] | [Chờ cập nhật] | [Chờ cập nhật] |
-| 4 | Triệu Thị Tuyết Mai | 2351160535 | 65HTTT | Thành viên | [Chờ cập nhật] | [Chờ cập nhật] | [Chờ cập nhật] |
-| 5 | Nguyễn Văn Tiến | 2351160558 | 65HTTT | Thành viên | [Chờ cập nhật] | [Chờ cập nhật] | [Chờ cập nhật] |
+| 1 | Trần Văn Tài | 2351160548 | 65HTTT | Nhóm trưởng | [Chờ cập nhật] | 20% | 2351160548@e.tlu.edu.vn |
+| 2 | Nguyễn Việt Hoàng | 2351160522 | 65HTTT | Thành viên | [Chờ cập nhật] | 20% | 2351160522@e.tlu.edu.vn |
+| 3 | Phạm Quang Huy | 2351160529 | 65HTTT | Thành viên | [Chờ cập nhật] | 20% | 2351160529@e.tlu.edu.vn |
+| 4 | Triệu Thị Tuyết Mai | 2351160535 | 65HTTT | Thành viên | [Chờ cập nhật] | 20% | 2351160535@e.tlu.edu.vn |
+| 5 | Nguyễn Văn Tiến | 2351160558 | 65HTTT | Thành viên | [Chờ cập nhật] | 20% | 2351160558@e.tlu.edu.vn |
 
 ---
 
