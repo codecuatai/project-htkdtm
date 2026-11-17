@@ -99,8 +99,3 @@ def _fetch_lesson(conn, lesson_id: str) -> dict | None:
         return None
     except Exception:
         return None
-
-
-def _update_lesson_indexed(conn, lesson_id: str, indexed: bool) -> None:
-    """Mark lesson as having been indexed in Qdrant (no DB column yet - placeholder)."""
-    pass

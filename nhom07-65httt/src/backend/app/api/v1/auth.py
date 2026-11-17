@@ -240,9 +240,8 @@ async def refresh(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalidated. Please login again.")
 
     # Revoke the old refresh token
-    if jti:
-        if not await AuthService.invalidate_refresh_token(jti):
-            raise HTTPException(status_code=503, detail="Authentication service temporarily unavailable")
+    if jti and not await AuthService.invalidate_refresh_token(jti):
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication service temporarily unavailable")
 
     service = AuthService(repo)
     access_token = service.build_access_token(user.id, user.token_version or 0)

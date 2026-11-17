@@ -129,13 +129,3 @@ def search_similar(
             for r in points
         ]
     return []
-
-
-def delete_by_document_id(document_id: str) -> None:
-    client = get_qdrant_client()
-    client.delete(
-        collection_name=COLLECTION_NAME,
-        points_selector=Filter(
-            must=[FieldCondition(key="document_id", match=MatchValue(value=document_id))]
-        ),
-    )

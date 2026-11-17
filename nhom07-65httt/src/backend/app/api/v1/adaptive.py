@@ -56,7 +56,7 @@ async def get_my_weaknesses(
     # Group attempts by lesson_id to find recent weak performance
     lessons_map: dict[UUID, dict] = {}
 
-    for attempt, quiz, lesson, course in rows:
+    for attempt, _quiz, lesson, course in rows:
         lid = lesson.id
         if lid not in lessons_map:
             lessons_map[lid] = {

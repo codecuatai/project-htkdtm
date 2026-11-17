@@ -2,7 +2,7 @@
 
 import json
 
-from src.llm.groq_client import chat_completion
+from src.llm.gemini_client import chat_completion
 from src.utils.prompt_safety import untrusted_text
 
 REFLECTION_SYSTEM_PROMPT = """Bạn là một AI kiểm tra chất lượng câu trả lời.

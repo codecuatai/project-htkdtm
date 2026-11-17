@@ -1,4 +1,4 @@
-"""Audio/video transcription using Groq Whisper API with ffmpeg preprocessing."""
+"""Audio/video transcription using Gemini API with ffmpeg preprocessing."""
 
 import logging
 import os
@@ -8,7 +8,7 @@ import tempfile
 
 logger = logging.getLogger("worker.transcription")
 
-_MAX_CHUNK_BYTES = 24 * 1024 * 1024  # 24 MB (Groq limit is 25 MB)
+_MAX_CHUNK_BYTES = 18 * 1024 * 1024  # 18 MB safe inline audio limit for Gemini
 
 
 def _extract_audio_to_wav(input_bytes: bytes, ext: str) -> bytes:
@@ -78,14 +78,14 @@ def _split_wav(wav_bytes: bytes) -> list[bytes]:
 
 def transcribe_media(file_bytes: bytes, ext: str, file_name: str = "") -> list[dict]:
     """
-    Transcribe audio/video using Groq Whisper API.
+    Transcribe audio/video using Gemini API.
 
     Returns list of {page_number: int, text: str} dicts.
     page_number = segment index, used as citation reference.
     Falls back to placeholder text on error (never returns empty list).
     """
     try:
-        from groq import Groq
+        import google.generativeai as genai
         from src.core.config import settings
 
         logger.info("Transcribing %s (%d bytes)", file_name or ext, len(file_bytes))
@@ -95,31 +95,23 @@ def transcribe_media(file_bytes: bytes, ext: str, file_name: str = "") -> list[d
         audio_chunks = _split_wav(wav_bytes)
         logger.info("Split into %d chunk(s)", len(audio_chunks))
 
-        client = Groq(api_key=settings.GROQ_API_KEY)
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        model = genai.GenerativeModel(model_name=settings.GEMINI_MODEL)
         pages = []
 
         for idx, chunk in enumerate(audio_chunks):
             page_number = idx + 1
             try:
-                with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-                    tmp.write(chunk)
-                    tmp_path = tmp.name
-                try:
-                    with open(tmp_path, "rb") as audio_file:
-                        transcription = client.audio.transcriptions.create(
-                            model="whisper-large-v3-turbo",
-                            file=("audio.wav", audio_file, "audio/wav"),
-                            response_format="text",
-                            timeout=120,
-                        )
-                    text = transcription if isinstance(transcription, str) else getattr(transcription, "text", "")
-                    if text and text.strip():
-                        pages.append({"page_number": page_number, "text": text.strip()})
-                        logger.info("Chunk %d/%d: %d chars", page_number, len(audio_chunks), len(text))
-                    else:
-                        logger.warning("Chunk %d/%d: empty transcription", page_number, len(audio_chunks))
-                finally:
-                    os.unlink(tmp_path)
+                response = model.generate_content([
+                    {"mime_type": "audio/wav", "data": chunk},
+                    "Transcribe this audio accurately in its original language. Return only the transcribed text.",
+                ])
+                text = response.text or ""
+                if text and text.strip():
+                    pages.append({"page_number": page_number, "text": text.strip()})
+                    logger.info("Chunk %d/%d: %d chars", page_number, len(audio_chunks), len(text))
+                else:
+                    logger.warning("Chunk %d/%d: empty transcription", page_number, len(audio_chunks))
             except Exception as e:
                 logger.error("Chunk %d transcription error: %s", page_number, e)
                 pages.append({

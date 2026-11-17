@@ -13,10 +13,8 @@ import {
   Bot,
   Zap,
   Cpu,
-  Layers,
   Search,
-  CheckCircle2,
-  HelpCircle
+  CheckCircle2
 } from 'lucide-react'
 import { adminApi, type AiApiKey } from '../../services/api'
 import { Card } from '../../components/ui/Card'
@@ -45,64 +43,9 @@ const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
     badgeText: 'text-indigo-700 dark:text-indigo-300',
     badgeBorder: 'border-indigo-200 dark:border-indigo-800',
     icon: Sparkles,
-    models: 'gemini-2.0-flash-lite, gemini-2.0-flash',
+    models: 'gemini-2.5-flash, gemini-2.0-flash',
     placeholder: 'AIzaSy... hoặc AQ.Ab8...',
-    namePlaceholder: 'VD: Gemini Flash-Lite Key 1',
-  },
-  groq: {
-    id: 'groq',
-    label: 'Groq Cloud',
-    badgeBg: 'bg-orange-50 dark:bg-orange-950/40',
-    badgeText: 'text-orange-700 dark:text-orange-300',
-    badgeBorder: 'border-orange-200 dark:border-orange-800',
-    icon: Zap,
-    models: 'llama-3.3-70b, mixtral-8x7b, llama-3.1-8b',
-    placeholder: 'gsk_...',
-    namePlaceholder: 'VD: Groq Llama 3.3 Production Key',
-  },
-  openai: {
-    id: 'openai',
-    label: 'OpenAI',
-    badgeBg: 'bg-emerald-50 dark:bg-emerald-950/40',
-    badgeText: 'text-emerald-700 dark:text-emerald-300',
-    badgeBorder: 'border-emerald-200 dark:border-emerald-800',
-    icon: Cpu,
-    models: 'gpt-4o, gpt-4o-mini',
-    placeholder: 'sk-proj-... hoặc sk-...',
-    namePlaceholder: 'VD: OpenAI GPT-4o Key',
-  },
-  anthropic: {
-    id: 'anthropic',
-    label: 'Anthropic',
-    badgeBg: 'bg-rose-50 dark:bg-rose-950/40',
-    badgeText: 'text-rose-700 dark:text-rose-300',
-    badgeBorder: 'border-rose-200 dark:border-rose-800',
-    icon: Layers,
-    models: 'claude-3-5-sonnet, claude-3-5-haiku',
-    placeholder: 'sk-ant-...',
-    namePlaceholder: 'VD: Claude 3.5 Sonnet Key',
-  },
-  deepseek: {
-    id: 'deepseek',
-    label: 'DeepSeek',
-    badgeBg: 'bg-sky-50 dark:bg-sky-950/40',
-    badgeText: 'text-sky-700 dark:text-sky-300',
-    badgeBorder: 'border-sky-200 dark:border-sky-800',
-    icon: Bot,
-    models: 'deepseek-chat, deepseek-reasoner',
-    placeholder: 'sk-...',
-    namePlaceholder: 'VD: DeepSeek V3 Key',
-  },
-  other: {
-    id: 'other',
-    label: 'Khác / Custom',
-    badgeBg: 'bg-slate-50 dark:bg-slate-800/60',
-    badgeText: 'text-slate-700 dark:text-slate-300',
-    badgeBorder: 'border-slate-200 dark:border-slate-700',
-    icon: HelpCircle,
-    models: 'Custom Model Provider',
-    placeholder: 'Dán mã API key...',
-    namePlaceholder: 'VD: Custom AI Key 1',
+    namePlaceholder: 'VD: Gemini Flash Key 1',
   },
 }
 
@@ -115,7 +58,7 @@ export function AdminAiKeys() {
 
   // Modal State
   const [modalOpen, setModalOpen] = useState(false)
-  const [providerInput, setProviderInput] = useState('groq')
+  const [providerInput, setProviderInput] = useState('gemini')
   const [nameInput, setNameInput] = useState('')
   const [keyInput, setKeyInput] = useState('')
   const [showPlainKey, setShowPlainKey] = useState(false)
@@ -246,10 +189,10 @@ export function AdminAiKeys() {
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2.5">
             <Cpu className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
-            Quản Lý AI & API Keys Đa Nhà Cung Cấp
+            Quản Lý AI & Gemini API Keys
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">
-            Kiểm soát tập trung toàn bộ API Key từ Google Gemini, Groq, OpenAI, Anthropic và DeepSeek. Tự động xoay vòng Round-Robin và tự động chuyển dự phòng (Auto-Failover) khi chạm hạn ngạch (Rate Limit 429).
+            Kiểm soát tập trung toàn bộ API Key Google Gemini. Tự động xoay vòng Round-Robin và tự động chuyển dự phòng (Auto-Failover) khi chạm hạn ngạch (Rate Limit 429).
           </p>
         </div>
 
@@ -307,7 +250,7 @@ export function AdminAiKeys() {
             </div>
           </div>
           <p className="text-2xl font-bold text-indigo-700 dark:text-indigo-300 mt-2">{metrics.providers}</p>
-          <span className="text-xs text-indigo-600/80 dark:text-indigo-400/80 mt-1 block">Gemini, Groq, OpenAI...</span>
+          <span className="text-xs text-indigo-600/80 dark:text-indigo-400/80 mt-1 block">Google Gemini</span>
         </Card>
 
         <Card className="p-4 border border-amber-200/60 dark:border-amber-900/40 bg-amber-50/30 dark:bg-amber-950/10">
@@ -331,10 +274,6 @@ export function AdminAiKeys() {
             {[
               { id: 'all', label: 'Tất cả' },
               { id: 'gemini', label: 'Google Gemini' },
-              { id: 'groq', label: 'Groq Cloud' },
-              { id: 'openai', label: 'OpenAI' },
-              { id: 'anthropic', label: 'Anthropic' },
-              { id: 'deepseek', label: 'DeepSeek' },
             ].map((tab) => {
               const active = selectedTab === tab.id
               const count = tab.id === 'all' ? aiKeys.length : aiKeys.filter((k) => k.provider.toLowerCase() === tab.id).length
@@ -406,7 +345,7 @@ export function AdminAiKeys() {
                 </tr>
               ) : (
                 filteredKeys.map((k) => {
-                  const pConfig = PROVIDER_CONFIGS[k.provider.toLowerCase()] || PROVIDER_CONFIGS.other
+                  const pConfig = PROVIDER_CONFIGS[k.provider.toLowerCase()] || PROVIDER_CONFIGS.gemini
                   const ProviderIcon = pConfig.icon
                   return (
                     <tr key={k.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition-colors">
@@ -520,12 +459,7 @@ export function AdminAiKeys() {
               }}
               className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
             >
-              <option value="groq">Groq Cloud (Siêu tốc: Llama 3.3, Llama 3.1, Mixtral)</option>
-              <option value="gemini">Google Gemini (Mặc định: Flash-Lite, Flash 2.0)</option>
-              <option value="openai">OpenAI (GPT-4o, GPT-4o-mini)</option>
-              <option value="anthropic">Anthropic (Claude 3.5 Sonnet, Haiku)</option>
-              <option value="deepseek">DeepSeek (DeepSeek-V3, DeepSeek-R1)</option>
-              <option value="other">Khác (Custom Provider)</option>
+              <option value="gemini">Google Gemini (Gemini 2.5 Flash / 2.0 Flash)</option>
             </select>
           </div>
 

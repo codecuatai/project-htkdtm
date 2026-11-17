@@ -14,7 +14,7 @@ Mã nguồn trong [`src/`](./src/) được tổ chức theo mô hình monorepo 
 |---|---|
 | **Học viên (`student`)** | Tải lên & xử lý tài liệu đa định dạng (PDF, DOCX, TXT, ảnh, audio/video, URL); hỏi đáp Gia sư AI (Multimodal RAG truyền phát SSE kèm trích dẫn trang / mốc thời gian); sinh bộ trắc nghiệm & thẻ ghi nhớ (flashcards); chấm bài tự luận đối chiếu nguồn; sơ đồ tư duy; mua / ghi danh khóa học và theo dõi tiến độ. |
 | **Giảng viên (`lecturer`)** | Tạo và xuất bản khóa học theo chương/bài học; tải video/tài liệu giảng dạy; trợ lý AI phác thảo bài giảng & tóm tắt; đăng thông báo khóa học; quản lý hỏi đáp (Q&A) theo bài học; theo dõi tiến độ học viên, phân tích câu hỏi hay sai và xuất báo cáo CSV/XLSX. |
-| **Quản trị viên (`admin`)** | Quản lý tài khoản & phân quyền RBAC; kiểm duyệt khóa học và cây danh mục; quản lý Kho khóa AI Key Vault mã hóa Fernet (hỗ trợ xoay vòng khóa Gemini, OpenAI, Groq, Anthropic); theo dõi thống kê & kiểm tra sức khỏe toàn hệ thống. |
+| **Quản trị viên (`admin`)** | Quản lý tài khoản & phân quyền RBAC; kiểm duyệt khóa học và cây danh mục; quản lý Kho khóa AI Key Vault mã hóa Fernet (hỗ trợ xoay vòng khóa Gemini); theo dõi thống kê & kiểm tra sức khỏe toàn hệ thống. |
 
 ---
 
@@ -34,7 +34,7 @@ Worker ──────> PostgreSQL 14, MinIO, Qdrant và AI Service
 |---|---|---|---|
 | **Frontend** | `src/frontend/` | Next.js 16 (App Router, standalone), React 19, TypeScript, Tailwind CSS, Zustand, Markmap | `3000` |
 | **Backend API** | `src/backend/` | FastAPI, SQLAlchemy (Async), Alembic, Pydantic v2, Redis Cache, `slowapi` | `8000` |
-| **AI Service** | `src/ai/` | FastAPI, luồng RAG đa bước bằng `asyncio` (`GraphState`), Gemini / Groq LLM, `all-MiniLM-L6-v2`, Qdrant | `8001` *(nội bộ Compose)* |
+| **AI Service** | `src/ai/` | FastAPI, luồng RAG đa bước bằng `asyncio` (`GraphState`), Gemini LLM, `all-MiniLM-L6-v2`, Qdrant | `8001` *(nội bộ Compose)* |
 | **Worker** | `src/worker/` | Celery, Redis Broker, PyMuPDF (`fitz`), `pdfplumber`, FFmpeg, Whisper, Tesseract OCR | — |
 | **Hạ tầng** | `src/compose.yaml` | PostgreSQL 14 (`postgres:14-alpine`), Redis 7 (`redis:7-alpine`), Qdrant (`v1.12.5`), MinIO | `5432`, `6379`, `6333`, `9000` / `9001` |
 
@@ -97,7 +97,7 @@ Mở tệp `src/.env` và cập nhật **bắt buộc** toàn bộ các giá tr�
 | `INTERNAL_API_KEY` | Khóa xác thực nội bộ (tối thiểu **16 ký tự**) | Dùng cho header `X-Internal-API-Key` tới `ai/` |
 
 **Các biến tùy chọn (điền khi cần dùng tính năng tương ứng):**
-- **AI LLM:** `GEMINI_API_KEY`, `GROQ_API_KEY` *(hoặc thêm trực tiếp qua giao diện Admin Key Vault)*.
+- **AI LLM:** `GEMINI_API_KEY` *(hoặc thêm trực tiếp qua giao diện Admin Key Vault)*.
 - **Đăng nhập OAuth:** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET`, `NEXT_PUBLIC_FACEBOOK_APP_ID`.
 - **Thanh toán & Email:** `VNPAY_*`, `MOMO_*`, `SMTP_*`.
 - **Khởi tạo tài khoản Admin:** `ADMIN_PASSWORD` (sử dụng khi chạy script `app.core.init_db`).

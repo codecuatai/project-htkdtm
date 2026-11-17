@@ -56,24 +56,6 @@ def _safe_object_name(value: str) -> str:
     return raw
 
 
-def upload_file(object_name: str, data, content_type: str = "application/octet-stream", length: int = -1) -> str:
-    object_name = _safe_object_name(object_name)
-    client = get_minio_client()
-    client.put_object(
-        settings.MINIO_BUCKET_NAME,
-        object_name,
-        data,
-        length=length,
-        content_type=content_type,
-    )
-    return f"s3://{settings.MINIO_BUCKET_NAME}/{object_name}"
-
-
 def download_file(object_name: str):
     client = get_minio_client()
     return client.get_object(settings.MINIO_BUCKET_NAME, _safe_object_name(object_name))
-
-
-def delete_file(object_name: str) -> None:
-    client = get_minio_client()
-    client.remove_object(settings.MINIO_BUCKET_NAME, _safe_object_name(object_name))

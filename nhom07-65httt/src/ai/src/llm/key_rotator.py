@@ -1,4 +1,4 @@
-"""AI API Key Rotator and Failover Management for Multi-Providers (Gemini, Groq, OpenAI, etc.)."""
+"""AI API Key Rotator and Failover Management for Google Gemini."""
 
 import logging
 import time
@@ -59,13 +59,6 @@ class AIKeyRotator:
             keys = [k.strip() for k in raw_gemini.replace(",", " ").split() if k.strip()]
             for i, k in enumerate(keys):
                 self.add_key(k, key_name=f"Config Gemini {i+1}", provider="gemini")
-
-        # Load default Groq keys
-        raw_groq = settings.GROQ_API_KEY
-        if raw_groq:
-            keys = [k.strip() for k in raw_groq.replace(",", " ").split() if k.strip()]
-            for i, k in enumerate(keys):
-                self.add_key(k, key_name=f"Config Groq {i+1}", provider="groq")
 
         logger.info("Initialized AIKeyRotator with %d keys from settings", len(self.keys))
 
@@ -146,8 +139,6 @@ class AIKeyRotator:
                 from src.core.config import settings
                 if provider == "gemini" and settings.GEMINI_API_KEY:
                     return settings.GEMINI_API_KEY.split(",")[0].strip()
-                if provider == "groq" and settings.GROQ_API_KEY:
-                    return settings.GROQ_API_KEY.split(",")[0].strip()
                 raise RuntimeError(f"No active {provider.upper()} API keys configured in pool.")
 
         # Round Robin selection for this provider

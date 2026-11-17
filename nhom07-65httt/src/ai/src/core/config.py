@@ -11,7 +11,6 @@ class Settings(BaseSettings):
 
     DEBUG: bool = False
 
-    GROQ_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
     INTERNAL_API_KEY: str = ""
 
@@ -25,21 +24,22 @@ class Settings(BaseSettings):
     REDIS_URL: str = ""
     AI_CHAT_RATE_LIMIT_PER_MINUTE: int = 20
 
-    GROQ_MODEL: str = "openai/gpt-oss-20b"
     GEMINI_MODEL: str = "gemini-2.5-flash"
 
     @model_validator(mode="after")
     def validate_secrets(self) -> "Settings":
         weak_values = {
             "", "secret", "changeme", "your_internal_api_key", "your_internal_key",
-            "your_gemini_api_key", "your_groq_api_key", "change_me", "change_me_api_key",
+            "your_gemini_api_key", "change_me", "change_me_api_key",
         }
-        if not self.INTERNAL_API_KEY or self.INTERNAL_API_KEY.lower() in weak_values or len(self.INTERNAL_API_KEY) < 16:
-            if not self.DEBUG:
-                raise ValueError("INTERNAL_API_KEY must be a secure, non-default string (min 16 chars) in production")
-        for name, value in (("GROQ_API_KEY", self.GROQ_API_KEY), ("GEMINI_API_KEY", self.GEMINI_API_KEY)):
-            if value and (value.lower() in weak_values or len(value) < 16):
-                raise ValueError(f"{name} is too short or uses a weak placeholder")
+        if not self.DEBUG and (
+            not self.INTERNAL_API_KEY
+            or self.INTERNAL_API_KEY.lower() in weak_values
+            or len(self.INTERNAL_API_KEY) < 16
+        ):
+            raise ValueError("INTERNAL_API_KEY must be a secure, non-default string (min 16 chars) in production")
+        if self.GEMINI_API_KEY and (self.GEMINI_API_KEY.lower() in weak_values or len(self.GEMINI_API_KEY) < 16):
+            raise ValueError("GEMINI_API_KEY is too short or uses a weak placeholder")
         return self
 
 

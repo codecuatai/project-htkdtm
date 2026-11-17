@@ -2,7 +2,7 @@
 
 import json
 
-from src.llm.groq_client import chat_completion
+from src.llm.gemini_client import chat_completion
 from src.utils.prompt_safety import untrusted_text
 
 GRADER_SYSTEM_PROMPT = """Bạn là một grader đánh giá mức độ liên quan của document chunks.
@@ -69,7 +69,7 @@ def grade_chunks(query: str, chunks: list[dict]) -> dict:
 def enrich_relevant_chunks(relevant: list[dict], retrieved: list[dict]) -> list[dict]:
     """Merge retriever payload metadata into grader output.
 
-    The Groq grader LLM returns only id/text/score (/page_number), which
+    The grader LLM returns only id/text/score (/page_number), which
     drops document_id/material_id/course_id/lesson_id needed for citations.
     This helper re-attaches that metadata by chunk id. Shared by the
     non-stream workflow (grader_node) and the /chat/ask/stream endpoint.

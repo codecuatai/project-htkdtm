@@ -130,7 +130,7 @@ Tài liệu tham chiếu:
 Trả về DUY NHẤT một JSON array."""
 
     last_error: Exception | None = None
-    for attempt in range(2):
+    for _attempt in range(2):
         try:
             response = generate_content(
                 prompt=prompt,

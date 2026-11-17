@@ -390,12 +390,7 @@ export function AdminSettings() {
               onChange={(e) => setProviderInput(e.target.value)}
               className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
             >
-              <option value="gemini">Google Gemini (Flash-Lite / Pro)</option>
-              <option value="groq">Groq Cloud (Llama 3.3, Mixtral)</option>
-              <option value="openai">OpenAI (GPT-4o, GPT-4o-mini)</option>
-              <option value="anthropic">Anthropic (Claude 3.5 Sonnet / Haiku)</option>
-              <option value="deepseek">DeepSeek (DeepSeek-V3 / R1)</option>
-              <option value="other">Khác / Custom Provider</option>
+              <option value="gemini">Google Gemini (Gemini 2.5 Flash / 2.0 Flash)</option>
             </select>
           </div>
 

@@ -102,18 +102,6 @@ async def get_current_user(
     return user
 
 
-def require_role(*allowed_roles: str):
-    """Dependency factory for role-based access control."""
-    async def role_checker(current_user: User = Depends(get_current_user)) -> User:
-        if current_user.role not in allowed_roles:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Access denied. Required role(s): {', '.join(allowed_roles)}"
-            )
-        return current_user
-    return role_checker
-
-
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
     """Require admin role."""
     if current_user.role != "admin":
@@ -125,13 +113,6 @@ def require_lecturer(current_user: User = Depends(get_current_user)) -> User:
     """Require lecturer or admin role."""
     if current_user.role not in ("lecturer", "admin"):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Lecturer access required")
-    return current_user
-
-
-def require_student(current_user: User = Depends(get_current_user)) -> User:
-    """Require student role."""
-    if current_user.role != "student":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Student access required")
     return current_user
 
 

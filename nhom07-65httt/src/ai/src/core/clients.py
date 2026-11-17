@@ -7,11 +7,9 @@ from typing import TYPE_CHECKING, Optional
 from src.core.config import settings
 
 if TYPE_CHECKING:
-    from groq import Groq
     from qdrant_client import QdrantClient
 
 _qdrant_client: Optional[QdrantClient] = None
-_groq_client: Optional[Groq] = None
 _gemini_configured: bool = False
 
 
@@ -32,16 +30,6 @@ def get_qdrant_client() -> QdrantClient:
                 port=settings.QDRANT_PORT,
             )
     return _qdrant_client
-
-
-def get_groq_client() -> Groq:
-    """Retrieve the Groq client singleton."""
-    from groq import Groq
-
-    global _groq_client
-    if _groq_client is None:
-        _groq_client = Groq(api_key=settings.GROQ_API_KEY)
-    return _groq_client
 
 
 def configure_gemini() -> None:

@@ -1,8 +1,8 @@
-"""Intent classifier agent using Groq (fast, low cost)."""
+"""Intent classifier agent using Gemini."""
 
 import json
 
-from src.llm.groq_client import chat_completion
+from src.llm.gemini_client import chat_completion
 from src.utils.prompt_safety import untrusted_text
 
 INTENT_SYSTEM_PROMPT = """Bạn là một classifier phân loại ý định người dùng.
@@ -61,8 +61,8 @@ def is_greeting_query(query: str) -> bool:
 
 
 def classify_intent(query: str) -> dict:
-    """Classify user intent using Groq LLM."""
-    # Fast path: greetings never need an LLM round-trip (or Groq quota).
+    """Classify user intent using Gemini LLM."""
+    # Fast path: greetings never need an LLM round-trip (or Gemini quota).
     if is_greeting_query(query):
         return {"intent": "greeting", "sub_intent": "smalltalk"}
     try:
