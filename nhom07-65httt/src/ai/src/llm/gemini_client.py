@@ -1,12 +1,15 @@
 """Gemini client with centrally managed credentials, model selection, and failover."""
 
-import logging
+from __future__ import annotations
 
-from google import genai
-from google.genai import types
+import logging
+from typing import TYPE_CHECKING
 
 from src.llm.key_rotator import GeminiKeyRotator
 from src.llm.runtime_config import get_gemini_model
+
+if TYPE_CHECKING:
+    from google import genai
 
 logger = logging.getLogger("ai.gemini_client")
 
@@ -18,6 +21,8 @@ def _is_rate_limit_or_quota_error(exc: Exception) -> bool:
 
 
 def _client_for_next_key() -> tuple[genai.Client, str]:
+    from google import genai
+
     key = GeminiKeyRotator.get_instance().get_next_key()
     return genai.Client(api_key=key), key
 
@@ -28,6 +33,8 @@ def _max_attempts() -> int:
 
 
 def generate_content(prompt: str, system_instruction: str | None = None) -> str:
+    from google.genai import types
+
     rotator = GeminiKeyRotator.get_instance()
     last_error = None
     model_id = get_gemini_model()
@@ -69,6 +76,8 @@ def generate_content(prompt: str, system_instruction: str | None = None) -> str:
 
 def generate_content_stream(prompt: str, system_instruction: str | None = None):
     """Stream text chunks from Gemini using the next centrally managed key."""
+    from google.genai import types
+
     client, key = _client_for_next_key()
     model_id = get_gemini_model()
     config = types.GenerateContentConfig(system_instruction=system_instruction) if system_instruction else None
@@ -93,6 +102,8 @@ def generate_content_stream(prompt: str, system_instruction: str | None = None):
 
 def chat_completion(messages: list[dict], temperature: float = 0.3) -> str:
     """Execute chat-style messages against the Admin-selected Gemini model."""
+    from google.genai import types
+
     system_parts = [m.get("content", "") for m in messages if m.get("role") == "system" and m.get("content")]
     system_instruction = "\n\n".join(system_parts) if system_parts else None
     dialogue = [m for m in messages if m.get("role") != "system" and m.get("content")]
@@ -142,6 +153,8 @@ def chat_completion(messages: list[dict], temperature: float = 0.3) -> str:
 
 def transcribe_audio(audio_bytes: bytes, mime_type: str = "audio/wav") -> str:
     """Transcribe one audio chunk using the centrally managed key and model."""
+    from google.genai import types
+
     rotator = GeminiKeyRotator.get_instance()
     last_error = None
     model_id = get_gemini_model()
