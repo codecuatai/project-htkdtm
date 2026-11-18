@@ -17,6 +17,7 @@ from app.core.security import hash_password
 from app.dependencies.auth import require_admin
 from app.dependencies.db import get_db
 from app.models.ai_key import AiApiKey
+from app.models.ai_provider_setting import AiProviderSetting
 from app.models.document import Document
 from app.models.enrollment import Enrollment
 from app.models.user import User
@@ -31,6 +32,8 @@ from app.schemas.admin import (
     AiApiKeyCreate,
     AiApiKeyListResponse,
     AiApiKeyResponse,
+    AiProviderSettingResponse,
+    AiProviderSettingUpdate,
 )
 from app.utils.pagination import build_pagination
 
@@ -410,8 +413,27 @@ async def health(
 async def _sync_active_keys_to_ai_service(db: AsyncSession):
     try:
         from app.core.secret_store import decrypt_secret, encrypt_secret
-        result = await db.execute(select(AiApiKey).where(AiApiKey.is_active.is_(True)))
+        result = await db.execute(
+            select(AiApiKey).where(
+                AiApiKey.is_active.is_(True),
+                AiApiKey.provider == "gemini",
+            )
+        )
         active_keys = result.scalars().all()
+        setting_result = await db.execute(
+            select(AiProviderSetting).where(AiProviderSetting.provider == "gemini")
+        )
+        provider_setting = setting_result.scalar_one_or_none()
+        if provider_setting is None:
+            provider_setting = AiProviderSetting(
+                provider="gemini",
+                model_id="gemini-3.5-flash-lite",
+            )
+            db.add(provider_setting)
+            await db.flush()
+            setting_created = True
+        else:
+            setting_created = False
         changed = False
         keys_payload = [
             {
@@ -429,11 +451,67 @@ async def _sync_active_keys_to_ai_service(db: AsyncSession):
             if encrypted != key.api_key:
                 key.api_key = encrypted
                 changed = True
-        if changed:
+        if changed or setting_created:
             await db.commit()
-        await AiClient().sync_keys(keys_payload)
+        sync_result = await AiClient().sync_config(keys_payload, provider_setting.model_id)
+        synced = bool(sync_result.get("synced"))
+        if not synced:
+            logger.warning("AI service did not confirm Gemini configuration sync")
+        return synced
     except Exception as e:
         logger.warning(f"Failed to sync AI keys to AI service: {e}")
+        return False
+
+
+@router.get("/ai-settings", response_model=AiProviderSettingResponse)
+@limiter.limit(settings.RATE_LIMIT_ADMIN)
+async def get_ai_settings(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    result = await db.execute(
+        select(AiProviderSetting).where(AiProviderSetting.provider == "gemini")
+    )
+    setting = result.scalar_one_or_none()
+    if setting is None:
+        setting = AiProviderSetting(provider="gemini", model_id="gemini-3.5-flash-lite")
+        db.add(setting)
+        await db.commit()
+        await db.refresh(setting)
+    return AiProviderSettingResponse(
+        provider=setting.provider,
+        model_id=setting.model_id,
+        updated_at=setting.updated_at,
+    )
+
+
+@router.put("/ai-settings", response_model=AiProviderSettingResponse)
+@limiter.limit(settings.RATE_LIMIT_ADMIN)
+async def update_ai_settings(
+    request: Request,
+    payload: AiProviderSettingUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    result = await db.execute(
+        select(AiProviderSetting).where(AiProviderSetting.provider == "gemini")
+    )
+    setting = result.scalar_one_or_none()
+    if setting is None:
+        setting = AiProviderSetting(provider="gemini", model_id=payload.model_id.strip())
+        db.add(setting)
+    else:
+        setting.model_id = payload.model_id.strip()
+    await db.commit()
+    await db.refresh(setting)
+    synced = await _sync_active_keys_to_ai_service(db)
+    return AiProviderSettingResponse(
+        provider=setting.provider,
+        model_id=setting.model_id,
+        updated_at=setting.updated_at,
+        synced=synced,
+    )
 
 
 async def sync_ai_key_usage_to_db(db: AsyncSession) -> None:

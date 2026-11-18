@@ -10,7 +10,6 @@ if TYPE_CHECKING:
     from qdrant_client import QdrantClient
 
 _qdrant_client: Optional[QdrantClient] = None
-_gemini_configured: bool = False
 
 
 def get_qdrant_client() -> QdrantClient:
@@ -30,13 +29,3 @@ def get_qdrant_client() -> QdrantClient:
                 port=settings.QDRANT_PORT,
             )
     return _qdrant_client
-
-
-def configure_gemini() -> None:
-    """Initialize and configure Gemini API."""
-    import google.generativeai as genai
-
-    global _gemini_configured
-    if not _gemini_configured:
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        _gemini_configured = True

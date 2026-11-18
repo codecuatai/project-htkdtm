@@ -26,8 +26,6 @@ class Settings(BaseSettings):
 
     AI_SERVICE_URL: str = "http://localhost:8001"
     INTERNAL_API_KEY: str = ""
-    GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-2.5-flash"
     DEBUG: bool = False
 
     @field_validator("DATABASE_URL", mode="before")

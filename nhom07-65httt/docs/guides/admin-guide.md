@@ -29,7 +29,7 @@ Trong hệ sinh thái đào tạo thông minh **Multimodal AI Learning Hub**, t�
 | **Giám sát Sẵn sàng (High Availability)** | Theo dõi liên tục trạng thái sống còn của 6 cụm dịch vụ kỹ thuật (API Gateway, AI LangGraph, Cơ sở dữ liệu PostgreSQL, Bộ đệm Redis, Kho vector Qdrant, Lưu trữ đối tượng MinIO/R2, Hàng đợi Celery Worker). | Đảm bảo tính khả dụng của nền tảng đạt tối thiểu **99.9%** thời gian hoạt động. |
 | **Kiểm duyệt & An toàn Nội dung** | Thanh tra toàn diện các khóa học, tài liệu tải lên; gỡ bỏ ngay lập tức các nội dung độc hại, sai lệch tôn giáo chính trị hoặc vi phạm nghiêm trọng bản quyền sở hữu trí tuệ. | Thời gian phản hồi và xử lý khiếu nại bản quyền hoặc nội dung xấu dưới **2 giờ**. |
 | **Quản trị Tài khoản & Phân quyền** | Khởi tạo tài khoản giảng viên, điều chỉnh định mức lưu trữ và token AI cho các tài khoản VIP, vô hiệu hóa kịp thời các tài khoản có hành vi phá hoại hoặc gian lận. | Tuyệt đối không để xảy ra tình trạng lộ lọt thông tin cá nhân hoặc cấp quyền sai lệch. |
-| **Điều phối Chi phí AI (FinOps)** | Quản lý kho khóa API đa nhà cung cấp (Google Gemini, Groq, OpenAI, Anthropic), thiết lập cơ chế xoay vòng chìa khóa và dự phòng lỗi tự động nhằm tiết kiệm chi phí và duy trì học tập không gián đoạn. | Tránh tối đa hiện tượng ngắt kết nối do chạm ngưỡng giới hạn (Rate Limit) hoặc cạn ngân sách. |
+| **Điều phối Gemini** | Quản lý Gemini API keys, model đang dùng và cơ chế xoay vòng/dự phòng khi gặp giới hạn. | Quản trị viên thay key hoặc model mà không cần cập nhật biến môi trường. |
 
 ### 1.2 Cơ Chế Bảo Vệ Quản Trị Viên Tối Hậu (Last-Admin Safeguards)
 
@@ -273,46 +273,40 @@ Khi nhận được phản ánh về một khóa học vi phạm bản quyền v
 +--------------------------+--------------------------+--------------------------+--------------------------+
 |      TỔNG SỐ KHÓA AI     |    KHÓA ĐANG HOẠT ĐỘNG   |    NHÀ CUNG CẤP AI       |     TỔNG LƯỢT GỌI AI     |
 |          8               |            6             |            4             |          84.210          |
-| (Bao gồm Gemini, Groq...) | (Sẵn sàng trong Pool)    | (Google, Groq, OpenAI...) | (Đã phục vụ học viên)    |
+| (Các key Gemini trong database) | (Sẵn sàng trong Pool) | (Gemini Developer API) | (Đã phục vụ học viên) |
 +--------------------------+--------------------------+--------------------------+--------------------------+
 ```
 
 ### 7.2 Cơ Chế Bảo Mật Tuyệt Đối (Zero-Leakage Encryption)
 
-Các mã API Key từ nhà cung cấp (như Google AI Studio, Groq Cloud, OpenAI) có giá trị tài chính thực tế rất lớn. Nếu bị lộ lọt, kẻ gian có thể đánh cắp và tiêu tốn hàng nghìn đô la. Hệ thống áp dụng tiêu chuẩn bảo mật ngân hàng:
+Gemini API key là thông tin bí mật. Hệ thống mã hóa key trước khi ghi vào database và không trả lại giá trị đầy đủ sau khi lưu:
 
 1. **Mã hóa đối xứng Fernet (AES-128 CBC kết hợp HMAC SHA-256):** Khi Quản trị viên nhập khóa mới, mã khóa lập tức được mã hóa ngay trước khi ghi vào cơ sở dữ liệu. Ngay cả kỹ sư quản trị máy chủ mở trực tiếp bảng cơ sở dữ liệu cũng chỉ nhìn thấy một chuỗi ký tự mã hóa vô nghĩa.
-2. **Che mờ giao diện (Masked Rendering):** Trên màn hình quản trị, các chìa khóa không bao giờ hiển thị nguyên văn mà luôn được che mờ dưới dạng: `AIza...k91P`, `gsk_...x72Q` hoặc `•••••••••••••••• Đã bảo vệ`.
+2. **Che mờ giao diện (Masked Rendering):** Sau khi lưu, key đầy đủ không được trả lại cho trình duyệt; giao diện chỉ hiển thị dấu chấm và trạng thái đã bảo vệ.
 
 ---
 
-### 7.3 Hướng Dẫn Thêm Chìa Khóa AI Mới
+### 7.3 Quản Lý Gemini Key Và Model
 
 ```
-[ Bấm "Thêm khóa AI" ]
+[ Mở Admin → Khóa API & AI ]
           │
           ▼
-[ Chọn Nhà Cung Cấp: Google Gemini / Groq / OpenAI / Anthropic / DeepSeek ]
+[ Thêm Gemini API Key và đặt tên gợi nhớ ]
           │
           ▼
-[ Đặt Tên Khóa Gợi Nhớ (Ví dụ: "Gemini 2.0 Flash - Dự phòng số 2") ]
+[ Chọn model, mặc định gemini-3.5-flash-lite ]
           │
           ▼
-[ Dán Mã API Key Nguyên Bản (Lấy từ Google Cloud hoặc Groq Console) ]
-          │
-          ▼
-[ Bấm "Lưu & Kích hoạt" ] ──▶ [ Tự động mã hóa AES & Đồng bộ vào AI Pool ]
+[ Lưu — key được mã hóa và đồng bộ tới AI service ]
 ```
 
-1. Bấm nút **Thêm khóa mới** (Biểu tượng chiếc chìa khóa).
-2. Chọn **Nhà cung cấp (Provider):**
-   - **Google Gemini:** Dùng cho các mô hình thế hệ mới tốc độ cao và chi phí tối ưu (Gemini 2.0 Flash, Gemini 1.5 Pro).
-   - **Groq Cloud:** Dùng cho các mô hình mã nguồn mở siêu tốc (Llama 3.3 70B, Mixtral 8x7B) và bóc tách âm thanh video (Groq Whisper).
-   - **OpenAI:** Tích hợp các mô hình GPT-4o, GPT-4o-mini.
-   - **Anthropic / DeepSeek:** Tùy chọn mở rộng cho các bài toán phân tích học thuật chuyên sâu.
-3. Nhập **Tên định danh (Key Name):** Đặt tên rõ ràng mục đích sử dụng (Ví dụ: *Google Gemini Production Key 01*).
-4. Dán **Mã API Key:** Dán chuỗi ký tự bí mật do nhà cung cấp cấp phát.
-5. Bấm **Lưu khóa**. Hệ thống sẽ kiểm tra định dạng, mã hóa và đưa ngay vào nhóm chìa khóa sẵn sàng phục vụ.
+1. Mở mục **Khóa API & AI** trong trang quản trị.
+2. Thêm Gemini API key, đặt tên gợi nhớ rồi lưu. Key đầy đủ chỉ xuất hiện trong lúc nhập; sau đó hệ thống mã hóa trong database và chỉ hiển thị trạng thái đã bảo vệ.
+3. Chọn model ID Gemini và bấm **Lưu model**. Giá trị mặc định là `gemini-3.5-flash-lite`; thay đổi áp dụng cho chatbot và phiên âm audio.
+4. Các key đang bật được AI service dùng luân phiên. Worker gửi audio qua AI service nên không cần lưu Gemini key riêng.
+
+Heroku không cần `GEMINI_API_KEY` hoặc `GEMINI_MODEL`. Giữ `AI_KEY_ENCRYPTION_KEY` ổn định; nếu đổi khóa mã hóa, các Gemini API key đã lưu sẽ không giải mã được.
 
 ---
 
@@ -361,7 +355,7 @@ Tại trang **Cài Đặt Hệ Thống** (`/app/admin/settings`), Quản trị v
 - **Phiên bản hệ thống:** `2.0.0 (4-Service Microservices Architecture)`.
 - **Giao diện người dùng (Frontend):** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS.
 - **Cổng giao tiếp dữ liệu (API Gateway):** FastAPI, Uvicorn, Python 3.11.
-- **Lõi trí tuệ nhân tạo (AI Core):** FastAPI + AsyncIO Multi-Step RAG Workflow (`GraphState`), Gemini / Groq LLM.
+- **Lõi trí tuệ nhân tạo (AI Core):** FastAPI + AsyncIO Multi-Step RAG Workflow (`GraphState`) và Gemini LLM.
 - **Cơ sở dữ liệu Vector:** Qdrant Vector Engine.
 
 ### 8.2 Bảng Định Mức Tài Nguyên Mặc Định (Default Quotas)
@@ -388,8 +382,8 @@ Khi tiếp nhận phản hồi sự cố từ đội ngũ hỗ trợ khách hàn
 - **Bước 2:** Nhìn vào đèn chỉ số **Dịch vụ AI (LangGraph)**. Nếu đèn báo Đỏ, liên hệ ngay đội ngũ hạ tầng DevOps kiểm tra máy chủ AI.
 - **Bước 3:** Nếu đèn AI vẫn Xanh, truy cập ngay vào tab **Khóa AI (AI Key Vault)** (`/app/admin/ai-keys` hoặc `/app/admin/settings`).
 - **Bước 4:** Kiểm tra danh sách khóa:
-  - Có bao nhiêu khóa đang ở trạng thái **Hoạt động (Active)**? Nếu tất cả các khóa đều đang tắt hoặc số lượt gọi tăng vọt, rất có thể các tài khoản bên phía nhà cung cấp (Google/Groq) đã hết tiền hoặc chạm hạn ngạch tháng.
-- **Bước 5 - Khắc phục tức thì:** Bấm **Thêm khóa mới**, dán một API Key mới còn hạn ngạch của Google Gemini hoặc Groq, bấm Lưu và Bật. Hệ thống sẽ khôi phục chức năng AI cho toàn bộ người dùng chỉ sau 5 giây.
+  - Có bao nhiêu Gemini key đang ở trạng thái **Hoạt động (Active)**? Nếu tất cả key đều đang tắt hoặc số lượt gọi tăng vọt, có thể tài khoản Google đã hết quota hoặc chạm hạn ngạch.
+- **Bước 5 - Khắc phục:** Thêm một Gemini API key còn hạn ngạch trong Admin → Khóa API & AI, rồi bật key. AI service nhận cấu hình mới qua đồng bộ nội bộ.
 
 ---
 
@@ -444,7 +438,7 @@ Khi tiếp nhận phản hồi sự cố từ đội ngũ hỗ trợ khách hàn
             - Qdrant Vector DB: Đèn Xanh Lục
             - Celery Worker: Đèn Xanh Lục
 [ ] Bước 3: Kiểm tra chỉ số "Đang xử lý (Documents Processing)": Đảm bảo không có hàng chục tài liệu bị ứ đọng từ hôm trước.
-[ ] Bước 4: Kiểm tra tab "Khóa AI (AI Key Vault)": Đảm bảo luôn có tối thiểu 2 chìa khóa của mỗi nhà cung cấp (Gemini, Groq) đang ở trạng thái Hoạt Động (Active).
+[ ] Bước 4: Kiểm tra Admin → Khóa API & AI: bảo đảm có ít nhất một Gemini API key đang hoạt động và model đã chọn hợp lệ.
 [ ] Bước 5: Kiểm tra mục Quản lý người dùng: Đảm bảo không có tài khoản bất thường gửi lượng yêu cầu đột biến.
 ```
 

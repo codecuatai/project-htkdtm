@@ -1,60 +1,66 @@
-"""Gemini client wrapper with Key Rotation and Auto-Failover."""
+"""Gemini client with centrally managed credentials, model selection, and failover."""
 
 import logging
-from src.core.config import settings
+
+from google import genai
+from google.genai import types
+
 from src.llm.key_rotator import GeminiKeyRotator
+from src.llm.runtime_config import get_gemini_model
 
 logger = logging.getLogger("ai.gemini_client")
 
 
-def _is_rate_limit_or_quota_error(e: Exception) -> bool:
-    err_str = str(e).lower()
-    err_type = type(e).__name__.lower()
-    return any(term in err_str or term in err_type for term in ["429", "resourceexhausted", "quota", "rate limit", "too many requests"])
+def _is_rate_limit_or_quota_error(exc: Exception) -> bool:
+    message = str(exc).lower()
+    error_type = type(exc).__name__.lower()
+    return any(term in message or term in error_type for term in ("429", "resourceexhausted", "quota", "rate limit", "too many requests"))
+
+
+def _client_for_next_key() -> tuple[genai.Client, str]:
+    key = GeminiKeyRotator.get_instance().get_next_key()
+    return genai.Client(api_key=key), key
+
+
+def _max_attempts() -> int:
+    keys = GeminiKeyRotator.get_instance().keys
+    return max(1, min(len(keys), 5)) if keys else 1
 
 
 def generate_content(prompt: str, system_instruction: str | None = None) -> str:
-    import google.generativeai as genai
-
     rotator = GeminiKeyRotator.get_instance()
-    max_attempts = max(1, min(len(rotator.keys), 5)) if rotator.keys else 1
     last_error = None
+    model_id = get_gemini_model()
 
-    for attempt in range(max_attempts):
-        key = rotator.get_next_key()
-        genai.configure(api_key=key)
+    for attempt in range(_max_attempts()):
+        client, key = _client_for_next_key()
         try:
-            try:
-                model = genai.GenerativeModel(
-                    model_name=settings.GEMINI_MODEL,
-                    system_instruction=system_instruction,
-                )
-                response = model.generate_content(prompt)
-            except TypeError:
-                # Fallback for google-generativeai < 0.4.0
-                model = genai.GenerativeModel(model_name=settings.GEMINI_MODEL)
-                full_prompt = f"CHỈ DẪN HỆ THỐNG:\n{system_instruction}\n\n{prompt}" if system_instruction else prompt
-                response = model.generate_content(full_prompt)
-            try:
-                usage = response.usage_metadata
+            config = types.GenerateContentConfig(system_instruction=system_instruction) if system_instruction else None
+            response = client.models.generate_content(
+                model=model_id,
+                contents=prompt,
+                config=config,
+            )
+            usage = response.usage_metadata
+            if usage:
                 logger.info(
                     "gemini token_usage prompt=%s output=%s total=%s model=%s",
                     getattr(usage, "prompt_token_count", "?"),
                     getattr(usage, "candidates_token_count", "?"),
                     getattr(usage, "total_token_count", "?"),
-                    settings.GEMINI_MODEL,
+                    model_id,
                 )
-            except Exception:
-                pass
             return response.text or ""
-        except Exception as e:
-            last_error = e
-            if _is_rate_limit_or_quota_error(e):
+        except Exception as exc:
+            last_error = exc
+            if _is_rate_limit_or_quota_error(exc):
                 rotator.report_rate_limit(key, cooldown_seconds=60.0)
-                logger.warning("Gemini key rate-limited on attempt %d/%d. Retrying with next key...", attempt + 1, max_attempts)
+                logger.warning("Gemini key rate-limited on attempt %d/%d; trying next key", attempt + 1, _max_attempts())
                 continue
-            logger.error("Gemini generate_content error: %s", e)
-            raise e
+            logger.exception("Gemini generate_content failed")
+            raise
+        finally:
+            client.close()
 
     if last_error:
         raise last_error
@@ -62,95 +68,104 @@ def generate_content(prompt: str, system_instruction: str | None = None) -> str:
 
 
 def generate_content_stream(prompt: str, system_instruction: str | None = None):
-    """Stream Gemini response token by token. Yields text chunks as they arrive."""
-    import google.generativeai as genai
-
-    rotator = GeminiKeyRotator.get_instance()
-    key = rotator.get_next_key()
-    genai.configure(api_key=key)
+    """Stream text chunks from Gemini using the next centrally managed key."""
+    client, key = _client_for_next_key()
+    model_id = get_gemini_model()
+    config = types.GenerateContentConfig(system_instruction=system_instruction) if system_instruction else None
 
     try:
-        try:
-            model = genai.GenerativeModel(
-                model_name=settings.GEMINI_MODEL,
-                system_instruction=system_instruction,
-            )
-        except TypeError:
-            model = genai.GenerativeModel(model_name=settings.GEMINI_MODEL)
-
-        response = model.generate_content(prompt, stream=True)
-        for chunk in response:
-            try:
-                text = chunk.text
-                if text:
-                    yield text
-            except Exception:
-                continue
-    except Exception as e:
-        if _is_rate_limit_or_quota_error(e):
-            rotator.report_rate_limit(key, cooldown_seconds=60.0)
-        logger.error("Gemini stream error: %s", e)
+        response_stream = client.models.generate_content_stream(
+            model=model_id,
+            contents=prompt,
+            config=config,
+        )
+        for chunk in response_stream:
+            if chunk.text:
+                yield chunk.text
+    except Exception as exc:
+        if _is_rate_limit_or_quota_error(exc):
+            GeminiKeyRotator.get_instance().report_rate_limit(key, cooldown_seconds=60.0)
+        logger.exception("Gemini streaming failed")
         raise
+    finally:
+        client.close()
 
 
-def chat_completion(messages: list[dict], model: str | None = None, temperature: float = 0.3) -> str:
-    """Execute OpenAI-style chat messages against Gemini with key rotation and failover."""
-    import google.generativeai as genai
-
+def chat_completion(messages: list[dict], temperature: float = 0.3) -> str:
+    """Execute chat-style messages against the Admin-selected Gemini model."""
     system_parts = [m.get("content", "") for m in messages if m.get("role") == "system" and m.get("content")]
     system_instruction = "\n\n".join(system_parts) if system_parts else None
-
     dialogue = [m for m in messages if m.get("role") != "system" and m.get("content")]
     if not dialogue:
         return ""
 
-    prompt_parts = []
     if len(dialogue) == 1:
         prompt = dialogue[0]["content"]
     else:
-        for msg in dialogue:
-            role_label = "Assistant" if msg.get("role") == "assistant" else "User"
-            prompt_parts.append(f"{role_label}: {msg['content']}")
-        prompt = "\n\n".join(prompt_parts)
+        prompt = "\n\n".join(
+            f"{'Assistant' if message.get('role') == 'assistant' else 'User'}: {message['content']}"
+            for message in dialogue
+        )
 
-    target_model = model or settings.GEMINI_MODEL
     rotator = GeminiKeyRotator.get_instance()
-    max_attempts = max(1, min(len(rotator.keys), 5)) if rotator.keys else 1
+    last_error = None
+    model_id = get_gemini_model()
+    config = types.GenerateContentConfig(
+        temperature=temperature,
+        system_instruction=system_instruction,
+    )
 
-    for attempt in range(max_attempts):
+    for attempt in range(_max_attempts()):
         try:
-            key = rotator.get_next_key()
-        except Exception as e:
-            logger.warning("No Gemini API key available: %s", e)
+            client, key = _client_for_next_key()
+        except RuntimeError as exc:
+            logger.warning("No Gemini API key available: %s", exc)
             return ""
-
-        genai.configure(api_key=key)
         try:
-            generation_config = genai.types.GenerationConfig(temperature=temperature)
-            try:
-                gen_model = genai.GenerativeModel(
-                    model_name=target_model,
-                    system_instruction=system_instruction,
-                    generation_config=generation_config,
-                )
-                response = gen_model.generate_content(prompt)
-            except TypeError:
-                gen_model = genai.GenerativeModel(
-                    model_name=target_model,
-                    generation_config=generation_config,
-                )
-                full_prompt = f"CHỈ DẪN HỆ THỐNG:\n{system_instruction}\n\n{prompt}" if system_instruction else prompt
-                response = gen_model.generate_content(full_prompt)
+            response = client.models.generate_content(model=model_id, contents=prompt, config=config)
             return response.text or ""
-        except Exception as e:
-            if _is_rate_limit_or_quota_error(e):
+        except Exception as exc:
+            last_error = exc
+            if _is_rate_limit_or_quota_error(exc):
                 rotator.report_rate_limit(key, cooldown_seconds=60.0)
-                logger.warning("Gemini rate limit hit on attempt %d/%d. Retrying...", attempt + 1, max_attempts)
+                logger.warning("Gemini rate limit hit on attempt %d/%d; trying next key", attempt + 1, _max_attempts())
                 continue
-            logger.error("Gemini chat_completion error (attempt %d/%d): %s", attempt + 1, max_attempts, e)
-            if attempt == max_attempts - 1:
-                return ""
+            logger.exception("Gemini chat completion failed")
+            return ""
+        finally:
+            client.close()
 
+    if last_error:
+        logger.warning("All configured Gemini keys failed: %s", type(last_error).__name__)
     return ""
 
 
+def transcribe_audio(audio_bytes: bytes, mime_type: str = "audio/wav") -> str:
+    """Transcribe one audio chunk using the centrally managed key and model."""
+    rotator = GeminiKeyRotator.get_instance()
+    last_error = None
+    model_id = get_gemini_model()
+    contents = [
+        types.Part.from_bytes(data=audio_bytes, mime_type=mime_type),
+        "Transcribe this audio accurately in its original language. Return only the transcribed text.",
+    ]
+
+    for attempt in range(_max_attempts()):
+        client, key = _client_for_next_key()
+        try:
+            response = client.models.generate_content(model=model_id, contents=contents)
+            return (response.text or "").strip()
+        except Exception as exc:
+            last_error = exc
+            if _is_rate_limit_or_quota_error(exc):
+                rotator.report_rate_limit(key, cooldown_seconds=60.0)
+                logger.warning("Gemini transcription key rate-limited on attempt %d/%d; trying next key", attempt + 1, _max_attempts())
+                continue
+            logger.exception("Gemini audio transcription failed")
+            raise
+        finally:
+            client.close()
+
+    if last_error:
+        raise last_error
+    return ""

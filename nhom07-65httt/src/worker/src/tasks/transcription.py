@@ -1,10 +1,15 @@
-"""Audio/video transcription using Gemini API with ffmpeg preprocessing."""
+"""Audio/video preprocessing and transcription requests for the AI service."""
 
+import base64
 import logging
 import os
 import struct
 import subprocess
 import tempfile
+
+import httpx
+
+from src.core.config import settings
 
 logger = logging.getLogger("worker.transcription")
 
@@ -78,16 +83,13 @@ def _split_wav(wav_bytes: bytes) -> list[bytes]:
 
 def transcribe_media(file_bytes: bytes, ext: str, file_name: str = "") -> list[dict]:
     """
-    Transcribe audio/video using Gemini API.
+    Transcribe audio/video through the centrally managed AI service.
 
     Returns list of {page_number: int, text: str} dicts.
     page_number = segment index, used as citation reference.
     Falls back to placeholder text on error (never returns empty list).
     """
     try:
-        import google.generativeai as genai
-        from src.core.config import settings
-
         logger.info("Transcribing %s (%d bytes)", file_name or ext, len(file_bytes))
         wav_bytes = _extract_audio_to_wav(file_bytes, ext)
         logger.info("Extracted WAV: %d bytes", len(wav_bytes))
@@ -95,18 +97,24 @@ def transcribe_media(file_bytes: bytes, ext: str, file_name: str = "") -> list[d
         audio_chunks = _split_wav(wav_bytes)
         logger.info("Split into %d chunk(s)", len(audio_chunks))
 
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        model = genai.GenerativeModel(model_name=settings.GEMINI_MODEL)
         pages = []
+        headers = {"X-Internal-API-Key": settings.INTERNAL_API_KEY}
+        ai_url = f"{settings.AI_SERVICE_URL.rstrip('/')}/internal/transcribe"
 
         for idx, chunk in enumerate(audio_chunks):
             page_number = idx + 1
             try:
-                response = model.generate_content([
-                    {"mime_type": "audio/wav", "data": chunk},
-                    "Transcribe this audio accurately in its original language. Return only the transcribed text.",
-                ])
-                text = response.text or ""
+                response = httpx.post(
+                    ai_url,
+                    headers=headers,
+                    json={
+                        "mime_type": "audio/wav",
+                        "audio_base64": base64.b64encode(chunk).decode("ascii"),
+                    },
+                    timeout=httpx.Timeout(180.0, connect=15.0),
+                )
+                response.raise_for_status()
+                text = response.json().get("text", "")
                 if text and text.strip():
                     pages.append({"page_number": page_number, "text": text.strip()})
                     logger.info("Chunk %d/%d: %d chars", page_number, len(audio_chunks), len(text))

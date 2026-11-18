@@ -65,7 +65,7 @@ class AdminCourseListResponse(BaseModel):
 class AiApiKeyCreate(BaseModel):
     api_key: str = Field(..., min_length=10)
     key_name: str = Field(..., min_length=1, max_length=100)
-    provider: str = Field(default="gemini", max_length=50)
+    provider: str = Field(default="gemini", max_length=50, pattern="^gemini$")
 
 
 class AiApiKeyResponse(BaseModel):
@@ -84,3 +84,14 @@ class AiApiKeyResponse(BaseModel):
 class AiApiKeyListResponse(BaseModel):
     items: list[AiApiKeyResponse]
     total: int
+
+
+class AiProviderSettingResponse(BaseModel):
+    provider: str
+    model_id: str
+    updated_at: datetime
+    synced: bool = True
+
+
+class AiProviderSettingUpdate(BaseModel):
+    model_id: str = Field(..., min_length=3, max_length=100, pattern=r"^gemini-[A-Za-z0-9._-]+$")

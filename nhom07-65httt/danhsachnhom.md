@@ -60,7 +60,7 @@ nhom07-65httt/
    cd nhom07-65httt/src
    cp .env.example .env
    ```
-   *(Cập nhật các khóa bảo mật `CHANGE_ME_*` như `DB_PASSWORD`, `MINIO_ROOT_*`, `SECRET_KEY`, `AI_KEY_ENCRYPTION_KEY`, `INTERNAL_API_KEY`, và thêm `GEMINI_API_KEY` nếu dùng AI).*
+   *(Cập nhật các khóa bảo mật `CHANGE_ME_*` như `DB_PASSWORD`, `MINIO_ROOT_*`, `SECRET_KEY`, `AI_KEY_ENCRYPTION_KEY`, `INTERNAL_API_KEY`; thêm Gemini API key qua Admin Key Vault sau khi triển khai).*
 2. **Build và khởi chạy toàn bộ cụm dịch vụ (`db`, `redis`, `qdrant`, `minio`, `ai`, `api`, `worker`, `web`):**
    ```bash
    docker compose up -d --build

@@ -1,5 +1,5 @@
 import { api, getAccessToken } from './client'
-import type { AuthUser, AuthResponse, DocumentItem, ChatSession, Citation, ChatMessage, ChatAskResponse, CourseChatMessage, SocialChatUser, SocialChatRoom, SocialChatMessage, Category, CourseMaterial, Course, Section, Lesson, Attachment, Quiz, Question, Answer, QuizAttempt, QuizStudent, QuizAttemptResult, WeaknessSummaryResponse, RemedialQuizResponse, LessonMindmapResponse, Assignment, AssignmentSubmission, Discussion, NotificationItem, WishlistItem, Announcement, Review, PaymentIntentResponse, Enrollment, MaterialProgressResponse, MaterialProgress, DashboardResponse, AudioSummaryResponse, AiApiKey, CourseDiscussionItem, Note } from './types'
+import type { AuthUser, AuthResponse, DocumentItem, ChatSession, Citation, ChatMessage, ChatAskResponse, CourseChatMessage, SocialChatUser, SocialChatRoom, SocialChatMessage, Category, CourseMaterial, Course, Section, Lesson, Attachment, Quiz, Question, Answer, QuizAttempt, QuizStudent, QuizAttemptResult, WeaknessSummaryResponse, RemedialQuizResponse, LessonMindmapResponse, Assignment, AssignmentSubmission, Discussion, NotificationItem, WishlistItem, Announcement, Review, PaymentIntentResponse, Enrollment, MaterialProgressResponse, MaterialProgress, DashboardResponse, AudioSummaryResponse, AiApiKey, AiProviderSetting, CourseDiscussionItem, Note } from './types'
 
 export const categoriesApi = {
   list: () => api.get<Category[]>('/categories'),
@@ -517,6 +517,8 @@ export const adminApi = {
   health: () => api.get('/admin/health'),
   listAiKeys: (provider?: string) =>
     api.get<{ items: AiApiKey[]; total: number }>('/admin/ai-keys', { params: provider ? { provider } : undefined }),
+  getAiSettings: () => api.get<AiProviderSetting>('/admin/ai-settings'),
+  updateAiSettings: (data: { model_id: string }) => api.put<AiProviderSetting>('/admin/ai-settings', data),
   createAiKey: (data: { api_key: string; key_name: string; provider?: string }) =>
     api.post<AiApiKey>('/admin/ai-keys', data),
   deleteAiKey: (id: string) => api.delete(`/admin/ai-keys/${id}`),

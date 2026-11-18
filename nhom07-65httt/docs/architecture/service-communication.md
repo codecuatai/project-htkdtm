@@ -189,7 +189,8 @@ Mọi request thiếu header hoặc sai khóa đều bị từ chối ngay với
 | `/study/flashcards/generate` | POST | Sinh bộ thẻ ghi nhớ mặt trước / mặt sau | `FlashcardGenerateRequest` (`context`, `set_name`, `count`) | `FlashcardGenerateResponse` |
 | `/study/essay/grade` | POST | Chấm bài tự luận đối chiếu tài liệu nguồn | `EssayGradeRequest` (`essay_text`, `document_id`, `context`) | `EssayGradeResponse` (`score`, `feedback`, `comparisons`) |
 | `/study/mindmap/generate` | POST | Sinh cây Markdown cho sơ đồ tư duy (Markmap) | `MindmapGenerateRequest` (`content`, `title`) | `MindmapGenerateResponse` (`markdown_tree`) |
-| `/internal/keys/sync` | POST | Đồng bộ danh sách khóa AI API đang bật | `{"keys": [...]}` | `{"synced": true, "count": int}` |
+| `/internal/config/sync` | POST | Đồng bộ Gemini API keys đang bật và model từ Admin database | `{"keys": [...], "model_id": "gemini-3.5-flash-lite"}` | `{"synced": true, "count": int, "model_id": str}` |
+| `/internal/transcribe` | POST | Phiên âm một audio chunk bằng key/model Gemini do Admin quản lý | `{"mime_type": "audio/wav", "audio_base64": "..."}` | `{"text": str}` |
 | `/internal/keys/status` | GET | Lấy trạng thái xoay vòng khóa & số lượt dùng | — | Danh sách khóa đã che (`masked`) & bộ đếm |
 
 ### 3.3. Hợp Đồng Truy Vấn RAG Nội Bộ
