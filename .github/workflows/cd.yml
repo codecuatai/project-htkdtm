@@ -72,7 +72,7 @@ jobs:
         run: |
           echo "$HEROKU_API_KEY" | docker login --username=_ --password-stdin registry.heroku.com
 
-      - name: Build & Push Docker image (${{ matrix.target }})
+      - name: Build Docker image (${{ matrix.target }})
         uses: docker/build-push-action@v6
         with:
           context: nhom07-65httt/src
@@ -81,10 +81,13 @@ jobs:
           platforms: linux/amd64
           provenance: false
           sbom: false
-          push: true
+          load: true
           tags: registry.heroku.com/${{ env.HEROKU_APP_NAME }}/${{ matrix.process_type }}
           cache-from: type=gha,scope=heroku-${{ matrix.target }}
           cache-to: type=gha,mode=max,scope=heroku-${{ matrix.target }}
+
+      - name: Push Docker image to Heroku Container Registry
+        run: docker push "registry.heroku.com/${HEROKU_APP_NAME}/${{ matrix.process_type }}"
 
       - name: Release container on Heroku
         run: |
