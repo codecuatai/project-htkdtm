@@ -11,11 +11,11 @@ import {
 } from './theme-context'
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('system')
+  const [theme, setThemeState] = useState<Theme>('light')
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('light')
 
   useEffect(() => {
-    const stored = (localStorage.getItem(THEME_STORAGE_KEY) as Theme | null) || 'system'
+    const stored = (localStorage.getItem(THEME_STORAGE_KEY) as Theme | null) || 'light'
     const resolved = stored === 'system' ? getSystemTheme() : stored
     // Sync client preference after mount so SSR and initial hydration markup match.
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -25,7 +25,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
     const handleSystemChange = () => {
-      const current = (localStorage.getItem(THEME_STORAGE_KEY) as Theme | null) || 'system'
+      const current = (localStorage.getItem(THEME_STORAGE_KEY) as Theme | null) || 'light'
       if (current === 'system') {
         const next = getSystemTheme()
         setResolvedTheme(next)
