@@ -112,13 +112,11 @@ jobs:
     environment: dev
     outputs:
       url: ${{ steps.deploy.outputs.url }}
-    defaults:
-      run:
-        working-directory: nhom07-65httt/src/frontend
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      INTERNAL_API_URL: https://learninghubs-api-3fdfcd0a3a60.herokuapp.com
     steps:
       - uses: actions/checkout@v4
         with:
