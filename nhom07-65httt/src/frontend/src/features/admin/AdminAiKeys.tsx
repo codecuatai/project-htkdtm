@@ -14,7 +14,8 @@ import {
   Zap,
   Cpu,
   Search,
-  CheckCircle2
+  CheckCircle2,
+  Save
 } from 'lucide-react'
 import { adminApi, type AiApiKey } from '../../services/api'
 import { Card } from '../../components/ui/Card'
@@ -24,26 +25,22 @@ import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/useToast'
 
 interface ProviderConfig {
-  id: string
   label: string
   badgeBg: string
   badgeText: string
   badgeBorder: string
   icon: typeof Bot
-  models: string
   placeholder: string
   namePlaceholder: string
 }
 
 const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
   gemini: {
-    id: 'gemini',
     label: 'Google Gemini',
     badgeBg: 'bg-indigo-50 dark:bg-indigo-950/40',
     badgeText: 'text-indigo-700 dark:text-indigo-300',
     badgeBorder: 'border-indigo-200 dark:border-indigo-800',
     icon: Sparkles,
-    models: 'gemini-2.5-flash, gemini-2.0-flash',
     placeholder: 'AIzaSy... hoặc AQ.Ab8...',
     namePlaceholder: 'VD: Gemini Flash Key 1',
   },
@@ -55,10 +52,12 @@ export function AdminAiKeys() {
   const [loading, setLoading] = useState(false)
   const [selectedTab, setSelectedTab] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [modelId, setModelId] = useState('gemini-3.5-flash-lite')
+  const [savedModelId, setSavedModelId] = useState('gemini-3.5-flash-lite')
+  const [savingModel, setSavingModel] = useState(false)
 
   // Modal State
   const [modalOpen, setModalOpen] = useState(false)
-  const [providerInput, setProviderInput] = useState('gemini')
   const [nameInput, setNameInput] = useState('')
   const [keyInput, setKeyInput] = useState('')
   const [showPlainKey, setShowPlainKey] = useState(false)
@@ -67,12 +66,15 @@ export function AdminAiKeys() {
   // Initial load without synchronous setState in effect
   useEffect(() => {
     let ignore = false
-    adminApi.listAiKeys()
-      .then((res) => {
-        if (!ignore) setAiKeys(res.data.items || [])
+    Promise.all([adminApi.listAiKeys('gemini'), adminApi.getAiSettings()])
+      .then(([keysRes, settingsRes]) => {
+        if (ignore) return
+        setAiKeys(keysRes.data.items || [])
+        setModelId(settingsRes.data.model_id)
+        setSavedModelId(settingsRes.data.model_id)
       })
       .catch(() => {
-        if (!ignore) toast({ type: 'error', title: 'Lỗi', message: 'Không thể tải danh sách AI API Keys' })
+        if (!ignore) toast({ type: 'error', title: 'Lỗi', message: 'Không thể tải cấu hình Gemini' })
       })
       .finally(() => {
         if (!ignore) setLoading(false)
@@ -86,12 +88,39 @@ export function AdminAiKeys() {
   const handleRefresh = async () => {
     setLoading(true)
     try {
-      const res = await adminApi.listAiKeys()
-      setAiKeys(res.data.items || [])
+      const [keysRes, settingsRes] = await Promise.all([adminApi.listAiKeys('gemini'), adminApi.getAiSettings()])
+      setAiKeys(keysRes.data.items || [])
+      setModelId(settingsRes.data.model_id)
+      setSavedModelId(settingsRes.data.model_id)
     } catch {
       toast({ type: 'error', title: 'Lỗi', message: 'Không thể tải danh sách AI API Keys' })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleSaveModel = async () => {
+    const cleanModelId = modelId.trim()
+    if (!/^gemini-[A-Za-z0-9._-]+$/.test(cleanModelId)) {
+      toast({ type: 'error', title: 'Model không hợp lệ', message: 'Model ID phải có dạng gemini-...' })
+      return
+    }
+    setSavingModel(true)
+    try {
+      const response = await adminApi.updateAiSettings({ model_id: cleanModelId })
+      setModelId(response.data.model_id)
+      setSavedModelId(response.data.model_id)
+      toast({
+        type: response.data.synced === false ? 'error' : 'success',
+        title: response.data.synced === false ? 'Đã lưu, chưa đồng bộ' : 'Đã cập nhật model',
+        message: response.data.synced === false
+          ? 'Model đã lưu trong database. AI service sẽ nhận cấu hình khi kết nối lại.'
+          : 'Model mới áp dụng cho chatbot và phiên âm audio.',
+      })
+    } catch {
+      toast({ type: 'error', title: 'Lỗi', message: 'Không thể lưu model Gemini' })
+    } finally {
+      setSavingModel(false)
     }
   }
 
@@ -131,7 +160,7 @@ export function AdminAiKeys() {
     setSavingKey(true)
     try {
       const res = await adminApi.createAiKey({
-        provider: providerInput.toLowerCase().trim(),
+        provider: 'gemini',
         key_name: nameInput.trim(),
         api_key: keyInput.trim(),
       })
@@ -177,7 +206,7 @@ export function AdminAiKeys() {
     return { total, active, providers, totalCalls }
   }, [aiKeys])
 
-  const currentProviderConfig = PROVIDER_CONFIGS[providerInput] || PROVIDER_CONFIGS.other
+  const currentProviderConfig = PROVIDER_CONFIGS.gemini
 
   return (
     <div className="space-y-6">
@@ -217,6 +246,35 @@ export function AdminAiKeys() {
           </Button>
         </div>
       </div>
+
+      <Card className="p-4 border border-indigo-200/70 dark:border-indigo-900/50 bg-white dark:bg-slate-900/50">
+        <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+          <div className="flex-1">
+            <label htmlFor="gemini-model-id" className="block text-sm font-semibold text-slate-800 dark:text-slate-100">
+              Model Gemini đang dùng
+            </label>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-2">
+              Áp dụng cho chatbot và phiên âm audio. Mặc định: gemini-3.5-flash-lite.
+            </p>
+            <input
+              id="gemini-model-id"
+              value={modelId}
+              onChange={(event) => setModelId(event.target.value)}
+              placeholder="gemini-3.5-flash-lite"
+              maxLength={100}
+              className="w-full sm:max-w-md px-3 py-2 text-sm font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+            />
+          </div>
+          <Button
+            onClick={handleSaveModel}
+            disabled={savingModel || !modelId.trim() || modelId.trim() === savedModelId}
+            className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
+          >
+            <Save className="w-4 h-4" />
+            {savingModel ? 'Đang lưu...' : 'Lưu model'}
+          </Button>
+        </div>
+      </Card>
 
       {/* Metrics Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -319,7 +377,6 @@ export function AdminAiKeys() {
                 <th className="px-4 py-3">Nhà Cung Cấp</th>
                 <th className="px-4 py-3">Tên Gợi Nhớ</th>
                 <th className="px-4 py-3">Khóa Bảo Mật (Đã Ẩn)</th>
-                <th className="px-4 py-3">Model Đề Xuất</th>
                 <th className="px-4 py-3 text-center">Số Lần Gọi</th>
                 <th className="px-4 py-3 text-center">Trạng Thái</th>
                 <th className="px-4 py-3 text-right">Hành Động</th>
@@ -328,14 +385,14 @@ export function AdminAiKeys() {
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {loading && aiKeys.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-slate-400">
+                  <td colSpan={6} className="px-4 py-12 text-center text-slate-400">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-indigo-500" />
                     Đang tải danh sách khóa...
                   </td>
                 </tr>
               ) : filteredKeys.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-slate-400">
+                  <td colSpan={6} className="px-4 py-12 text-center text-slate-400">
                     <Key className="w-8 h-8 mx-auto mb-2 opacity-30" />
                     <p className="font-medium text-slate-600 dark:text-slate-300">Không tìm thấy API Key nào</p>
                     <p className="text-xs text-slate-400 mt-0.5">
@@ -369,13 +426,6 @@ export function AdminAiKeys() {
                           <span className="text-slate-400 dark:text-slate-500 tracking-widest font-bold select-none">••••••••••••••••</span>
                           <span className="text-[10px] text-slate-400 bg-slate-200/60 dark:bg-slate-700/60 px-1.5 py-0.2 rounded select-none font-sans font-medium">Đã bảo vệ</span>
                         </div>
-                      </td>
-
-                      {/* Recommended Models */}
-                      <td className="px-4 py-3.5 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
-                        <span className="inline-block max-w-[200px] truncate" title={pConfig.models}>
-                          {pConfig.models}
-                        </span>
                       </td>
 
                       {/* Usage Count */}
@@ -441,26 +491,7 @@ export function AdminAiKeys() {
       >
         <form onSubmit={handleCreateKey} className="space-y-4 pt-1">
           <div className="p-3 bg-indigo-50/70 dark:bg-indigo-950/30 rounded-lg border border-indigo-100 dark:border-indigo-900/50 text-xs text-indigo-700 dark:text-indigo-300 leading-relaxed">
-            Khóa sẽ được lưu an toàn vào cơ sở dữ liệu và tự động che mờ (chỉ hiển thị 6 ký tự đầu và 4 ký tự cuối). Hệ thống sẽ tự động đưa khóa vào pool xoay vòng (Round-Robin) của nhà cung cấp đã chọn.
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold uppercase text-slate-600 dark:text-slate-400 mb-1.5">
-              Nhà Cung Cấp (Provider)
-            </label>
-            <select
-              value={providerInput}
-              onChange={(e) => {
-                setProviderInput(e.target.value)
-                const cfg = PROVIDER_CONFIGS[e.target.value]
-                if (cfg && !nameInput) {
-                  setNameInput(cfg.namePlaceholder)
-                }
-              }}
-              className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
-            >
-              <option value="gemini">Google Gemini (Gemini 2.5 Flash / 2.0 Flash)</option>
-            </select>
+            Khóa sẽ được mã hóa trong cơ sở dữ liệu. Sau khi lưu, giá trị đầy đủ không được hiển thị lại; khóa đang bật sẽ được đồng bộ vào vòng xoay của Gemini.
           </div>
 
           <div>

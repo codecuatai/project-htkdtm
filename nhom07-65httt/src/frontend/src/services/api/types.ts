@@ -543,6 +543,13 @@ export interface AiApiKey {
   created_at: string | null
 }
 
+export interface AiProviderSetting {
+  provider: string
+  model_id: string
+  updated_at: string
+  synced?: boolean
+}
+
 export interface CourseDiscussionItem {
   id: string
   lesson_id: string

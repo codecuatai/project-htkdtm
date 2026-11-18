@@ -1,6 +1,9 @@
 """Learning Hub AI Service - Main FastAPI Application."""
 
+import base64
+import binascii
 import os
+import re
 import secrets
 from contextlib import asynccontextmanager
 
@@ -8,8 +11,9 @@ import json as _json
 from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.gzip import GZipMiddleware
+from starlette.concurrency import run_in_threadpool
 
-from src.core.clients import configure_gemini, get_qdrant_client
+from src.core.clients import get_qdrant_client
 from src.core.config import settings
 from src.core.rate_limit import enforce_chat_rate_limit
 from src.schemas.requests import (
@@ -54,10 +58,6 @@ async def lifespan(app: FastAPI):
         get_qdrant_client()
     except Exception as exc:
         log.warning("Qdrant init deferred: %s", exc)
-    try:
-        configure_gemini()
-    except Exception as exc:
-        log.warning("Gemini init deferred: %s", exc)
     try:
         workflow = build_graph()
     except Exception as exc:
@@ -482,14 +482,18 @@ async def generate_mindmap_endpoint(
     return MindmapGenerateResponse(markdown_tree=tree)
 
 
-@app.post("/internal/keys/sync")
-async def sync_keys(payload: dict, _=Depends(verify_internal_key)):
-    """Sync API keys from gateway into in-memory key rotator."""
+@app.post("/internal/config/sync")
+async def sync_ai_config(payload: dict, _=Depends(verify_internal_key)):
+    """Replace runtime Gemini keys and model with the Admin database values."""
     from src.llm.key_rotator import GeminiKeyRotator
+    from src.llm.runtime_config import set_gemini_model
 
     keys_list = payload.get("keys", [])
     if not isinstance(keys_list, list) or len(keys_list) > 100:
         raise HTTPException(status_code=400, detail="Invalid key list")
+    model_id = payload.get("model_id")
+    if not isinstance(model_id, str) or not re.fullmatch(r"gemini-[A-Za-z0-9._-]{1,93}", model_id):
+        raise HTTPException(status_code=400, detail="Invalid Gemini model id")
     keys_list = [
         item for item in keys_list
         if isinstance(item, dict)
@@ -497,7 +501,8 @@ async def sync_keys(payload: dict, _=Depends(verify_internal_key)):
         and 16 <= len(item["api_key"].strip()) <= 512
     ]
     GeminiKeyRotator.get_instance().sync_keys(keys_list)
-    return {"synced": True, "count": len(keys_list)}
+    set_gemini_model(model_id)
+    return {"synced": True, "count": len(keys_list), "model_id": model_id}
 
 
 @app.get("/internal/keys/status")
@@ -506,6 +511,32 @@ async def get_keys_status(_=Depends(verify_internal_key)):
     from src.llm.key_rotator import GeminiKeyRotator
 
     return GeminiKeyRotator.get_instance().get_status()
+
+
+@app.post("/internal/transcribe")
+async def transcribe_audio_chunk(payload: dict, _=Depends(verify_internal_key)):
+    """Transcribe an audio chunk using centrally managed Gemini credentials."""
+    encoded_audio = payload.get("audio_base64")
+    mime_type = payload.get("mime_type", "audio/wav")
+    if not isinstance(encoded_audio, str) or len(encoded_audio) > 25 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Audio chunk is too large")
+    if mime_type != "audio/wav":
+        raise HTTPException(status_code=400, detail="Only audio/wav is supported")
+    try:
+        audio_bytes = base64.b64decode(encoded_audio, validate=True)
+    except (binascii.Error, ValueError):
+        raise HTTPException(status_code=400, detail="Invalid audio payload") from None
+    if not audio_bytes or len(audio_bytes) > 18 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Audio chunk is empty or too large")
+
+    from src.llm.gemini_client import transcribe_audio
+    try:
+        text = await run_in_threadpool(transcribe_audio, audio_bytes, mime_type)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail="No active Gemini API key is configured") from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail="Gemini transcription failed") from exc
+    return {"text": text}
 
 
 if __name__ == "__main__":

@@ -43,24 +43,12 @@ class AIKeyRotator:
     def __init__(self):
         self.keys: list[KeyItem] = []
         self._current_indices: dict[str, int] = {}
-        self._load_from_settings()
 
     @classmethod
     def get_instance(cls) -> "AIKeyRotator":
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance
-
-    def _load_from_settings(self):
-        from src.core.config import settings
-        # Load default Gemini keys
-        raw_gemini = settings.GEMINI_API_KEY
-        if raw_gemini:
-            keys = [k.strip() for k in raw_gemini.replace(",", " ").split() if k.strip()]
-            for i, k in enumerate(keys):
-                self.add_key(k, key_name=f"Config Gemini {i+1}", provider="gemini")
-
-        logger.info("Initialized AIKeyRotator with %d keys from settings", len(self.keys))
 
     def add_key(
         self,
@@ -115,10 +103,9 @@ class AIKeyRotator:
 
             new_keys.append(item)
 
-        if new_keys:
-            self.keys = new_keys
-            self._current_indices.clear()
-            logger.info("Synced %d keys into AIKeyRotator", len(self.keys))
+        self.keys = new_keys
+        self._current_indices.clear()
+        logger.info("Synced %d keys into AIKeyRotator", len(self.keys))
 
     def get_next_key(self, provider: str = "gemini") -> str:
         """Get the next available active API Key for the given provider via Round-Robin with cooldown handling."""
@@ -136,9 +123,6 @@ class AIKeyRotator:
                 soonest.cooldown_until = 0.0
                 available = [soonest]
             else:
-                from src.core.config import settings
-                if provider == "gemini" and settings.GEMINI_API_KEY:
-                    return settings.GEMINI_API_KEY.split(",")[0].strip()
                 raise RuntimeError(f"No active {provider.upper()} API keys configured in pool.")
 
         # Round Robin selection for this provider

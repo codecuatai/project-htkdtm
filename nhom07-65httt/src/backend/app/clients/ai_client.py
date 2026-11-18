@@ -141,11 +141,15 @@ class AiClient:
         response.raise_for_status()
         return response.json()
 
-    async def sync_keys(self, keys: list[dict[str, Any]]) -> dict[str, Any]:
-        """Synchronize active AI API keys to the AI service."""
+    async def sync_config(self, keys: list[dict[str, Any]], model_id: str) -> dict[str, Any]:
+        """Synchronize active AI keys and provider model to the AI service."""
         headers = {"X-Internal-API-Key": settings.INTERNAL_API_KEY}
         try:
-            response = await self.client.post("/internal/keys/sync", json={"keys": keys}, headers=headers)
+            response = await self.client.post(
+                "/internal/config/sync",
+                json={"keys": keys, "model_id": model_id},
+                headers=headers,
+            )
             response.raise_for_status()
             return response.json()
         except Exception:

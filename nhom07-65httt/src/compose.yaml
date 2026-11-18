@@ -80,8 +80,6 @@ services:
       QDRANT_HOST: qdrant
       REDIS_URL: redis://redis:6379/0
       INTERNAL_API_KEY: ${INTERNAL_API_KEY:?Set INTERNAL_API_KEY in .env}
-      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
     depends_on:
       redis:
         condition: service_healthy
@@ -163,8 +161,6 @@ services:
       QDRANT_HOST: qdrant
       AI_SERVICE_URL: http://ai:8001
       INTERNAL_API_KEY: ${INTERNAL_API_KEY:?Set INTERNAL_API_KEY in .env}
-      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
     depends_on:
       db:
         condition: service_healthy

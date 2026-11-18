@@ -97,7 +97,7 @@ Mở tệp `src/.env` và cập nhật **bắt buộc** toàn bộ các giá tr�
 | `INTERNAL_API_KEY` | Khóa xác thực nội bộ (tối thiểu **16 ký tự**) | Dùng cho header `X-Internal-API-Key` tới `ai/` |
 
 **Các biến tùy chọn (điền khi cần dùng tính năng tương ứng):**
-- **AI LLM:** `GEMINI_API_KEY` *(hoặc thêm trực tiếp qua giao diện Admin Key Vault)*.
+- **AI LLM:** Thêm Gemini API key và chọn model trong Admin → Khóa API & AI. Không cần đặt `GEMINI_API_KEY` hoặc `GEMINI_MODEL` trong môi trường chạy.
 - **Đăng nhập OAuth:** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET`, `NEXT_PUBLIC_FACEBOOK_APP_ID`.
 - **Thanh toán & Email:** `VNPAY_*`, `MOMO_*`, `SMTP_*`.
 - **Khởi tạo tài khoản Admin:** `ADMIN_PASSWORD` (sử dụng khi chạy script `app.core.init_db`).
