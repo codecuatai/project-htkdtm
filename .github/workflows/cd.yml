@@ -81,13 +81,14 @@ jobs:
           platforms: linux/amd64
           provenance: false
           sbom: false
-          load: true
-          tags: registry.heroku.com/${{ env.HEROKU_APP_NAME }}/${{ matrix.process_type }}
+          outputs: type=docker,dest=/tmp/learninghubs-${{ matrix.target }}.tar,name=registry.heroku.com/${{ env.HEROKU_APP_NAME }}/${{ matrix.process_type }},oci-mediatypes=false
           cache-from: type=gha,scope=heroku-${{ matrix.target }}
           cache-to: type=gha,mode=max,scope=heroku-${{ matrix.target }}
 
       - name: Push Docker image to Heroku Container Registry
-        run: docker push "registry.heroku.com/${HEROKU_APP_NAME}/${{ matrix.process_type }}"
+        run: |
+          docker load --input "/tmp/learninghubs-${{ matrix.target }}.tar"
+          docker push "registry.heroku.com/${HEROKU_APP_NAME}/${{ matrix.process_type }}"
 
       - name: Release container on Heroku
         run: |
