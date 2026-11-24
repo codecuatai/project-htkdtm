@@ -25,7 +25,7 @@ limiter = Limiter(
     key_func=_get_real_ip,
     default_limits=["100/minute"],
     storage_uri=_get_storage_uri(),
-    storage_options={"socket_connect_timeout": 2, "socket_timeout": 2},
+    storage_options={"socket_connect_timeout": 5, "socket_timeout": 5},
     # Fall back to in-memory limiting if Redis is temporarily unavailable
     # so auth/API endpoints do not fail with HTTP 500.
     in_memory_fallback_enabled=True,

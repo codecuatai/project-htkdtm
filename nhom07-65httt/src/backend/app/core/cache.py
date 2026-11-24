@@ -18,8 +18,8 @@ def get_redis_client() -> aioredis.Redis:
         kwargs: dict[str, Any] = {
             "decode_responses": True,
             "max_connections": 50,
-            "socket_connect_timeout": 2,
-            "socket_timeout": 2,
+            "socket_connect_timeout": 5,
+            "socket_timeout": 5,
         }
         if settings.REDIS_URL.startswith("rediss://") and "ssl_cert_reqs" not in settings.REDIS_URL:
             kwargs["ssl_cert_reqs"] = None

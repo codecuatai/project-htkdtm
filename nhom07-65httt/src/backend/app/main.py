@@ -65,18 +65,19 @@ async def lifespan(app: FastAPI):
     except Exception as exc:
         logger.warning("Could not seed default categories on startup: %s", exc)
 
-    # Synchronize AI keys to AI service on startup
-    try:
-        from app.api.v1.admin import _sync_active_keys_to_ai_service
-        async with AsyncSessionLocal() as db:
-            await _sync_active_keys_to_ai_service(db)
-            logger.info("Synchronized active AI API keys to AI service on startup")
-    except Exception as exc:
-        logger.warning("Could not sync active AI API keys on startup: %s", exc)
-
-    # Periodic background task to persist AI key usage metrics to DB
+    # Periodic background task to sync active AI keys on startup and persist usage metrics to DB
     import asyncio
     async def _periodic_key_usage_sync():
+        try:
+            from app.api.v1.admin import _sync_active_keys_to_ai_service
+            async with AsyncSessionLocal() as db:
+                await _sync_active_keys_to_ai_service(db)
+                logger.info("Synchronized active AI API keys to AI service on startup")
+        except asyncio.CancelledError:
+            return
+        except Exception as exc:
+            logger.warning("Could not sync active AI API keys on startup: %s", exc)
+
         while True:
             try:
                 await asyncio.sleep(60)
