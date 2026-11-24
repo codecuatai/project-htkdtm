@@ -25,9 +25,11 @@ limiter = Limiter(
     key_func=_get_real_ip,
     default_limits=["100/minute"],
     storage_uri=_get_storage_uri(),
-    # Never silently fall back to per-process limits; that multiplies the
-    # effective brute-force/quota budget across workers.
-    in_memory_fallback_enabled=False,
+    storage_options={"socket_connect_timeout": 2, "socket_timeout": 2},
+    # Fall back to in-memory limiting if Redis is temporarily unavailable
+    # so auth/API endpoints do not fail with HTTP 500.
+    in_memory_fallback_enabled=True,
+    swallow_errors=True,
 )
 
 
