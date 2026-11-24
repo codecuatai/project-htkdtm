@@ -206,53 +206,47 @@ export function LandingPage() {
           {/* Brand Logo */}
           <div
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex items-center gap-3 cursor-pointer group"
+            className="flex items-center gap-2.5 cursor-pointer group shrink-0"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary via-indigo-600 to-accent text-primary-foreground shadow-sm shadow-primary/25 group-hover:scale-105 transition-transform">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary via-indigo-600 to-accent text-primary-foreground shadow-sm shadow-primary/25 group-hover:scale-105 transition-transform shrink-0">
               <Zap className="h-5 w-5 fill-current" />
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-black tracking-tight text-foreground">Learning Hub</span>
-              <span className="px-2 py-0.5 rounded-full text-3xs font-extrabold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
-                AI v2.0
-              </span>
-            </div>
+            <span className="text-lg sm:text-xl font-black tracking-tight text-foreground whitespace-nowrap">
+              Learning Hub
+            </span>
           </div>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center gap-7 text-sm font-semibold text-foreground/75">
-            <button onClick={() => scrollToSection('features')} className="hover:text-primary transition-colors cursor-pointer">
-              Tính năng AI
+          <nav className="hidden lg:flex items-center gap-5 xl:gap-7 text-sm font-semibold text-foreground/75">
+            <button onClick={() => scrollToSection('features')} className="hover:text-primary transition-colors cursor-pointer whitespace-nowrap">
+              Tính năng
             </button>
-            <button onClick={() => scrollToSection('live-studio')} className="hover:text-primary transition-colors cursor-pointer">
-              Trải nghiệm Studio
+            <button onClick={() => scrollToSection('live-studio')} className="hover:text-primary transition-colors cursor-pointer whitespace-nowrap">
+              Studio
             </button>
-            <button onClick={() => scrollToSection('how-it-works')} className="hover:text-primary transition-colors cursor-pointer">
-              Cách hoạt động
+            <button onClick={() => scrollToSection('how-it-works')} className="hover:text-primary transition-colors cursor-pointer whitespace-nowrap">
+              Quy trình
             </button>
-            <button onClick={() => scrollToSection('roles')} className="hover:text-primary transition-colors cursor-pointer">
-              Không gian vai trò
+            <button onClick={() => scrollToSection('roles')} className="hover:text-primary transition-colors cursor-pointer whitespace-nowrap">
+              Vai trò
             </button>
-            <button onClick={() => scrollToSection('comparison')} className="hover:text-primary transition-colors cursor-pointer">
-              So sánh
-            </button>
-            <button onClick={() => scrollToSection('faq')} className="hover:text-primary transition-colors cursor-pointer">
+            <button onClick={() => scrollToSection('faq')} className="hover:text-primary transition-colors cursor-pointer whitespace-nowrap">
               Hỏi đáp
             </button>
           </nav>
 
           {/* Right Action Buttons */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <ThemeToggle />
             <button
               onClick={() => router.push('/login')}
-              className="text-sm font-bold text-foreground/80 hover:text-primary px-3 py-2 rounded-xl transition-colors cursor-pointer"
+              className="text-sm font-bold text-foreground/80 hover:text-primary px-3 py-2 rounded-xl transition-colors cursor-pointer whitespace-nowrap"
             >
               Đăng nhập
             </button>
             <Button
               onClick={() => router.push('/welcome')}
-              className="h-9 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-primary text-primary-foreground shadow-sm hover:opacity-95 transition-all"
+              className="h-9 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-primary text-primary-foreground shadow-sm hover:opacity-95 transition-all whitespace-nowrap shrink-0"
             >
               <span>Trải nghiệm ngay</span>
               <ArrowRight className="h-3.5 w-3.5 ml-1 hidden sm:inline" />
@@ -271,19 +265,16 @@ export function LandingPage() {
         {mobileMenuOpen && (
           <div className="lg:hidden border-t border-border bg-surface-elevated px-4 pt-3 pb-5 space-y-2 animate-fade-in shadow-lift">
             <button onClick={() => scrollToSection('features')} className="block w-full text-left py-2 text-sm font-semibold text-foreground">
-              Tính năng AI
+              Tính năng
             </button>
             <button onClick={() => scrollToSection('live-studio')} className="block w-full text-left py-2 text-sm font-semibold text-foreground">
-              Trải nghiệm Studio
+              Studio
             </button>
             <button onClick={() => scrollToSection('how-it-works')} className="block w-full text-left py-2 text-sm font-semibold text-foreground">
-              Cách hoạt động
+              Quy trình
             </button>
             <button onClick={() => scrollToSection('roles')} className="block w-full text-left py-2 text-sm font-semibold text-foreground">
-              Không gian vai trò
-            </button>
-            <button onClick={() => scrollToSection('comparison')} className="block w-full text-left py-2 text-sm font-semibold text-foreground">
-              So sánh
+              Vai trò
             </button>
             <button onClick={() => scrollToSection('faq')} className="block w-full text-left py-2 text-sm font-semibold text-foreground">
               Hỏi đáp
