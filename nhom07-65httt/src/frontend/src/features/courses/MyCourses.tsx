@@ -143,7 +143,7 @@ export function MyCourses() {
 
       <Card padding="none" className="overflow-hidden">
         <div className="border-b border-border p-4">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-center 2xl:justify-between">
             <FilterPills activeTab={activeTab} counts={counts} onChange={setActiveTab} />
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <Input
@@ -152,14 +152,14 @@ export function MyCourses() {
                 placeholder="Tìm kiếm khóa học của bạn..."
                 prefixIcon={<Search className="h-4 w-4" />}
                 aria-label="Tìm kiếm khóa học đã ghi danh"
-                className="sm:w-80"
+                className="sm:w-72"
               />
               <label className="sr-only" htmlFor="course-sort">Sắp xếp khóa học</label>
               <select
                 id="course-sort"
                 value={sortBy}
                 onChange={(event) => setSortBy(event.target.value as CourseSort)}
-                className="h-10 rounded-md border border-input bg-surface-elevated px-3 text-sm text-foreground shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="h-10 shrink-0 whitespace-nowrap rounded-md border border-input bg-surface-elevated px-3 text-sm text-foreground shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
                 <option value="recent">Mới ghi danh gần đây</option>
                 <option value="progress-desc">Tiến độ: Cao đến thấp</option>
