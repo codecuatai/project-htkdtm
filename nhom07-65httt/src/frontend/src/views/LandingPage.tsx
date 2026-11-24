@@ -202,16 +202,16 @@ export function LandingPage() {
     <div className="min-h-screen bg-background text-foreground font-body selection:bg-primary/20 selection:text-foreground">
       {/* 1. STICKY NAVBAR */}
       <header className="sticky top-0 z-50 w-full border-b border-border/70 bg-background/80 backdrop-blur-xl transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-4">
           {/* Brand Logo */}
           <div
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex items-center gap-2.5 cursor-pointer group shrink-0"
+            className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group shrink-0"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary via-indigo-600 to-accent text-primary-foreground shadow-sm shadow-primary/25 group-hover:scale-105 transition-transform shrink-0">
-              <Zap className="h-5 w-5 fill-current" />
+            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary via-indigo-600 to-accent text-primary-foreground shadow-sm shadow-primary/25 group-hover:scale-105 transition-transform shrink-0">
+              <Zap className="h-4 w-4 sm:h-5 sm:w-5 fill-current" />
             </div>
-            <span className="text-lg sm:text-xl font-black tracking-tight text-foreground whitespace-nowrap">
+            <span className="text-base sm:text-xl font-black tracking-tight text-foreground whitespace-nowrap">
               Learning Hub
             </span>
           </div>
@@ -246,9 +246,10 @@ export function LandingPage() {
             </button>
             <Button
               onClick={() => router.push('/welcome')}
-              className="h-9 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-semibold bg-primary text-primary-foreground shadow-sm hover:opacity-95 transition-all whitespace-nowrap shrink-0"
+              className="h-8 sm:h-9 px-2.5 sm:px-4 rounded-xl text-xs sm:text-sm font-semibold bg-primary text-primary-foreground shadow-sm hover:opacity-95 transition-all whitespace-nowrap shrink-0"
             >
-              <span>Trải nghiệm ngay</span>
+              <span className="sm:hidden">Bắt đầu</span>
+              <span className="hidden sm:inline">Trải nghiệm ngay</span>
               <ArrowRight className="h-3.5 w-3.5 ml-1 hidden sm:inline" />
             </Button>
             <button
@@ -264,7 +265,11 @@ export function LandingPage() {
 
         {/* Mobile Nav Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-border bg-surface-elevated px-4 pt-3 pb-5 space-y-2 animate-fade-in shadow-lift">
+          <div
+            role="dialog"
+            aria-label="Menu điều hướng"
+            className="lg:hidden border-t border-border bg-surface-elevated px-4 pt-3 pb-5 space-y-2 animate-fade-in shadow-lift"
+          >
             <button onClick={() => scrollToSection('features')} className="block w-full text-left py-2 text-sm font-semibold text-foreground">
               Tính năng
             </button>
