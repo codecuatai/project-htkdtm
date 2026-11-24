@@ -18,6 +18,7 @@ Hướng dẫn cài đặt, Docker Compose và biến môi trường được đ
 - [Quản trị hệ thống](api/admin.md)
 
 ## Hướng Dẫn & Tham Khảo (`guides/`)
+- [Hướng dẫn Commit & Tạo Pull Request vào nhánh `dev`](guides/git-commit-and-pr-guide.md)
 - [Tài khoản mẫu & phân quyền](guides/demo-accounts.md)
 - [Thuật ngữ kỹ thuật](guides/glossary.md)
 - [Hướng dẫn Học viên](guides/student-guide.md)
