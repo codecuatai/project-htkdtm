@@ -191,7 +191,9 @@ async def list_documents(
         page_size=pagination["page_size"],
     )
     
-    await cache.set(cache_key, response_data.model_dump(mode="json"), ttl=settings.REDIS_CACHE_TTL_DOCS)
+    has_in_flight = any(d.status in ("pending", "processing") for d in docs)
+    if not has_in_flight:
+        await cache.set(cache_key, response_data.model_dump(mode="json"), ttl=settings.REDIS_CACHE_TTL_DOCS)
     return response_data
 
 
@@ -206,6 +208,8 @@ async def get_document(
     doc = await repo.get_by_id(doc_id)
     if not doc or doc.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
+    if doc.status in ("ready", "failed"):
+        await RedisCache().delete_pattern(f"cache:docs:{current_user.id}:*")
     return _to_response(doc)
 
 
