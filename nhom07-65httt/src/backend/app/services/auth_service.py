@@ -297,15 +297,42 @@ class AuthService:
     def build_refresh_token(user_id: UUID, token_version: int = 0) -> str:
         return create_refresh_token({"sub": str(user_id), "ver": token_version})
 
-    @staticmethod
-    async def invalidate_refresh_token(jti: str) -> bool:
-        """Blacklist a refresh token by its jti claim."""
+    # Bounded in-memory fallback for refresh-token revocation when Redis is unavailable
+    _local_revoked_jtis: dict[str, float] = {}
+
+    @classmethod
+    def _prune_local_revoked(cls) -> None:
+        import time
+        now = time.time()
+        expired = [k for k, exp in cls._local_revoked_jtis.items() if exp <= now]
+        for k in expired:
+            cls._local_revoked_jtis.pop(k, None)
+
+    @classmethod
+    async def is_refresh_token_revoked(cls, jti: str) -> bool:
+        """Check whether a refresh token jti has been revoked, with in-memory fallback."""
         try:
             redis = get_redis_client()
-            ttl_seconds = settings.REFRESH_TOKEN_EXPIRE_DAYS * 86400
+            if await redis.get(f"revoked_token:{jti}"):
+                return True
+        except Exception as e:
+            import logging
+            logging.warning(f"Redis unavailable checking refresh token {jti}; using in-memory fallback: {e}")
+        cls._prune_local_revoked()
+        return jti in cls._local_revoked_jtis
+
+    @classmethod
+    async def invalidate_refresh_token(cls, jti: str) -> bool:
+        """Blacklist a refresh token by its jti claim, falling back to in-memory if Redis fails."""
+        import time
+        ttl_seconds = settings.REFRESH_TOKEN_EXPIRE_DAYS * 86400
+        try:
+            redis = get_redis_client()
             await redis.set(f"revoked_token:{jti}", "1", ex=ttl_seconds)
             return True
         except Exception as e:
             import logging
-            logging.error(f"Redis error invalidating refresh token {jti}: {e}")
-            return False
+            logging.warning(f"Redis unavailable invalidating refresh token {jti}; using in-memory fallback: {e}")
+            cls._prune_local_revoked()
+            cls._local_revoked_jtis[jti] = time.time() + ttl_seconds
+            return True

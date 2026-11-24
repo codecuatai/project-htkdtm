@@ -210,19 +210,8 @@ async def refresh(
 
     # Check if token was revoked
     jti = token_payload.get("jti")
-    if jti:
-        try:
-            from app.core.cache import get_redis_client
-            r = get_redis_client()
-            is_revoked = await r.get(f"revoked_token:{jti}")
-            if is_revoked:
-                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token has been revoked")
-        except HTTPException:
-            raise
-        except Exception:
-            import logging
-            logging.exception("Redis error checking refresh-token revocation")
-            raise HTTPException(status_code=503, detail="Authentication service temporarily unavailable")
+    if jti and await AuthService.is_refresh_token_revoked(jti):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token has been revoked")
 
     user_id = token_payload.get("sub")
     if not user_id:
