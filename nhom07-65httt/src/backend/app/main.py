@@ -49,6 +49,22 @@ async def lifespan(app: FastAPI):
     except Exception:
         logger.exception("Could not migrate legacy AI API keys")
 
+    # Seed default course categories idempotently if none exist yet.
+    try:
+        from sqlalchemy import func, select
+        from app.models.category import Category
+        from app.scripts.seed_categories import CATEGORIES, slugify
+
+        async with AsyncSessionLocal() as db:
+            existing_count = await db.scalar(select(func.count()).select_from(Category))
+            if not existing_count:
+                for name, description, icon in CATEGORIES:
+                    db.add(Category(name=name, slug=slugify(name), description=description, icon=icon))
+                await db.commit()
+                logger.info("Seeded %d default course categories on startup", len(CATEGORIES))
+    except Exception as exc:
+        logger.warning("Could not seed default categories on startup: %s", exc)
+
     # Synchronize AI keys to AI service on startup
     try:
         from app.api.v1.admin import _sync_active_keys_to_ai_service
