@@ -236,25 +236,26 @@ export function LandingPage() {
           </nav>
 
           {/* Right Action Buttons */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <ThemeToggle />
             <button
               onClick={() => router.push('/login')}
-              className="text-sm font-bold text-foreground/80 hover:text-primary px-3 py-2 rounded-xl transition-colors cursor-pointer whitespace-nowrap"
+              className="hidden sm:inline-flex text-sm font-bold text-foreground/80 hover:text-primary px-3 py-2 rounded-xl transition-colors cursor-pointer whitespace-nowrap"
             >
               Đăng nhập
             </button>
             <Button
               onClick={() => router.push('/welcome')}
-              className="h-9 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-primary text-primary-foreground shadow-sm hover:opacity-95 transition-all whitespace-nowrap shrink-0"
+              className="h-9 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-semibold bg-primary text-primary-foreground shadow-sm hover:opacity-95 transition-all whitespace-nowrap shrink-0"
             >
               <span>Trải nghiệm ngay</span>
               <ArrowRight className="h-3.5 w-3.5 ml-1 hidden sm:inline" />
             </Button>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-xl text-muted-foreground hover:bg-muted"
+              className="lg:hidden p-2 rounded-xl text-muted-foreground hover:bg-muted shrink-0"
               aria-label="Menu"
+              aria-expanded={mobileMenuOpen}
             >
               <Menu className="h-5 w-5" />
             </button>
@@ -279,6 +280,17 @@ export function LandingPage() {
             <button onClick={() => scrollToSection('faq')} className="block w-full text-left py-2 text-sm font-semibold text-foreground">
               Hỏi đáp
             </button>
+            <div className="pt-2 border-t border-border/60 sm:hidden">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false)
+                  router.push('/login')
+                }}
+                className="block w-full text-left py-2 text-sm font-bold text-primary"
+              >
+                Đăng nhập
+              </button>
+            </div>
           </div>
         )}
       </header>
@@ -1383,6 +1395,7 @@ export function LandingPage() {
               >
                 <button
                   onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                  aria-expanded={openFaq === idx}
                   className="w-full flex items-center justify-between p-4 sm:p-5 text-left font-bold text-foreground hover:text-primary transition-colors gap-4 cursor-pointer"
                 >
                   <span className="text-sm sm:text-base">{faq.q}</span>

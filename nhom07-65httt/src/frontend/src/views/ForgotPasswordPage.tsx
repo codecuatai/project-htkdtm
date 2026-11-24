@@ -32,7 +32,7 @@ export function ForgotPasswordPage() {
   }
 
   return (
-    <div className="relative min-h-screen gradient-mesh-auth animate-fade-in">
+    <main className="relative min-h-screen gradient-mesh-auth animate-fade-in">
       <div className="mx-auto flex min-h-screen max-w-6xl flex-col gap-10 px-6 py-8 lg:flex-row lg:items-center lg:justify-between lg:gap-20">
         <section className="flex w-full flex-col gap-8 lg:w-5/12 animate-zoom-in-95">
           <div className="flex items-center gap-3">
@@ -142,6 +142,6 @@ export function ForgotPasswordPage() {
           </div>
         </aside>
       </div>
-    </div>
+    </main>
   )
 }

@@ -1,12 +1,28 @@
 import axios from 'axios'
 
 const DEFAULT_API_URL = '/api/v1'
-let API_BASE = process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL
 
-// Auto-append /api/v1 if NEXT_PUBLIC_API_URL is an absolute domain without the prefix
-if (API_BASE.startsWith('http') && !API_BASE.includes('/api/v1')) {
-  API_BASE = API_BASE.replace(/\/+$/, '') + '/api/v1'
+function normalizeApiBase(raw?: string): string {
+  const trimmed = (raw || '').trim().replace(/^["']|["']$/g, '')
+  if (!trimmed) return DEFAULT_API_URL
+  if (trimmed.startsWith('/')) {
+    return trimmed.replace(/\/+$/, '') || DEFAULT_API_URL
+  }
+  if (/^https?:\/\//i.test(trimmed)) {
+    const clean = trimmed.replace(/\/+$/, '')
+    return clean.includes('/api/v1') ? clean : `${clean}/api/v1`
+  }
+  if (/^api(\/|$)/i.test(trimmed)) {
+    return '/' + trimmed.replace(/^\/+|\/+$/g, '')
+  }
+  if (/^[a-z0-9.-]+\.[a-z]{2,}(\/.*)?$/i.test(trimmed)) {
+    const clean = `https://${trimmed}`.replace(/\/+$/, '')
+    return clean.includes('/api/v1') ? clean : `${clean}/api/v1`
+  }
+  return DEFAULT_API_URL
 }
+
+const API_BASE = normalizeApiBase(process.env.NEXT_PUBLIC_API_URL)
 
 export const api = axios.create({
   baseURL: API_BASE,

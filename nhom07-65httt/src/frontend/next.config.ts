@@ -32,13 +32,33 @@ loadSharedEnv()
 
 const internalApiBase = (process.env.INTERNAL_API_URL || 'http://localhost:8000').replace(/\/+$/, '')
 
+function normalizePublicApiUrl(raw?: string): string {
+  const trimmed = (raw || '').trim().replace(/^["']|["']$/g, '')
+  if (!trimmed) return '/api/v1'
+  if (trimmed.startsWith('/')) {
+    return trimmed.replace(/\/+$/, '') || '/api/v1'
+  }
+  if (/^https?:\/\//i.test(trimmed)) {
+    const clean = trimmed.replace(/\/+$/, '')
+    return clean.includes('/api/v1') ? clean : `${clean}/api/v1`
+  }
+  if (/^api(\/|$)/i.test(trimmed)) {
+    return '/' + trimmed.replace(/^\/+|\/+$/g, '')
+  }
+  if (/^[a-z0-9.-]+\.[a-z]{2,}(\/.*)?$/i.test(trimmed)) {
+    const clean = `https://${trimmed}`.replace(/\/+$/, '')
+    return clean.includes('/api/v1') ? clean : `${clean}/api/v1`
+  }
+  return '/api/v1'
+}
+
 const nextConfig: NextConfig = {
   output: 'standalone',
   images: {
     unoptimized: true,
   },
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || process.env.VITE_API_URL || '/api/v1',
+    NEXT_PUBLIC_API_URL: normalizePublicApiUrl(process.env.NEXT_PUBLIC_API_URL || process.env.VITE_API_URL),
     NEXT_PUBLIC_GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || '',
     NEXT_PUBLIC_FACEBOOK_APP_ID: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID || process.env.VITE_FACEBOOK_APP_ID || '',
   },
