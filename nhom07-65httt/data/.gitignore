@@ -1,0 +1,8 @@
+config.udemy.yaml
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.pytest_tmp/
+.venv/
+data/*.csv
+logs/*.log

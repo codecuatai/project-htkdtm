@@ -1,41 +1,44 @@
-# Crawl danh mục khoahocre.com
+# SmartEdu course data pipeline
 
-Thu thập thông tin khóa học công khai, xuất JSON và CSV UTF-8 BOM mở được bằng Excel.
+The project keeps the existing Udemy CSV as a read-only legacy input and builds auditable raw, staging, approved, release, and database-load artifacts around it. It does not fetch source pages during audit, ingest, transform, release, or database dry-run.
 
-## Chạy
+## Current collection boundary
+
+The legacy file `data/udemy_courses.csv` contains 3,001 rows. The local crawler config caps the total at 3,001 and has `source_authorized: false`; the pipeline config also has Udemy authorization disabled. The crawler exits before making a request unless documented authorization is configured. Use its dry-run to inspect the settings without network access:
 
 ```powershell
+cd D:\source_cua_Huy\crawl_topcv\udemy_course_scraper
+python data/crawl.py --config config.udemy.yaml --max-pages 1 --max-courses 10 --dry-run
+```
+
+The reported `network_requests` value must be `0`. Do not enable collection until Udemy provides written authorization or an approved API agreement and the source review is updated. Robots rules alone do not establish that authorization. The crawler’s `max_total_courses` remains 3,001 to preserve the existing cap.
+
+## Install
+
+```powershell
+cd D:\source_cua_Huy\crawl_topcv\udemy_course_scraper
+python -m venv .venv
+.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
-python crawl.py
 ```
 
-- `data/courses.csv`: bảng dữ liệu cho Excel.
-- `data/courses.json`: dữ liệu có kiểu số, mảng danh mục và giá trị null.
-- `data/report.json`: số trang, số khóa, thời gian UTC, lỗi và trạng thái `complete`.
-- `data/cache/`: HTML đã tải để chạy tiếp không tải lại các trang thành công.
+## Offline pipeline
+
+Run these in order. `audit` analyzes the original CSV; `ingest` copies it into a content-hashed raw batch without modifying the source; `transform` produces staging records and quality reports; `release` contains only records that satisfy the approval checks; `db-load` validates a release in dry-run mode. Use the batch ID printed by `ingest` for the later steps.
 
 ```powershell
-# Thử hai trang, lưu riêng
-python crawl.py --max-pages 2 --output data_sample
-
-# Lấy thêm mô tả SEO ngắn, ngày đăng và ngày sửa từ trang chi tiết
-python crawl.py --details
-
-# Thu thập lại dữ liệu mới nhất, bỏ qua cache
-python crawl.py --refresh
+python pipeline_cli.py audit
+python pipeline_cli.py ingest
+python pipeline_cli.py transform --batch-id <batch-id>
+python pipeline_cli.py release --batch-id <batch-id> --version 0.1.0
+python pipeline_cli.py db-load --version 0.1.0
 ```
 
-Mặc định crawl toàn bộ trang danh mục, tuần tự, cách nhau tối thiểu 1,5 giây. Có thể tăng bằng `--delay 3`. Chương trình đọc robots.txt, thử lại lỗi kết nối/429/5xx tối đa bốn lần, loại trùng theo URL và dừng báo lỗi khi phân trang lặp hoặc không còn nhận diện được khóa học. Chạy lại cùng lệnh để sử dụng HTML cache. Cache không tự hết hạn; dùng `--refresh` để cập nhật giá.
+Current legacy data is incomplete: description, skills, and level are absent, and many other fields are sparse. Those records are marked `needs_review`; they are not silently enriched or promoted. Therefore the current release is expected to be empty until required fields are reviewed and populated from an authorized source. No taxonomy, external database schema, endpoint, or credentials have been invented. The database adapter is dry-run only until those are supplied.
 
-## Các trường
+Original internal demo course content is kept separately in `data/internal/courses.json`; it is not mixed into Udemy records or release candidates. Source review and the field dictionary are in `data/sources.md` and `data/schema_dictionary.md`.
 
-`id`, `title`, `url`, `price_vnd`, `original_price_vnd`, `categories`, `category_slugs`, `image_url`, `crawled_at`.
-
-Giá là số nguyên VND; giá không có trên trang được để null, không tự coi là miễn phí. `categories` là nhãn hiển thị trên thẻ khóa học, `category_slugs` là các danh mục có trong thuộc tính HTML. Ảnh được lưu dưới dạng URL. Mô tả tùy chọn là mô tả SEO ngắn, không phải toàn văn nội dung khóa học. Không tải video, tài liệu trả phí hay nội dung yêu cầu đăng nhập.
-
-Khi giới hạn số trang, `complete` là false dù chạy thành công. Nếu có lỗi, dữ liệu đã lấy vẫn được lưu và tiến trình trả exit code 1. Dữ liệu phản ánh thời điểm tải từng trang; website có thể thay đổi trong lúc crawl.
-
-## Kiểm tra
+## Tests
 
 ```powershell
 python -m unittest discover -s tests -v
