@@ -7,7 +7,7 @@ from .storage import read_jsonl
 def load_release(release_dir: Path, database_config: dict, dry_run: bool = True) -> dict:
     source = release_dir / "courses.jsonl"
     if not source.exists():
-        raise FileNotFoundError(f"Release data not found: {source}")
+        raise FileNotFoundError(f"Không tìm thấy dữ liệu bản phát hành: {source}")
     records = list(read_jsonl(source))
     invalid = []
     identities = set()
@@ -22,10 +22,10 @@ def load_release(release_dir: Path, database_config: dict, dry_run: bool = True)
             invalid.append({"row": index, "course_id": identity, "reason": "duplicate course_id"})
         identities.add(identity)
     if invalid:
-        raise ValueError(f"Release schema validation failed: {invalid[:5]}")
+        raise ValueError(f"Bản phát hành không đạt kiểm tra schema: {invalid[:5]}")
     adapter = database_config.get("adapter")
     if dry_run:
         return {"status": "DRY_RUN", "records_validated": len(records), "records_written": 0, "adapter": adapter, "configured": bool(adapter)}
     if not adapter:
-        raise ValueError("Database adapter is not configured; no endpoint or schema was assumed.")
-    raise NotImplementedError(f"Database adapter '{adapter}' has no supplied schema/credentials and is not implemented.")
+        raise ValueError("Chưa cấu hình adapter cơ sở dữ liệu; không tự giả định endpoint hoặc schema.")
+    raise NotImplementedError(f"Adapter cơ sở dữ liệu '{adapter}' chưa được triển khai vì chưa có schema/thông tin xác thực.")

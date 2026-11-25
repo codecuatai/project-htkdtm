@@ -21,7 +21,7 @@ def sha256_file(path: Path) -> str:
 def write_jsonl_new(path: Path, records):
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():
-        raise FileExistsError(f"Refusing to overwrite immutable batch file: {path}")
+        raise FileExistsError(f"Không ghi đè tệp lô dữ liệu bất biến: {path}")
     with path.open("x", encoding="utf-8", newline="\n") as stream:
         for record in records:
             stream.write(json.dumps(record, ensure_ascii=False, separators=(",", ":"), default=str) + "\n")
@@ -48,4 +48,4 @@ def read_jsonl(path: Path):
             try:
                 yield json.loads(line)
             except json.JSONDecodeError as exc:
-                raise ValueError(f"Invalid JSONL at {path}:{line_number}: {exc}") from exc
+                raise ValueError(f"JSONL không hợp lệ tại {path}:{line_number}: {exc}") from exc

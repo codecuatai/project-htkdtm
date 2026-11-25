@@ -9,6 +9,7 @@ from scraper.client import UdemyClient
 from scraper.config import Config
 from scraper.udemy_exporter import append_course_csv, count_course_rows, existing_course_urls, export_courses_csv
 from scraper.udemy_parser import discover_course_urls, discover_sitemap_entries, parse_course
+from pipeline.console import configure_utf8_console
 
 
 def page_url(url: str, page: int) -> str:
@@ -71,7 +72,7 @@ def iter_listing_course_urls(client, config, existing_urls: set[str], limit: int
 
 def run(config: Config):
     if not config.source_authorized or not config.authorization_reference:
-        raise PermissionError("Udemy automated collection is disabled pending documented authorization; no request sent.")
+        raise PermissionError("Crawler Udemy đang bị khóa vì chưa có văn bản cho phép; chưa gửi request nào.")
     max_total = max(0, config.max_total_courses)
     existing_count = count_course_rows(config.output_file) if config.append else 0
     if max_total and existing_count >= max_total:
@@ -101,12 +102,13 @@ def run(config: Config):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Crawl thông tin khóa học công khai trên Udemy ra CSV")
-    parser.add_argument("--config", default="config.udemy.yaml")
-    parser.add_argument("--source", choices=["udemy"], default="udemy")
-    parser.add_argument("--max-pages", type=int)
-    parser.add_argument("--max-courses", type=int)
-    parser.add_argument("--dry-run", action="store_true", help="Show config without making network requests")
+    configure_utf8_console()
+    parser = argparse.ArgumentParser(description="Thu thập metadata khóa học Udemy và xuất ra CSV")
+    parser.add_argument("--config", default="config.udemy.yaml", help="Đường dẫn tệp cấu hình (mặc định: config.udemy.yaml)")
+    parser.add_argument("--source", choices=["udemy"], default="udemy", help="Nguồn dữ liệu")
+    parser.add_argument("--max-pages", type=int, help="Số trang danh sách tối đa trong lần chạy này")
+    parser.add_argument("--max-courses", type=int, help="Số khóa học mới tối đa trong lần chạy này")
+    parser.add_argument("--dry-run", action="store_true", help="Xem cấu hình mà không gửi request mạng")
     args = parser.parse_args()
     root = Path(__file__).resolve().parent
     config_path = Path(args.config)

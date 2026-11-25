@@ -9,9 +9,9 @@
   "pipeline_version": "0.1.0",
   "reviewer": null,
   "collection_limitations": [
-    "Only approved candidate records are included.",
-    "No additional Udemy crawling is performed without written authorization.",
-    "The legacy source CSV lacked descriptions and skills; records missing required fields remain outside releases."
+    "Ch? ??a c?c b?n ghi ?ng vi?n ?? ???c duy?t v?o b?n ph?t h?nh.",
+    "Kh?ng crawl th?m Udemy khi ch?a c? v?n b?n cho ph?p.",
+    "CSV ngu?n c? thi?u description v? skills; b?n ghi thi?u tr??ng b?t bu?c kh?ng ???c ??a v?o b?n ph?t h?nh."
   ],
   "release_status": "EMPTY"
 }

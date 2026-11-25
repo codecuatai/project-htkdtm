@@ -31,17 +31,17 @@ def analyze_csv(path: Path) -> dict:
 def write_baseline_report(stats: dict, output_path: Path):
     total = stats["rows"]
     lines = [
-        "# Baseline report", "", f"Generated: {datetime.now().astimezone().isoformat(timespec='seconds')}", "",
-        f"- Source file: `{stats['path']}`", f"- Records: {total:,}", f"- Columns: {len(stats['fields'])}",
-        f"- Invalid row shapes: {stats['invalid_shapes']}", f"- Duplicate URLs: {stats['duplicate_urls']}",
-        f"- Duplicate source IDs: {stats['duplicate_ids']}", f"- Repeated title groups: {stats['duplicate_title_groups']} ({stats['duplicate_title_rows']} excess rows)",
-        f"- Titles with HTML entities: {stats['html_entity_titles']}", f"- Scrape timestamp range: {stats['scraped_at_min']} — {stats['scraped_at_max']}",
-        "", "## Null coverage", "", "| Field | Present | Null | Null % |", "|---|---:|---:|---:|",
+        "# Báo cáo kiểm toán dữ liệu ban đầu", "", f"Thời điểm tạo: {datetime.now().astimezone().isoformat(timespec='seconds')}", "",
+        f"- Tệp nguồn: `{stats['path']}`", f"- Số bản ghi: {total:,}", f"- Số cột: {len(stats['fields'])}",
+        f"- Dòng sai cấu trúc: {stats['invalid_shapes']}", f"- URL trùng: {stats['duplicate_urls']}",
+        f"- Mã nguồn trùng: {stats['duplicate_ids']}", f"- Nhóm tiêu đề lặp: {stats['duplicate_title_groups']} (thừa {stats['duplicate_title_rows']} dòng)",
+        f"- Tiêu đề có HTML entity: {stats['html_entity_titles']}", f"- Khoảng thời gian crawl: {stats['scraped_at_min']} – {stats['scraped_at_max']}",
+        "", "## Tỷ lệ giá trị trống", "", "| Trường | Có dữ liệu | Trống | Tỷ lệ trống (%) |", "|---|---:|---:|---:|",
     ]
     for field in stats["fields"]:
         nulls = stats["null_counts"][field]
         percentage = nulls / total * 100 if total else 0
         lines.append(f"| `{field}` | {total - nulls} | {nulls} | {percentage:.2f}% |")
-    lines.extend(["", "## Interpretation", "", "This report describes the imported CSV only. It does not validate metadata against Udemy pages. Missing source fields remain missing; no synthetic values are introduced.", ""])
+    lines.extend(["", "## Diễn giải", "", "Báo cáo chỉ mô tả CSV đã nhập, không đối chiếu metadata với trang Udemy. Trường bị thiếu vẫn để trống; không tạo dữ liệu giả.", ""])
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text("\n".join(lines), encoding="utf-8")

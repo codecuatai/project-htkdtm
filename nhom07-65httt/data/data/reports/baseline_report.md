@@ -1,20 +1,20 @@
-# Baseline report
+# Báo cáo kiểm toán dữ liệu ban đầu
 
-Generated: 2026-11-25T10:56:00+07:00
+Thời điểm tạo: 2026-11-25T11:51:49+07:00
 
-- Source file: `D:\source_cua_Huy\crawl_topcv\udemy_course_scraper\data\udemy_courses.csv`
-- Records: 3,001
-- Columns: 27
-- Invalid row shapes: 0
-- Duplicate URLs: 0
-- Duplicate source IDs: 0
-- Repeated title groups: 15 (16 excess rows)
-- Titles with HTML entities: 326
-- Scrape timestamp range: 2026-11-18T09:37:15+00:00 — 2026-11-18T11:54:50+00:00
+- Tệp nguồn: `D:\source_cua_Huy\crawl_topcv\udemy_course_scraper\data\udemy_courses.csv`
+- Số bản ghi: 3,001
+- Số cột: 27
+- Dòng sai cấu trúc: 0
+- URL trùng: 0
+- Mã nguồn trùng: 0
+- Nhóm tiêu đề lặp: 15 (thừa 16 dòng)
+- Tiêu đề có HTML entity: 326
+- Khoảng thời gian crawl: 2026-11-18T09:37:15+00:00 – 2026-11-18T11:54:50+00:00
 
-## Null coverage
+## Tỷ lệ giá trị trống
 
-| Field | Present | Null | Null % |
+| Trường | Có dữ liệu | Trống | Tỷ lệ trống (%) |
 |---|---:|---:|---:|
 | `course_id` | 3001 | 0 | 0.00% |
 | `title` | 3001 | 0 | 0.00% |
@@ -44,6 +44,6 @@ Generated: 2026-11-25T10:56:00+07:00
 | `target_audience` | 0 | 3001 | 100.00% |
 | `scraped_at` | 3001 | 0 | 0.00% |
 
-## Interpretation
+## Diễn giải
 
-This report describes the imported CSV only. It does not validate metadata against Udemy pages. Missing source fields remain missing; no synthetic values are introduced.
+Báo cáo chỉ mô tả CSV đã nhập, không đối chiếu metadata với trang Udemy. Trường bị thiếu vẫn để trống; không tạo dữ liệu giả.

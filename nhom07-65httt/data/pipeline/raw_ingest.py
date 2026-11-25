@@ -16,7 +16,7 @@ def _source_name(url):
 
 def ingest_legacy_csv(source_csv: Path, raw_root: Path) -> tuple[str, Path]:
     if not source_csv.exists():
-        raise FileNotFoundError(f"Legacy CSV does not exist: {source_csv}")
+        raise FileNotFoundError(f"Không tìm thấy CSV nguồn cũ: {source_csv}")
     started_at = utc_now()
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     batch_id = f"legacy-{stamp}-{sha256_file(source_csv)[:8]}"
@@ -29,7 +29,7 @@ def ingest_legacy_csv(source_csv: Path, raw_root: Path) -> tuple[str, Path]:
     with source_csv.open(encoding="utf-8-sig", newline="") as stream:
         reader = csv.DictReader(stream)
         if not reader.fieldnames:
-            raise ValueError(f"CSV is missing a header: {source_csv}")
+            raise ValueError(f"CSV không có dòng tiêu đề cột: {source_csv}")
         records = []
         for row_number, row in enumerate(reader, 1):
             total += 1

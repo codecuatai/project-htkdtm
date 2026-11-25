@@ -14,7 +14,7 @@ def load_taxonomy(path: str | Path | None):
     values = yaml.safe_load(source.read_text(encoding="utf-8")) or {}
     skills = values.get("skills", []) if isinstance(values, dict) else []
     if not isinstance(skills, list):
-        raise ValueError("Taxonomy 'skills' must be a list")
+        raise ValueError("Trường taxonomy 'skills' phải là một danh sách")
     normalized = []
     for entry in skills:
         if not isinstance(entry, dict) or not entry.get("name"):
