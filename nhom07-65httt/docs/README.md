@@ -6,6 +6,7 @@ Hướng dẫn cài đặt, Docker Compose và biến môi trường được đ
 - [Thiết kế tổng thể hệ thống](architecture/system-design.md)
 - [Giao tiếp giữa các service](architecture/service-communication.md)
 - [Lược đồ cơ sở dữ liệu](architecture/database-schema.md)
+- [Hợp đồng dữ liệu AI gợi ý & vùng Analytics](architecture/ai-recommendation-analytics-contract.md)
 - [Lưu trữ & bộ nhớ đệm](architecture/storage-and-cache.md)
 - [Quy trình AI Agent & RAG](architecture/ai-agent-workflow.md)
 
