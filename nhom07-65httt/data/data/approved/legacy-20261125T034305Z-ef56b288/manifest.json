@@ -1,0 +1,32 @@
+{
+  "batch_id": "legacy-20261125T034305Z-ef56b288",
+  "generated_at": "2026-11-25T03:45:33+00:00",
+  "records_in": 3001,
+  "records_staged": 3001,
+  "approved_candidates": 0,
+  "quality_status_counts": {
+    "needs_review": 3001
+  },
+  "duplicate_status_counts": {
+    "unique": 2794,
+    "near_duplicate": 207
+  },
+  "quality_flag_counts": {
+    "missing_description": 3001,
+    "missing_skills": 3001,
+    "missing_level": 3001,
+    "near_duplicate_review": 207
+  },
+  "near_duplicate_pair_count": 162,
+  "field_non_null_counts": {
+    "title": 3001,
+    "description": 0,
+    "skills": 0,
+    "level": 0,
+    "price_amount": 0,
+    "duration_minutes": 2009
+  },
+  "taxonomy_loaded": false,
+  "external_source_accuracy": null,
+  "note": "No live source validation was performed; see sources.md."
+}

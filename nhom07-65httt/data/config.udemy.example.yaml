@@ -1,0 +1,16 @@
+start_url: "https://www.udemy.com/courses/"
+sitemap_url: "https://www.udemy.com/sitemap.xml"
+crawl_mode: "sitemap"  # sitemap = URL được sitemap liệt kê; listing = trang danh sách
+output_file: "data/udemy_courses.csv"
+start_page: 1
+max_pages: 0  # 0 = crawl đến khi hết trang có khóa học mới
+max_courses: 0  # 0 = không giới hạn số khóa học tìm thấy
+max_total_courses: 0  # 0 = không giới hạn tổng số dòng trong CSV
+append: true
+request_delay: 2.0
+timeout: 30
+retries: 3
+respect_robots_txt: true
+source_authorized: false
+authorization_reference: null
+user_agent: "PublicCourseResearch/1.0 (contact: your-email@example.com)"

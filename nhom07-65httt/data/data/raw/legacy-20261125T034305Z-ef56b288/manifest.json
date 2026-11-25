@@ -1,0 +1,17 @@
+{
+  "batch_id": "legacy-20261125T034305Z-ef56b288",
+  "source_name": "udemy",
+  "started_at": "2026-11-25T03:43:05+00:00",
+  "finished_at": "2026-11-25T03:43:05+00:00",
+  "total_pages": null,
+  "total_records": 3001,
+  "successful_records": 3001,
+  "failed_records": 0,
+  "parser_errors": 0,
+  "network_errors": 0,
+  "status": "SUCCESS",
+  "ingestion_kind": "legacy_parsed_csv_not_original_source_payload",
+  "input_file": "D:\\source_cua_Huy\\crawl_topcv\\udemy_course_scraper\\data\\udemy_courses.csv",
+  "input_sha256": "ef56b2881f7206821259ba5bdd424254327c786a62e326b4335ea910e16af078",
+  "raw_html_or_source_json_retained": false
+}
