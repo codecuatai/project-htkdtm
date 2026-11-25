@@ -42,7 +42,6 @@ const mainNavItems: NavItem[] = [
 ]
 
 const toolNavItems: NavItem[] = [
-  { id: 'chat', label: 'Trợ lý AI Tutor', icon: Sparkles, path: '/app/student/chat', badge: 'AI', badgeVariant: 'purple' },
   { id: 'quiz', label: 'Tạo trắc nghiệm AI', icon: QuizIcon, path: '/app/student/quiz', badge: 'Mới', badgeVariant: 'primary' },
   { id: 'flashcards', label: 'Thẻ ghi nhớ Flashcards', icon: Layers, path: '/app/student/flashcards' },
   { id: 'essay', label: 'Chấm bài luận AI', icon: FileCheck2, path: '/app/student/essay' },

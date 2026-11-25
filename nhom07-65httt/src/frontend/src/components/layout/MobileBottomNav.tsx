@@ -5,7 +5,6 @@ import {
   Home,
   BookOpen,
   Compass,
-  Sparkles,
   Menu,
   Users,
   BarChart3,
@@ -38,7 +37,6 @@ export function MobileBottomNav() {
     { id: 'dashboard', label: 'Tổng quan', icon: Home, path: '/app/student/dashboard' },
     { id: 'courses', label: 'Khóa học', icon: BookOpen, path: '/app/student/courses' },
     { id: 'browse', label: 'Khám phá', icon: Compass, path: '/app/student/browse' },
-    { id: 'chat', label: 'AI Tutor', icon: Sparkles, path: '/app/student/chat', highlight: true },
     { id: 'menu', label: 'Thêm', icon: Menu, isAction: true },
   ]
 
