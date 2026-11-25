@@ -324,12 +324,12 @@ function AuthShell({ variant }: { variant: Variant }) {
     : isStudent
       ? {
           title: 'Tạo tài khoản Học viên',
-          subtitle: 'Học cùng AI tutor, luyện đề mỗi ngày và theo dõi tiến độ rõ ràng.',
+          subtitle: '',
         }
       : lecturerStep === 1
         ? {
             title: 'Trở thành Giảng viên',
-            subtitle: 'Tạo tài khoản để thiết kế khóa học và quản lý lớp học của bạn.',
+            subtitle: '',
           }
         : {
             title: 'Hồ sơ giảng dạy',
@@ -403,7 +403,9 @@ function AuthShell({ variant }: { variant: Variant }) {
         <h1 className="font-display text-2xl sm:text-[1.75rem] font-bold leading-tight tracking-tight text-foreground">
           {header.title}
         </h1>
-        <p className="text-sm leading-relaxed text-muted-foreground">{header.subtitle}</p>
+        {header.subtitle && (
+          <p className="text-sm leading-relaxed text-muted-foreground">{header.subtitle}</p>
+        )}
       </div>
 
       {/* Role segmented control (register only) */}
@@ -601,7 +603,7 @@ function AuthShell({ variant }: { variant: Variant }) {
               prefixIcon={<Mail className="h-4 w-4" aria-hidden="true" />}
             />
 
-            <div className={cn('grid gap-3', isRegister && 'sm:grid-cols-2')}>
+            <div className="grid gap-3">
               <AuthInput
                 name="password"
                 label="Mật khẩu"
@@ -614,6 +616,7 @@ function AuthShell({ variant }: { variant: Variant }) {
                 autoComplete={isRegister ? 'new-password' : 'current-password'}
                 prefixIcon={<Lock className="h-4 w-4" aria-hidden="true" />}
               />
+              {isRegister && password.length > 0 && <PasswordStrength password={password} />}
 
               {isRegister && (
                 <AuthInput
@@ -630,7 +633,6 @@ function AuthShell({ variant }: { variant: Variant }) {
                 />
               )}
             </div>
-            {isRegister && password.length > 0 && <PasswordStrength password={password} />}
           </>
         )}
 
