@@ -130,7 +130,7 @@ export function AdminDashboard() {
           subtitle="Hệ thống quản trị"
           title="Bảng điều khiển quản trị"
           description="Giám sát hiệu năng, kiểm tra sức khỏe dịch vụ và quản lý người dùng theo thời gian thực."
-          icon={<Settings className="text-indigo-600 dark:text-indigo-400" />}
+          icon={<Settings className="text-fuchsia-600 dark:text-fuchsia-400" />}
           actions={
             <Button
               onClick={() => {
@@ -154,7 +154,7 @@ export function AdminDashboard() {
         <StatCard
           label="Tổng người dùng"
           value={analytics?.total_users ?? 0}
-          icon={<Users className="text-indigo-600 dark:text-indigo-400" />}
+          icon={<Users className="text-fuchsia-600 dark:text-fuchsia-400" />}
           variant="primary"
           loading={loadingAnalytics}
           className="border-border bg-surface-elevated"
@@ -162,7 +162,7 @@ export function AdminDashboard() {
         <StatCard
           label="Tổng tài liệu"
           value={analytics?.total_documents ?? 0}
-          icon={<FileText className="text-indigo-600 dark:text-indigo-400" />}
+          icon={<FileText className="text-fuchsia-600 dark:text-fuchsia-400" />}
           variant="primary"
           loading={loadingAnalytics}
           className="border-border bg-surface-elevated"
@@ -217,44 +217,44 @@ export function AdminDashboard() {
           <ServiceCard
             name="Cơ sở dữ liệu PostgreSQL"
             description="Lưu trữ dữ liệu quan hệ"
-            icon={<Database className="text-blue-500" />}
+            icon={<Database className="text-pink-500" />}
             status={health?.services.database || 'offline'}
-            className="bg-surface-elevated hover:shadow-indigo-500/5 border border-indigo-500/5"
+            className="bg-surface-elevated hover:shadow-fuchsia-500/5 border border-fuchsia-500/5"
           />
           <ServiceCard
             name="Dịch vụ AI LangGraph"
             description="Engine luồng xử lý LLM"
-            icon={<Bot className="text-indigo-500" />}
+            icon={<Bot className="text-fuchsia-500" />}
             status={health?.services.ai_service || 'offline'}
-            className="bg-surface-elevated hover:shadow-indigo-500/5 border border-indigo-500/5 glow-admin"
+            className="bg-surface-elevated hover:shadow-fuchsia-500/5 border border-fuchsia-500/5 glow-admin"
           />
           <ServiceCard
             name="Redis (Upstash)"
             description="Bộ nhớ đệm phiên & truy vấn"
             icon={<Zap className="text-amber-500" />}
             status={health?.services.redis || 'offline'}
-            className="bg-surface-elevated hover:shadow-indigo-500/5 border border-indigo-500/5"
+            className="bg-surface-elevated hover:shadow-fuchsia-500/5 border border-fuchsia-500/5"
           />
           <ServiceCard
             name="Cloudflare R2 Storage"
             description="Lưu trữ đối tượng tương thích S3"
-            icon={<HardDrive className="text-sky-500" />}
+            icon={<HardDrive className="text-fuchsia-500" />}
             status={health?.services.s3_storage || 'offline'}
-            className="bg-surface-elevated hover:shadow-indigo-500/5 border border-indigo-500/5"
+            className="bg-surface-elevated hover:shadow-fuchsia-500/5 border border-fuchsia-500/5"
           />
           <ServiceCard
             name="Qdrant Vector DB"
             description="Cơ sở dữ liệu vector embeddings"
             icon={<Cpu className="text-violet-500" />}
             status={health?.services.qdrant || 'offline'}
-            className="bg-surface-elevated hover:shadow-indigo-500/5 border border-indigo-500/5"
+            className="bg-surface-elevated hover:shadow-fuchsia-500/5 border border-fuchsia-500/5"
           />
           <ServiceCard
             name="Celery Worker"
             description="Xử lý tác vụ bất đồng bộ"
             icon={<Activity className="text-rose-500" />}
             status={health?.services.celery || 'offline'}
-            className="bg-surface-elevated hover:shadow-indigo-500/5 border border-indigo-500/5"
+            className="bg-surface-elevated hover:shadow-fuchsia-500/5 border border-fuchsia-500/5"
           />
         </div>
       </Card>
@@ -330,13 +330,13 @@ export function AdminDashboard() {
                 </tr>
               ) : (
                 filteredUsers.map((u) => (
-                  <tr key={u.id} className="border-b border-border/60 last:border-0 hover:bg-indigo-500/5 hover:text-foreground transition-all duration-150">
+                  <tr key={u.id} className="border-b border-border/60 last:border-0 hover:bg-fuchsia-500/5 hover:text-foreground transition-all duration-150">
                     <td className="py-3 px-5">
                       <div className="flex items-center gap-2.5">
                         <Avatar
                           fallback={(u.full_name || u.email).split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
                           size="sm"
-                          className="ring-1 ring-indigo-500/10"
+                          className="ring-1 ring-fuchsia-500/10"
                         />
                         <div className="min-w-0">
                           <p className="font-semibold text-foreground truncate">
@@ -351,9 +351,9 @@ export function AdminDashboard() {
                         variant={u.role === 'admin' ? 'primary' : u.role === 'lecturer' ? 'warning' : 'default'}
                         label={u.role === 'admin' ? 'Quản trị viên' : u.role === 'lecturer' ? 'Giảng viên' : 'Học viên'}
                         className={cn(
-                          u.role === 'admin' ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20' :
+                          u.role === 'admin' ? 'bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 border border-fuchsia-500/20' :
                           u.role === 'lecturer' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20' :
-                          'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
+                          'bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/20'
                         )}
                       />
                     </td>

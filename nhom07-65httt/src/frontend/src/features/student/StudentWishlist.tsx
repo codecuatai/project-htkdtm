@@ -134,7 +134,7 @@ export function StudentWishlist() {
               <div>
                 {/* Thumbnail */}
                 <Link href={`/app/student/courses/${item.course_id}`}>
-                  <div className="relative aspect-video bg-gradient-to-br from-primary/10 to-cyan-500/10 overflow-hidden">
+                  <div className="relative aspect-video bg-gradient-to-br from-primary/10 to-rose-500/10 overflow-hidden">
                     {item.course_thumbnail ? (
                       <img
                         src={item.course_thumbnail}

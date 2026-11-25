@@ -20,10 +20,10 @@ export function AuthLayout({ role, children }: AuthLayoutProps) {
         roleName: 'Học viên',
         roleTag: 'Student Workspace',
         icon: GraduationCap,
-        badgeBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-        gradientBg: 'from-blue-600 via-indigo-600 to-slate-900',
-        accentBorder: 'border-blue-500/30',
-        glowRing: 'ring-blue-500/20',
+        badgeBg: 'bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20',
+        gradientBg: 'from-pink-600 via-fuchsia-600 to-slate-900',
+        accentBorder: 'border-pink-500/30',
+        glowRing: 'ring-pink-500/20',
         headline: 'Học tập thông minh cùng Trợ lý AI thế hệ mới.',
         subhead: 'Tối ưu hoá thời gian nghiên cứu, tạo flashcard tự động và nắm vững kiến thức chuyên sâu.',
         perks: [
@@ -99,13 +99,13 @@ export function AuthLayout({ role, children }: AuthLayoutProps) {
         <div
           className={cn(
             'absolute -top-32 -left-32 w-96 h-96 rounded-full blur-3xl pointer-events-none opacity-20 dark:opacity-30',
-            isStudent ? 'bg-blue-500' : 'bg-purple-600'
+            isStudent ? 'bg-pink-500' : 'bg-purple-600'
           )}
         />
         <div
           className={cn(
             'absolute -bottom-32 -right-32 w-96 h-96 rounded-full blur-3xl pointer-events-none opacity-15 dark:opacity-25',
-            isStudent ? 'bg-indigo-500' : 'bg-pink-600'
+            isStudent ? 'bg-fuchsia-500' : 'bg-pink-600'
           )}
         />
 
@@ -120,7 +120,7 @@ export function AuthLayout({ role, children }: AuthLayoutProps) {
               className={cn(
                 'flex h-11 w-11 items-center justify-center rounded-xl text-white shadow-soft transition-transform duration-200 group-hover:scale-105',
                 isStudent
-                  ? 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-blue-500/20'
+                  ? 'bg-gradient-to-br from-pink-500 to-fuchsia-600 shadow-pink-500/20'
                   : 'bg-gradient-to-br from-purple-600 to-violet-700 shadow-purple-600/20'
               )}
             >
@@ -153,8 +153,8 @@ export function AuthLayout({ role, children }: AuthLayoutProps) {
           {/* Role badge */}
           <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur-md shadow-sm transition-colors duration-200"
             style={{ borderColor: isStudent ? 'rgba(59,130,246,0.25)' : 'rgba(147,51,234,0.25)' }}>
-            <RoleIcon className={cn('h-3.5 w-3.5', isStudent ? 'text-blue-500' : 'text-purple-500')} />
-            <span className={isStudent ? 'text-blue-600 dark:text-blue-400' : 'text-purple-600 dark:text-purple-400'}>
+            <RoleIcon className={cn('h-3.5 w-3.5', isStudent ? 'text-pink-500' : 'text-purple-500')} />
+            <span className={isStudent ? 'text-pink-600 dark:text-pink-400' : 'text-purple-600 dark:text-purple-400'}>
               {roleMeta.roleTag}
             </span>
           </div>
@@ -179,7 +179,7 @@ export function AuthLayout({ role, children }: AuthLayoutProps) {
                   className={cn(
                     'mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg',
                     isStudent
-                      ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                      ? 'bg-pink-500/10 text-pink-600 dark:text-pink-400'
                       : 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
                   )}
                 >
@@ -219,7 +219,7 @@ export function AuthLayout({ role, children }: AuthLayoutProps) {
             <div
               className={cn(
                 'flex h-9 w-9 items-center justify-center rounded-lg text-white shadow-soft',
-                isStudent ? 'bg-blue-600' : 'bg-purple-600'
+                isStudent ? 'bg-pink-600' : 'bg-purple-600'
               )}
             >
               <Sparkles className="h-4 w-4" />

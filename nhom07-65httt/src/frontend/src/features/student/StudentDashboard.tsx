@@ -73,7 +73,7 @@ export function StudentDashboard() {
       {/* 1. Welcome & AI Quick Prompt Banner */}
       <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-br from-surface-elevated via-primary/5 to-surface p-6 md:p-8 shadow-soft">
         <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-rose-500/10 blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="max-w-2xl space-y-2">
@@ -83,7 +83,7 @@ export function StudentDashboard() {
             </div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">
               {getGreeting()},{' '}
-              <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 dark:from-blue-300 dark:via-indigo-200 dark:to-cyan-200 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-pink-600 via-fuchsia-600 to-rose-600 dark:from-pink-300 dark:via-fuchsia-200 dark:to-rose-200 bg-clip-text text-transparent">
                 {user?.name?.split(' ')[0]}
               </span>{' '}
               👋
@@ -143,7 +143,7 @@ export function StudentDashboard() {
             <Button
               onClick={() => router.push('/app/student/quiz')}
               icon={<BrainCircuit className="h-4 w-4 text-purple-400" />}
-              className="h-11 px-5 rounded-2xl bg-gradient-to-r from-blue-600 to-primary text-white hover:from-blue-700 hover:to-primary/90 shadow-md hover:shadow-lg transition-all duration-200 w-full sm:w-auto"
+              className="h-11 px-5 rounded-2xl bg-gradient-to-r from-pink-600 to-primary text-white hover:from-pink-700 hover:to-primary/90 shadow-md hover:shadow-lg transition-all duration-200 w-full sm:w-auto"
             >
               Tạo đề ôn thi AI
             </Button>
@@ -162,10 +162,10 @@ export function StudentDashboard() {
       {/* 2. Key Learning Metrics (4 Modern Stat Cards) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {/* Enrolled Courses */}
-        <div className="group relative overflow-hidden rounded-2xl border border-border/70 bg-surface-elevated p-4 hover:border-blue-500/40 hover:shadow-soft transition-all duration-200">
+        <div className="group relative overflow-hidden rounded-2xl border border-border/70 bg-surface-elevated p-4 hover:border-pink-500/40 hover:shadow-soft transition-all duration-200">
           <div className="flex items-center justify-between">
             <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">Khóa học</span>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 ring-1 ring-blue-500/20 group-hover:scale-110 transition-transform">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-pink-500/10 text-pink-600 dark:text-pink-400 ring-1 ring-pink-500/20 group-hover:scale-110 transition-transform">
               <BookOpen className="h-4.5 w-4.5" />
             </div>
           </div>
@@ -174,7 +174,7 @@ export function StudentDashboard() {
           ) : (
             <div className="mt-3 flex items-baseline gap-2">
               <span className="text-2xl font-black text-foreground tabular-nums">{stats?.total_enrolled ?? 0}</span>
-              <span className="text-3xs font-semibold text-blue-600 dark:text-blue-300 bg-blue-500/10 dark:bg-blue-500/20 border border-blue-500/20 px-1.5 py-0.5 rounded">Đang học</span>
+              <span className="text-3xs font-semibold text-pink-600 dark:text-pink-300 bg-pink-500/10 dark:bg-pink-500/20 border border-pink-500/20 px-1.5 py-0.5 rounded">Đang học</span>
             </div>
           )}
           <p className="text-xs text-muted-foreground mt-1">Đã tham gia tích cực</p>
@@ -200,10 +200,10 @@ export function StudentDashboard() {
         </div>
 
         {/* Reference Materials */}
-        <div className="group relative overflow-hidden rounded-2xl border border-border/70 bg-surface-elevated p-4 hover:border-cyan-500/40 hover:shadow-soft transition-all duration-200">
+        <div className="group relative overflow-hidden rounded-2xl border border-border/70 bg-surface-elevated p-4 hover:border-rose-500/40 hover:shadow-soft transition-all duration-200">
           <div className="flex items-center justify-between">
             <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">Tài liệu</span>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 ring-1 ring-cyan-500/20 group-hover:scale-110 transition-transform">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 ring-1 ring-rose-500/20 group-hover:scale-110 transition-transform">
               <FileText className="h-4.5 w-4.5" />
             </div>
           </div>
@@ -212,7 +212,7 @@ export function StudentDashboard() {
           ) : (
             <div className="mt-3 flex items-baseline gap-2">
               <span className="text-2xl font-black text-foreground tabular-nums">{stats?.total_materials ?? 0}</span>
-              <span className="text-3xs font-semibold text-cyan-600 dark:text-cyan-300 bg-cyan-500/10 dark:bg-cyan-500/20 border border-cyan-500/20 px-1.5 py-0.5 rounded">Tài nguyên</span>
+              <span className="text-3xs font-semibold text-rose-600 dark:text-rose-300 bg-rose-500/10 dark:bg-rose-500/20 border border-rose-500/20 px-1.5 py-0.5 rounded">Tài nguyên</span>
             </div>
           )}
           <p className="text-xs text-muted-foreground mt-1">Học liệu & bài tập</p>
@@ -240,7 +240,7 @@ export function StudentDashboard() {
 
       {/* 3. Hero "Tiếp tục bài học gần nhất" (Resume Learning Banner) */}
       {continueCourse && (
-        <div className="relative overflow-hidden rounded-3xl border border-primary/25 bg-gradient-to-r from-blue-600/10 via-primary/10 to-cyan-500/10 p-5 md:p-6 shadow-soft">
+        <div className="relative overflow-hidden rounded-3xl border border-primary/25 bg-gradient-to-r from-pink-600/10 via-primary/10 to-rose-500/10 p-5 md:p-6 shadow-soft">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
             <div className="flex items-center gap-4">
               <div className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary/20 text-primary overflow-hidden ring-2 ring-primary/30 shadow-md">
@@ -274,7 +274,7 @@ export function StudentDashboard() {
                 <div className="flex items-center gap-3 pt-1">
                   <div className="h-2 w-48 md:w-64 bg-muted/80 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-blue-500 via-primary to-cyan-400 rounded-full transition-all duration-500"
+                      className="h-full bg-gradient-to-r from-pink-500 via-primary to-rose-400 rounded-full transition-all duration-500"
                       style={{ width: `${Math.max(5, continueCourse.completion_percent)}%` }}
                     />
                   </div>
@@ -367,7 +367,7 @@ export function StudentDashboard() {
                   >
                     <div>
                       <div className="flex items-start justify-between gap-3 mb-3">
-                        <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/15 to-cyan-500/15 text-primary overflow-hidden ring-1 ring-primary/20 group-hover:scale-105 transition-transform">
+                        <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/15 to-rose-500/15 text-primary overflow-hidden ring-1 ring-primary/20 group-hover:scale-105 transition-transform">
                           {course.course_thumbnail ? (
                             <img
                               src={course.course_thumbnail}
@@ -397,7 +397,7 @@ export function StudentDashboard() {
                     <div className="mt-4 pt-3 border-t border-border/40 space-y-2">
                       <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-gradient-to-r from-blue-500 to-primary transition-all duration-300"
+                          className="h-full rounded-full bg-gradient-to-r from-pink-500 to-primary transition-all duration-300"
                           style={{ width: `${percent}%` }}
                         />
                       </div>
@@ -439,12 +439,12 @@ export function StudentDashboard() {
 
               <button
                 onClick={() => router.push('/app/student/quiz')}
-                className="group flex flex-col items-start p-3.5 rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-surface-elevated text-left hover:border-blue-500/40 hover:shadow-xs transition-all duration-150"
+                className="group flex flex-col items-start p-3.5 rounded-2xl border border-pink-500/20 bg-gradient-to-br from-pink-500/5 to-surface-elevated text-left hover:border-pink-500/40 hover:shadow-xs transition-all duration-150"
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 mb-2 group-hover:scale-110 transition-transform">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-pink-500/10 text-pink-600 dark:text-pink-400 mb-2 group-hover:scale-110 transition-transform">
                   <BrainCircuit className="h-4 w-4" />
                 </div>
-                <span className="text-xs font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                <span className="text-xs font-bold text-foreground group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors">
                   Tạo Đề Thi AI
                 </span>
                 <span className="text-3xs text-muted-foreground mt-0.5">Tự động hóa đề</span>
@@ -465,12 +465,12 @@ export function StudentDashboard() {
 
               <button
                 onClick={() => router.push('/app/student/documents')}
-                className="group flex flex-col items-start p-3.5 rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-500/5 to-surface-elevated text-left hover:border-cyan-500/40 hover:shadow-xs transition-all duration-150"
+                className="group flex flex-col items-start p-3.5 rounded-2xl border border-rose-500/20 bg-gradient-to-br from-rose-500/5 to-surface-elevated text-left hover:border-rose-500/40 hover:shadow-xs transition-all duration-150"
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 mb-2 group-hover:scale-110 transition-transform">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 mb-2 group-hover:scale-110 transition-transform">
                   <FileText className="h-4 w-4" />
                 </div>
-                <span className="text-xs font-bold text-foreground group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
+                <span className="text-xs font-bold text-foreground group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
                   Tài Liệu Của Tôi
                 </span>
                 <span className="text-3xs text-muted-foreground mt-0.5">Đã tải & phân tích</span>
@@ -481,7 +481,7 @@ export function StudentDashboard() {
           {/* Recent Activity Timeline */}
           <div className="space-y-3">
             <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-              <Clock className="h-4 w-4 text-cyan-500" />
+              <Clock className="h-4 w-4 text-rose-500" />
               Hoạt động gần đây
             </h2>
 
@@ -514,7 +514,7 @@ export function StudentDashboard() {
                         'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ring-1',
                         activity.activity_type === 'quiz' && 'bg-emerald-500/10 text-emerald-600 ring-emerald-500/20',
                         activity.activity_type === 'chat' && 'bg-purple-500/10 text-purple-600 ring-purple-500/20',
-                        activity.activity_type !== 'quiz' && activity.activity_type !== 'chat' && 'bg-blue-500/10 text-blue-600 ring-blue-500/20'
+                        activity.activity_type !== 'quiz' && activity.activity_type !== 'chat' && 'bg-pink-500/10 text-pink-600 ring-pink-500/20'
                       )}
                     >
                       {activity.activity_type === 'quiz' ? (

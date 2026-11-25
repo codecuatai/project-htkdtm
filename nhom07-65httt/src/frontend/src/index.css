@@ -4,28 +4,28 @@
 
 @layer base {
   :root {
-    /* 60% Nền trung tính công thái học dịu mắt (Light Mode - Warm Paper / Slate 50) */
-    --background: 210 40% 98%;          /* #F8FAFC - Giảm chói lóa, chống mỏi mắt khi đọc lâu */
-    --foreground: 217 33% 15%;          /* #1A2536 - Đậm sắc nét, tương phản chuẩn AAA 14:1 */
+    /* 60% Nền trung tính ấm phớt tím dịu mắt (Light Mode - Orchid & Rose) */
+    --background: 290 50% 99%;          /* #FCF9FD - Trắng phớt tím siêu nhẹ, dịu mắt */
+    --foreground: 274 37% 13%;          /* #23152E - Tím than đậm, tương phản chuẩn AAA */
 
-    --surface: 214 32% 95%;             /* #EFF4F9 - Nền thứ cấp êm dịu */
-    --surface-elevated: 0 0% 100%;       /* #FFFFFF - Thẻ nổi trên nền Canvas */
-    --surface-deep: 214 32% 90%;         /* #DFE7F1 - Vùng trũng input */
+    --surface: 290 36% 96%;             /* #F7EFFA - Nền thứ cấp tím phấn êm dịu */
+    --surface-elevated: 0 0% 100%;      /* #FFFFFF - Thẻ nổi trên nền Canvas */
+    --surface-deep: 290 28% 91%;        /* #ECE0F0 - Vùng trũng input */
 
     --card: 0 0% 100%;
-    --card-foreground: 217 33% 15%;
+    --card-foreground: 274 37% 13%;
 
-    --muted: 214 30% 94%;
-    --muted-foreground: 215 22% 38%;    /* #48586E - Chữ phụ rõ ràng, tương phản 6.2:1 (vượt chuẩn AA) */
+    --muted: 290 28% 95%;
+    --muted-foreground: 278 18% 40%;    /* #6B5478 - Chữ phụ rõ ràng, vượt chuẩn AA */
 
-    /* 30% Cấu trúc & Thương hiệu học thuật */
-    --primary: 243 75% 59%;             /* #4F46E5 - Indigo học thuật, kích thích tập trung */
+    /* 30% Cấu trúc & Thương hiệu Tím lan (Orchid) */
+    --primary: 295 72% 40%;             /* #A21CAF - Tím lan Orchid, sang trọng & sáng tạo */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 214 30% 94%;
-    --secondary-foreground: 217 33% 15%;
+    --secondary: 292 32% 94%;
+    --secondary-foreground: 274 37% 13%;
 
-    --accent: 221 83% 53%;              /* #2563EB - Blue năng động cho liên kết/thao tác */
+    --accent: 330 81% 60%;              /* #EC4899 - Hồng cánh sen nổi bật cho điểm nhấn */
     --accent-foreground: 0 0% 100%;
 
     /* 10% Trạng thái học tập Semantic */
@@ -33,70 +33,70 @@
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 48%;              /* #C26604 - Amber ấm áp, cảnh báo/đang làm dở */
-    --warning-foreground: 217 33% 15%;
+    --warning-foreground: 274 37% 13%;
 
     --destructive: 347 77% 48%;         /* #CF1741 - Rose đỏ dịu, giảm căng thẳng khi sai */
     --destructive-foreground: 0 0% 100%;
 
-    --info: 201 96% 32%;                /* #0284C7 - Sky Blue thông tuệ cho Gia sư AI */
+    --info: 292 70% 48%;                /* #B825D0 - Orchid sáng cho thông tin / Gia sư AI */
     --info-foreground: 0 0% 100%;
 
-    --border: 214 28% 88%;              /* #D5DFEB - Viền định hình rõ ràng, sắc nét */
-    --input: 214 28% 88%;
-    --ring: 243 75% 59%;
+    --border: 290 24% 88%;              /* #E6D9EA - Viền phớt tím sắc nét */
+    --input: 290 24% 88%;
+    --ring: 295 72% 40%;
 
-    --ink: 222 47% 11%;                 /* #0F172A */
-    --ink-soft: 215 25% 25%;            /* #303D51 */
-    --ink-mute: 215 22% 38%;            /* #48586E */
+    --ink: 274 42% 11%;                 /* #1D1027 */
+    --ink-soft: 276 24% 26%;            /* #453252 */
+    --ink-mute: 278 18% 40%;            /* #6B5478 */
 
-    --shadow: 222 47% 11%;
+    --shadow: 274 42% 11%;
   }
 
   .dark {
-    /* 60% Nền trung tính ban đêm công thái học (Dark Mode - Midnight Slate) */
-    --background: 222 47% 9%;           /* #0B1323 - Chiều sâu không gian vô cực, không đen tuyền */
-    --foreground: 210 40% 98%;          /* #F8FAFC - Trắng sáng sắc nét, chống nhòe thị giác */
+    /* 60% Nền tối ánh tím mận sâu (Dark Mode - Plum Midnight) */
+    --background: 272 37% 7%;           /* #120B18 - Đen ánh tím mận, không ánh xanh */
+    --foreground: 270 100% 98%;         /* #FAF5FF - Trắng phớt tím sắc nét */
 
-    --surface: 220 38% 13%;             /* #141D2E - Nền panel / header */
-    --surface-elevated: 217 33% 16%;    /* #1B2537 - Card và sidebar tách khối rõ nét */
-    --surface-deep: 224 48% 8%;          /* #090E1A */
+    --surface: 272 34% 10%;             /* #1A1122 - Nền panel / header */
+    --surface-elevated: 272 33% 11%;    /* #1D1326 - Card và sidebar tách khối rõ nét */
+    --surface-deep: 272 42% 5%;         /* #0D0812 */
 
-    --card: 217 33% 16%;                /* #1B2537 */
-    --card-foreground: 210 40% 98%;
+    --card: 272 33% 11%;                /* #1D1326 */
+    --card-foreground: 270 100% 98%;
 
-    --muted: 217 28% 21%;               /* #253147 */
-    --muted-foreground: 215 25% 75%;    /* #B4C2D6 - Sáng rõ, tương phản 8.1:1 trên nền card */
+    --muted: 274 26% 18%;               /* #30223A */
+    --muted-foreground: 280 22% 76%;    /* #CBB5D6 - Sáng rõ, vượt chuẩn AA trên nền card */
 
-    /* 30% Cấu trúc & Thương hiệu ban đêm */
-    --primary: 239 84% 67%;             /* #6366F1 - Indigo 500 sáng dịu trên nền tối */
-    --primary-foreground: 222 47% 11%;
+    /* 30% Cấu trúc & Thương hiệu ban đêm (Orchid & Rose) */
+    --primary: 292 84% 61%;             /* #D946EF - Fuchsia/Orchid sáng dịu trên nền tối */
+    --primary-foreground: 272 37% 7%;
 
-    --secondary: 217 28% 21%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 274 26% 18%;
+    --secondary-foreground: 270 100% 98%;
 
-    --accent: 199 89% 52%;              /* #1BB0F4 - Sky Blue thanh thoát */
-    --accent-foreground: 222 47% 11%;
+    --accent: 329 86% 70%;              /* #F472B6 - Hồng cánh sen sáng thanh thoát */
+    --accent-foreground: 272 37% 7%;
 
     /* 10% Trạng thái học tập Semantic ban đêm */
     --success: 158 64% 52%;             /* #10B981 - Emerald 500 */
-    --success-foreground: 222 47% 11%;
+    --success-foreground: 272 37% 7%;
 
-    --warning: 38 95% 58%;              /* #FBBF24 - Amber 400 sáng rõ, không xỉn nâu */
-    --warning-foreground: 222 47% 11%;
+    --warning: 38 95% 58%;              /* #FBBF24 - Amber 400 sáng rõ */
+    --warning-foreground: 272 37% 7%;
 
     --destructive: 349 89% 65%;         /* #FB7185 - Rose 400 nổi bật */
-    --destructive-foreground: 222 47% 11%;
+    --destructive-foreground: 272 37% 7%;
 
-    --info: 199 89% 62%;                /* #38BDF8 - Sky 400 */
-    --info-foreground: 222 47% 11%;
+    --info: 292 91% 73%;                /* #E879F9 - Fuchsia 400 cho Gia sư AI */
+    --info-foreground: 272 37% 7%;
 
-    --border: 217 30% 24%;              /* #2A374E - Viền sắc sảo, chống lẫn nền */
-    --input: 217 30% 24%;
-    --ring: 239 84% 67%;
+    --border: 275 26% 22%;              /* #3B2A47 - Viền tím trầm sắc sảo */
+    --input: 275 26% 22%;
+    --ring: 292 84% 61%;
 
-    --ink: 210 40% 98%;                 /* #F8FAFC */
-    --ink-soft: 214 32% 88%;            /* #E2E8F0 */
-    --ink-mute: 215 25% 75%;            /* #B4C2D6 */
+    --ink: 270 100% 98%;                /* #FAF5FF */
+    --ink-soft: 280 30% 88%;            /* #E6D4EE */
+    --ink-mute: 280 22% 76%;            /* #CBB5D6 */
 
     --shadow: 0 0% 0%;
   }
@@ -304,8 +304,8 @@
   .bg-grid-pattern {
     background-size: 36px 36px;
     background-image: 
-      linear-gradient(to right, rgba(99, 102, 241, 0.08) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(99, 102, 241, 0.08) 1px, transparent 1px);
+      linear-gradient(to right, rgba(162, 28, 175, 0.07) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(162, 28, 175, 0.07) 1px, transparent 1px);
   }
   .dark .bg-grid-pattern {
     background-size: 36px 36px;

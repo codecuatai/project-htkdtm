@@ -250,7 +250,7 @@ export function ChatPanel() {
                         className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-background/80 hover:bg-background border border-border/60 text-foreground/80 hover:text-foreground transition disabled:opacity-40 cursor-pointer"
                         title="Giải thích bằng ẩn dụ đời thực sinh động"
                       >
-                        <Compass className="h-3 w-3 text-sky-500" />
+                        <Compass className="h-3 w-3 text-fuchsia-500" />
                         Ẩn dụ
                       </button>
                       <button

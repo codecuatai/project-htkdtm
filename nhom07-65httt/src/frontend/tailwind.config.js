@@ -77,9 +77,9 @@ export default {
         soft: '0 1px 2px 0 hsl(var(--shadow) / 0.05)',
         lift: '0 12px 30px -18px hsl(var(--shadow) / 0.35), 0 2px 8px -6px hsl(var(--shadow) / 0.18)',
         glow: '0 0 0 1px hsl(var(--ring) / 0.12), 0 12px 28px -18px hsl(var(--ring) / 0.4)',
-        'glow-admin': '0 0 0 1px rgba(99, 102, 241, 0.15), 0 8px 24px -8px rgba(99, 102, 241, 0.35)',
-        'glow-lecturer': '0 0 0 1px rgba(139, 92, 246, 0.15), 0 8px 24px -8px rgba(139, 92, 246, 0.35)',
-        'glow-student': '0 0 0 1px rgba(59, 130, 246, 0.15), 0 8px 24px -8px rgba(59, 130, 246, 0.35)'
+        'glow-admin': '0 0 0 1px rgba(162, 28, 175, 0.18), 0 8px 24px -8px rgba(162, 28, 175, 0.35)',
+        'glow-lecturer': '0 0 0 1px rgba(217, 70, 239, 0.18), 0 8px 24px -8px rgba(217, 70, 239, 0.35)',
+        'glow-student': '0 0 0 1px rgba(236, 72, 153, 0.18), 0 8px 24px -8px rgba(236, 72, 153, 0.35)'
       },
       borderRadius: {
         xl: '0.75rem',

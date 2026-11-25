@@ -37,9 +37,9 @@ interface ProviderConfig {
 const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
   gemini: {
     label: 'Google Gemini',
-    badgeBg: 'bg-indigo-50 dark:bg-indigo-950/40',
-    badgeText: 'text-indigo-700 dark:text-indigo-300',
-    badgeBorder: 'border-indigo-200 dark:border-indigo-800',
+    badgeBg: 'bg-fuchsia-50 dark:bg-fuchsia-950/40',
+    badgeText: 'text-fuchsia-700 dark:text-fuchsia-300',
+    badgeBorder: 'border-fuchsia-200 dark:border-fuchsia-800',
     icon: Sparkles,
     placeholder: 'AIzaSy... hoặc AQ.Ab8...',
     namePlaceholder: 'VD: Gemini Flash Key 1',
@@ -217,7 +217,7 @@ export function AdminAiKeys() {
             <Badge variant="outline" label="Quản trị / Điều phối AI" className="text-xs font-mono" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2.5">
-            <Cpu className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
+            <Cpu className="w-7 h-7 text-fuchsia-600 dark:text-fuchsia-400" />
             Quản Lý AI & Gemini API Keys
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">
@@ -239,7 +239,7 @@ export function AdminAiKeys() {
           <Button
             size="sm"
             onClick={() => setModalOpen(true)}
-            className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm"
+            className="gap-2 bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-medium shadow-sm"
           >
             <Plus className="w-4 h-4" />
             Thêm API Key
@@ -247,7 +247,7 @@ export function AdminAiKeys() {
         </div>
       </div>
 
-      <Card className="p-4 border border-indigo-200/70 dark:border-indigo-900/50 bg-white dark:bg-slate-900/50">
+      <Card className="p-4 border border-fuchsia-200/70 dark:border-fuchsia-900/50 bg-white dark:bg-slate-900/50">
         <div className="flex flex-col sm:flex-row sm:items-end gap-3">
           <div className="flex-1">
             <label htmlFor="gemini-model-id" className="block text-sm font-semibold text-slate-800 dark:text-slate-100">
@@ -262,13 +262,13 @@ export function AdminAiKeys() {
               onChange={(event) => setModelId(event.target.value)}
               placeholder="gemini-3.5-flash-lite"
               maxLength={100}
-              className="w-full sm:max-w-md px-3 py-2 text-sm font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+              className="w-full sm:max-w-md px-3 py-2 text-sm font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 focus:border-fuchsia-500"
             />
           </div>
           <Button
             onClick={handleSaveModel}
             disabled={savingModel || !modelId.trim() || modelId.trim() === savedModelId}
-            className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
+            className="gap-2 bg-fuchsia-600 hover:bg-fuchsia-700 text-white"
           >
             <Save className="w-4 h-4" />
             {savingModel ? 'Đang lưu...' : 'Lưu model'}
@@ -300,15 +300,15 @@ export function AdminAiKeys() {
           <span className="text-xs text-emerald-600/80 dark:text-emerald-400/80 mt-1 block">Sẵn sàng xoay vòng</span>
         </Card>
 
-        <Card className="p-4 border border-indigo-200/60 dark:border-indigo-900/40 bg-indigo-50/30 dark:bg-indigo-950/10">
+        <Card className="p-4 border border-fuchsia-200/60 dark:border-fuchsia-900/40 bg-fuchsia-50/30 dark:bg-fuchsia-950/10">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-indigo-700 dark:text-indigo-400">Nhà Cung Cấp</span>
-            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg">
-              <Bot className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            <span className="text-xs font-medium text-fuchsia-700 dark:text-fuchsia-400">Nhà Cung Cấp</span>
+            <div className="p-2 bg-fuchsia-100 dark:bg-fuchsia-900/50 rounded-lg">
+              <Bot className="w-4 h-4 text-fuchsia-600 dark:text-fuchsia-400" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-indigo-700 dark:text-indigo-300 mt-2">{metrics.providers}</p>
-          <span className="text-xs text-indigo-600/80 dark:text-indigo-400/80 mt-1 block">Google Gemini</span>
+          <p className="text-2xl font-bold text-fuchsia-700 dark:text-fuchsia-300 mt-2">{metrics.providers}</p>
+          <span className="text-xs text-fuchsia-600/80 dark:text-fuchsia-400/80 mt-1 block">Google Gemini</span>
         </Card>
 
         <Card className="p-4 border border-amber-200/60 dark:border-amber-900/40 bg-amber-50/30 dark:bg-amber-950/10">
@@ -341,13 +341,13 @@ export function AdminAiKeys() {
                   onClick={() => setSelectedTab(tab.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1.5 ${
                     active
-                      ? 'bg-indigo-600 text-white shadow-sm'
+                      ? 'bg-fuchsia-600 text-white shadow-sm'
                       : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
                   }`}
                 >
                   {tab.label}
                   <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                    active ? 'bg-indigo-700/60 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'
+                    active ? 'bg-fuchsia-700/60 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'
                   }`}>
                     {count}
                   </span>
@@ -364,7 +364,7 @@ export function AdminAiKeys() {
               placeholder="Tìm theo tên hoặc khóa..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 focus:border-fuchsia-500"
             />
           </div>
         </div>
@@ -386,7 +386,7 @@ export function AdminAiKeys() {
               {loading && aiKeys.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-12 text-center text-slate-400">
-                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-indigo-500" />
+                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-fuchsia-500" />
                     Đang tải danh sách khóa...
                   </td>
                 </tr>
@@ -490,7 +490,7 @@ export function AdminAiKeys() {
         title="Thêm Gemini API Key"
       >
         <form onSubmit={handleCreateKey} className="space-y-4 pt-1">
-          <div className="p-3 bg-indigo-50/70 dark:bg-indigo-950/30 rounded-lg border border-indigo-100 dark:border-indigo-900/50 text-xs text-indigo-700 dark:text-indigo-300 leading-relaxed">
+          <div className="p-3 bg-fuchsia-50/70 dark:bg-fuchsia-950/30 rounded-lg border border-fuchsia-100 dark:border-fuchsia-900/50 text-xs text-fuchsia-700 dark:text-fuchsia-300 leading-relaxed">
             Khóa sẽ được mã hóa trong cơ sở dữ liệu. Sau khi lưu, giá trị đầy đủ không được hiển thị lại; khóa đang bật sẽ được đồng bộ vào vòng xoay của Gemini.
           </div>
 
@@ -503,7 +503,7 @@ export function AdminAiKeys() {
               placeholder={currentProviderConfig.namePlaceholder}
               value={nameInput}
               onChange={(e) => setNameInput(e.target.value)}
-              className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 focus:border-fuchsia-500"
               required
             />
           </div>
@@ -518,7 +518,7 @@ export function AdminAiKeys() {
                 placeholder={currentProviderConfig.placeholder}
                 value={keyInput}
                 onChange={(e) => setKeyInput(e.target.value)}
-                className="w-full pr-10 pl-3 py-2 text-sm font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                className="w-full pr-10 pl-3 py-2 text-sm font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 focus:border-fuchsia-500"
                 required
               />
               <button
@@ -547,7 +547,7 @@ export function AdminAiKeys() {
             <Button
               type="submit"
               disabled={savingKey}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium"
+              className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-medium"
             >
               {savingKey ? 'Đang lưu & đồng bộ...' : 'Lưu & Kích Hoạt'}
             </Button>

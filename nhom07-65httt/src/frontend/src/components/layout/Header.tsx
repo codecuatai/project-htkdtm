@@ -88,9 +88,9 @@ export function Header() {
   const role = user?.role || 'student'
   const roleThemes = {
     admin: {
-      bg: 'bg-indigo-500/10 dark:bg-indigo-500/20',
-      text: 'text-indigo-600 dark:text-indigo-400',
-      border: 'border-indigo-500/20',
+      bg: 'bg-fuchsia-500/10 dark:bg-fuchsia-500/20',
+      text: 'text-fuchsia-600 dark:text-fuchsia-400',
+      border: 'border-fuchsia-500/20',
       label: 'Quản trị viên'
     },
     lecturer: {
@@ -100,15 +100,15 @@ export function Header() {
       label: 'Giảng viên'
     },
     student: {
-      bg: 'bg-blue-500/10 dark:bg-blue-500/20',
-      text: 'text-blue-600 dark:text-blue-400',
-      border: 'border-blue-500/20',
+      bg: 'bg-pink-500/10 dark:bg-pink-500/20',
+      text: 'text-pink-600 dark:text-pink-400',
+      border: 'border-pink-500/20',
       label: 'Học viên'
     }
   }[role as 'admin' | 'lecturer' | 'student'] || {
-    bg: 'bg-blue-500/10',
-    text: 'text-blue-600',
-    border: 'border-blue-500/20',
+    bg: 'bg-pink-500/10',
+    text: 'text-pink-600',
+    border: 'border-pink-500/20',
     label: 'Học viên'
   }
 

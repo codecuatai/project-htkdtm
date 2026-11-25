@@ -21,11 +21,11 @@ interface SectionAccordionProps {
 const getFileIcon = (fileName: string) => {
   const ext = fileName.split('.').pop()?.toLowerCase();
   if (['pdf'].includes(ext || '')) return <FileText className="h-4 w-4 text-rose-500 shrink-0" />
-  if (['doc', 'docx'].includes(ext || '')) return <FileText className="h-4 w-4 text-blue-500 shrink-0" />
+  if (['doc', 'docx'].includes(ext || '')) return <FileText className="h-4 w-4 text-pink-500 shrink-0" />
   if (['xls', 'xlsx'].includes(ext || '')) return <FileText className="h-4 w-4 text-emerald-500 shrink-0" />
   if (['ppt', 'pptx'].includes(ext || '')) return <FileText className="h-4 w-4 text-orange-500 shrink-0" />
   if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(ext || '')) return <FileText className="h-4 w-4 text-purple-500 shrink-0" />
-  if (['mp4', 'mkv', 'avi', 'mov'].includes(ext || '')) return <Video className="h-4 w-4 text-indigo-500 shrink-0" />
+  if (['mp4', 'mkv', 'avi', 'mov'].includes(ext || '')) return <Video className="h-4 w-4 text-fuchsia-500 shrink-0" />
   return <Paperclip className="h-4 w-4 text-muted-foreground shrink-0" />
 }
 

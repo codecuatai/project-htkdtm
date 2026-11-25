@@ -197,7 +197,7 @@ export function CourseCatalog() {
             >
               <div>
                 {/* Thumbnail */}
-                <div className="relative aspect-video bg-gradient-to-br from-primary/10 to-cyan-500/10 overflow-hidden">
+                <div className="relative aspect-video bg-gradient-to-br from-primary/10 to-rose-500/10 overflow-hidden">
                   {course.thumbnail_url ? (
                     <img
                       src={course.thumbnail_url}

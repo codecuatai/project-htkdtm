@@ -325,7 +325,7 @@ function CurriculumLessonItem({
             </span>
           )}
           {docAttachmentsCount > 0 && (
-            <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-1.5 py-0.2 rounded-md">
+            <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-pink-600 dark:text-pink-400 bg-pink-500/10 px-1.5 py-0.2 rounded-md">
               <Paperclip className="h-2.5 w-2.5" /> {docAttachmentsCount}
             </span>
           )}

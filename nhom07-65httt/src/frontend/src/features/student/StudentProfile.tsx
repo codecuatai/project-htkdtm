@@ -383,7 +383,7 @@ export function StudentProfile() {
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-muted/60">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-300"
+                    className="h-full rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-500 transition-all duration-300"
                     style={{ width: `${Math.max(1, tokenPct)}%` }}
                   />
                 </div>

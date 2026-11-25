@@ -5,6 +5,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 import { ErrorBoundary } from '../common/ErrorBoundary'
 import { ThemeProvider } from '../ui/ThemeProvider'
 import { ToastContainer } from '../ui/Toast'
+import { FloatingAiBot } from '../ai/FloatingAiBot'
 import { useAppStore } from '../../stores/appStore'
 import { setRateLimitListener } from '../../services/api'
 
@@ -29,6 +30,7 @@ export function Providers({ children }: { children: ReactNode }) {
       <ThemeProvider>
         <ErrorBoundary>
           {children}
+          <FloatingAiBot />
           <ToastContainer />
         </ErrorBoundary>
       </ThemeProvider>

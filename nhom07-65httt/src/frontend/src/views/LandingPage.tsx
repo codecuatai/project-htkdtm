@@ -43,8 +43,8 @@ const morphKeywords = [
   {
     text: 'Giáo Trình PDF',
     icon: FileText,
-    gradient: 'from-blue-600 via-indigo-600 to-primary dark:from-blue-400 dark:via-indigo-300 dark:to-cyan-300',
-    badgeBg: 'bg-blue-500/12 text-blue-600 dark:text-blue-400 border-blue-500/25'
+    gradient: 'from-pink-600 via-fuchsia-600 to-primary dark:from-pink-400 dark:via-fuchsia-300 dark:to-rose-300',
+    badgeBg: 'bg-pink-500/12 text-pink-600 dark:text-pink-400 border-pink-500/25'
   },
   {
     text: 'Video Bài Giảng',
@@ -208,7 +208,7 @@ export function LandingPage() {
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group shrink-0"
           >
-            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary via-indigo-600 to-accent text-primary-foreground shadow-sm shadow-primary/25 group-hover:scale-105 transition-transform shrink-0">
+            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary via-fuchsia-600 to-accent text-primary-foreground shadow-sm shadow-primary/25 group-hover:scale-105 transition-transform shrink-0">
               <Zap className="h-4 w-4 sm:h-5 sm:w-5 fill-current" />
             </div>
             <span className="text-base sm:text-xl font-black tracking-tight text-foreground whitespace-nowrap">
@@ -343,7 +343,7 @@ export function LandingPage() {
                 </span>
                 <span className="block">
                   Thành{' '}
-                  <span className="bg-gradient-to-r from-primary via-indigo-600 to-accent dark:from-indigo-400 dark:via-blue-400 dark:to-cyan-300 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-primary via-fuchsia-600 to-accent dark:from-fuchsia-400 dark:via-pink-400 dark:to-rose-300 bg-clip-text text-transparent">
                     Tri Thức Tương Tác
                   </span>
                 </span>
@@ -424,12 +424,12 @@ export function LandingPage() {
                   </div>
 
                   <div className="hidden sm:flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-slate-900/80 border border-white/15 backdrop-blur-md text-white shadow-lg">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-500/25 text-indigo-300 shrink-0">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-fuchsia-500/25 text-fuchsia-300 shrink-0">
                       <Eye className="h-4 w-4" />
                     </div>
                     <div className="text-left">
                       <p className="text-2xs font-extrabold leading-tight">Eye-Care WCAG AAA</p>
-                      <p className="text-3xs text-sky-300 font-semibold">Giảm 40% căng thẳng mắt</p>
+                      <p className="text-3xs text-fuchsia-300 font-semibold">Giảm 40% căng thẳng mắt</p>
                     </div>
                   </div>
                 </div>
@@ -668,14 +668,14 @@ export function LandingPage() {
               <div className="grid grid-cols-2 gap-2.5">
                 <div className="rounded-xl p-3 bg-[#F8FAFC] border border-slate-200 text-[#1A2536] space-y-1 shadow-2xs">
                   <div className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#4F46E5]" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#A21CAF]" />
                     <span className="text-3xs font-extrabold">Slate Paper</span>
                   </div>
                   <p className="text-3xs text-slate-500">Ban ngày dịu mắt</p>
                 </div>
                 <div className="rounded-xl p-3 bg-[#0B1323] border border-slate-700 text-[#F8FAFC] space-y-1 shadow-2xs">
                   <div className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#6366F1]" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#EC4899]" />
                     <span className="text-3xs font-extrabold">Midnight</span>
                   </div>
                   <p className="text-3xs text-slate-400">Học đêm chống chói</p>
@@ -884,7 +884,7 @@ export function LandingPage() {
                             Thuật toán Lan truyền ngược (Backpropagation) tính đạo hàm riêng của hàm mất mát theo từng trọng số nhờ quy tắc chuỗi (Chain Rule), sau đó lan truyền sai số từ tầng ra ngược về các tầng ẩn để tối ưu trọng số qua Gradient Descent.
                           </p>
                           <div className="pt-1 flex flex-wrap items-center gap-2 text-3xs font-semibold">
-                            <span className="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-300 border border-blue-500/20">
+                            <span className="px-2.5 py-1 rounded-lg bg-pink-500/10 text-pink-600 dark:text-pink-300 border border-pink-500/20">
                               Trang 42 · GiaoTrinh_KhaiPhaDuLieu.pdf
                             </span>
                             <span className="px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20">
@@ -981,7 +981,7 @@ export function LandingPage() {
                           <span className={cn('w-1 rounded-full bg-primary', audioPlaying ? 'animate-soundwave-1' : 'h-2')} />
                           <span className={cn('w-1 rounded-full bg-accent', audioPlaying ? 'animate-soundwave-2' : 'h-3')} />
                           <span className={cn('w-1 rounded-full bg-primary', audioPlaying ? 'animate-soundwave-3' : 'h-4')} />
-                          <span className={cn('w-1 rounded-full bg-indigo-400', audioPlaying ? 'animate-soundwave-4' : 'h-2')} />
+                          <span className={cn('w-1 rounded-full bg-fuchsia-400', audioPlaying ? 'animate-soundwave-4' : 'h-2')} />
                         </div>
                       </div>
 
@@ -1179,7 +1179,7 @@ export function LandingPage() {
             {activeRole === 'student' ? (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center animate-fade-in">
                 <div className="lg:col-span-6 space-y-5">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-500/10 text-pink-600 dark:text-pink-400 text-xs font-bold">
                     <span>Trải nghiệm Học tập Chủ động</span>
                   </div>
                   <h3 className="text-2xl sm:text-3xl font-black text-foreground leading-tight">
@@ -1227,7 +1227,7 @@ export function LandingPage() {
                         <span className="text-emerald-400">Hoàn thành 75%</span>
                       </div>
                       <div className="h-1.5 w-full bg-white/15 rounded-full overflow-hidden">
-                        <div className="h-full w-3/4 bg-gradient-to-r from-indigo-400 to-emerald-400 rounded-full" />
+                        <div className="h-full w-3/4 bg-gradient-to-r from-fuchsia-400 to-emerald-400 rounded-full" />
                       </div>
                       <div className="flex flex-wrap items-center justify-between gap-2 text-3xs text-slate-200 pt-0.5">
                         <span>Ôn trắc nghiệm Chương 2: Big Data</span>
@@ -1285,7 +1285,7 @@ export function LandingPage() {
                     <div className="absolute bottom-4 inset-x-4 p-4 rounded-2xl bg-slate-900/80 border border-white/15 backdrop-blur-md text-white space-y-2.5 shadow-xl">
                       <div className="flex items-center justify-between text-xs font-bold">
                         <span>Báo cáo tiến độ lớp học phần</span>
-                        <span className="text-sky-300">85 học viên</span>
+                        <span className="text-fuchsia-300">85 học viên</span>
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-3xs">
                         <div className="p-2 rounded-xl bg-white/10 flex items-center justify-between">
@@ -1432,10 +1432,10 @@ export function LandingPage() {
             aria-hidden="true"
             className="absolute inset-0 w-full h-full object-cover opacity-25 mix-blend-luminosity pointer-events-none"
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/90 via-slate-950/85 to-blue-950/90 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-950/90 via-slate-950/85 to-pink-950/90 pointer-events-none" />
 
           <div className="relative z-10 max-w-2xl mx-auto space-y-4">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/10 border border-white/15 text-indigo-200 text-xs font-bold backdrop-blur-md">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/10 border border-white/15 text-fuchsia-200 text-xs font-bold backdrop-blur-md">
               <Sparkles className="h-3.5 w-3.5" /> Sẵn sàng bứt phá học kỳ này
             </span>
             <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">

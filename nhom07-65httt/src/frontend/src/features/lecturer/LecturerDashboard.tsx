@@ -110,7 +110,7 @@ export function LecturerDashboard() {
                   <div className={cn(
                     'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
                     stat.tone === 'violet' && 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
-                    stat.tone === 'blue' && 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+                    stat.tone === 'blue' && 'bg-pink-500/10 text-pink-600 dark:text-pink-400',
                     stat.tone === 'amber' && 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
                     stat.tone === 'emerald' && 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
                   )}>

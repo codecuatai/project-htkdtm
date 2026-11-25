@@ -124,7 +124,7 @@ export function LessonContextTabs({
         {activeTab === 'discussion' && (
           <Card padding="responsive" className="rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.05)] border border-border/60">
             <div className="mb-4 border-b border-border/60 pb-4 flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 text-blue-600 dark:text-blue-400 ring-1 ring-blue-500/20">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-pink-500/20 to-fuchsia-500/20 text-pink-600 dark:text-pink-400 ring-1 ring-pink-500/20">
                 <MessageSquare className="h-5 w-5" />
               </div>
               <div>
@@ -290,13 +290,13 @@ function OverviewTabContent({
       {hasDocs && (
         <Card padding="responsive" className="rounded-2xl border border-border/60 shadow-[0_2px_16px_rgba(0,0,0,0.04)]">
           <div className="flex items-center gap-2.5 border-b border-border/60 pb-4 mb-4">
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 ring-1 ring-blue-500/20">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-pink-500/10 text-pink-600 dark:text-pink-400 ring-1 ring-pink-500/20">
               <Paperclip className="h-4 w-4" />
             </span>
             <h3 className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-foreground">
               Tài liệu & Tệp đính kèm
             </h3>
-            <span className="ml-auto text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full tabular-nums">
+            <span className="ml-auto text-[11px] font-bold text-pink-600 dark:text-pink-400 bg-pink-500/10 px-2 py-0.5 rounded-full tabular-nums">
               {documentAttachments.length}
             </span>
           </div>
@@ -305,10 +305,10 @@ function OverviewTabContent({
             {documentAttachments.map((att) => (
               <div
                 key={att.id}
-                className="group flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-muted/20 p-3.5 transition-all hover:border-blue-500/40 hover:bg-blue-500/[0.04] hover:shadow-[0_4px_14px_rgba(59,130,246,0.12)]"
+                className="group flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-muted/20 p-3.5 transition-all hover:border-pink-500/40 hover:bg-pink-500/[0.04] hover:shadow-[0_4px_14px_rgba(236,72,153,0.12)]"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-pink-500/10 text-pink-600 dark:text-pink-400">
                     <FileText className="h-4 w-4" />
                   </span>
                   <div className="min-w-0">
@@ -323,7 +323,7 @@ function OverviewTabContent({
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-8 text-xs shrink-0 rounded-lg group-hover:border-blue-500/50 group-hover:text-blue-600 dark:group-hover:text-blue-400"
+                  className="h-8 text-xs shrink-0 rounded-lg group-hover:border-pink-500/50 group-hover:text-pink-600 dark:group-hover:text-pink-400"
                   icon={<Eye className="h-3 w-3" />}
                   onClick={() => setViewingDoc({ url: att.file_url, name: att.file_name })}
                 >

@@ -340,7 +340,7 @@ export function LecturerTeachingOps({ courseId, courseTitle }: LecturerTeachingO
       <section className="grid gap-4 xl:grid-cols-3">
         <Card padding="responsive">
           <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-            <HelpCircle className="h-5 w-5 text-blue-500" />
+            <HelpCircle className="h-5 w-5 text-pink-500" />
             Diễn Đàn Hỏi Đáp Bài Học
           </h2>
           <div className="mt-4 space-y-3">

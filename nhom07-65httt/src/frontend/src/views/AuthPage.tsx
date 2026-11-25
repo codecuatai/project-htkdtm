@@ -428,7 +428,7 @@ function AuthShell({ variant }: { variant: Variant }) {
               )}
             >
               <GraduationCap
-                className={cn('h-[18px] w-[18px]', isStudent ? 'text-blue-600' : 'text-muted-foreground')}
+                className={cn('h-[18px] w-[18px]', isStudent ? 'text-pink-600' : 'text-muted-foreground')}
                 aria-hidden="true"
               />
               <span>

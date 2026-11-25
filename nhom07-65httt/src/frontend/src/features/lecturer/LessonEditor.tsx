@@ -21,8 +21,8 @@ const getFileDetails = (fileName: string) => {
   }
   if (['doc', 'docx'].includes(ext)) {
     return {
-      icon: <FileText className="h-5 w-5 text-blue-500" />,
-      bg: 'bg-blue-500/10 border-blue-500/20',
+      icon: <FileText className="h-5 w-5 text-pink-500" />,
+      bg: 'bg-pink-500/10 border-pink-500/20',
       label: 'Tài liệu Word'
     }
   }
@@ -49,15 +49,15 @@ const getFileDetails = (fileName: string) => {
   }
   if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(ext)) {
     return {
-      icon: <FileImage className="h-5 w-5 text-cyan-500" />,
-      bg: 'bg-cyan-500/10 border-cyan-500/20',
+      icon: <FileImage className="h-5 w-5 text-rose-500" />,
+      bg: 'bg-rose-500/10 border-rose-500/20',
       label: 'Hình ảnh'
     }
   }
   if (['mp3', 'wav', 'ogg', 'm4a'].includes(ext)) {
     return {
-      icon: <Music className="h-5 w-5 text-indigo-500" />,
-      bg: 'bg-indigo-500/10 border-indigo-500/20',
+      icon: <Music className="h-5 w-5 text-fuchsia-500" />,
+      bg: 'bg-fuchsia-500/10 border-fuchsia-500/20',
       label: 'Tệp âm thanh'
     }
   }

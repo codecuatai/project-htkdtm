@@ -176,8 +176,8 @@ export function QuizTaking() {
     return (
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-4">
-            <BookOpen className="h-8 w-8 text-indigo-600" />
+          <div className="w-16 h-16 rounded-full bg-fuchsia-100 flex items-center justify-center mx-auto mb-4">
+            <BookOpen className="h-8 w-8 text-fuchsia-600" />
           </div>
           <h1 className="text-2xl font-bold mb-2">Bài trắc nghiệm từ khóa học</h1>
           <p className="text-gray-600">Tạo bài trắc nghiệm từ nội dung bài học để kiểm tra kiến thức</p>
@@ -223,7 +223,7 @@ export function QuizTaking() {
   if (generating) {
     return (
       <div className="max-w-2xl mx-auto text-center py-12">
-        <div className="animate-spin w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full mx-auto mb-4" />
+        <div className="animate-spin w-12 h-12 border-4 border-fuchsia-600 border-t-transparent rounded-full mx-auto mb-4" />
         <h2 className="text-xl font-semibold mb-2">Đang tạo bài trắc nghiệm...</h2>
         <p className="text-gray-600">AI đang phân tích tài liệu và tạo câu hỏi kiểm tra</p>
       </div>
@@ -237,7 +237,7 @@ export function QuizTaking() {
     <div className="max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <Link href={`/app/student/courses/${id}/learn`} className="text-sm text-indigo-600 hover:underline flex items-center gap-1 mb-1">
+          <Link href={`/app/student/courses/${id}/learn`} className="text-sm text-fuchsia-600 hover:underline flex items-center gap-1 mb-1">
             ← Quay lại học tập
           </Link>
           <h1 className="text-xl font-bold">Bài trắc nghiệm: {course.title}</h1>
@@ -272,15 +272,15 @@ export function QuizTaking() {
                     'w-full flex items-center gap-3 rounded-xl border p-4 text-left transition',
                     isCorrect && 'border-green-500 bg-green-50 text-green-700',
                     isWrong && 'border-red-500 bg-red-50 text-red-700',
-                    !submitted && isSelected && 'border-indigo-500 bg-indigo-50 text-indigo-700',
-                    !submitted && !isSelected && 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
+                    !submitted && isSelected && 'border-fuchsia-500 bg-fuchsia-50 text-fuchsia-700',
+                    !submitted && !isSelected && 'border-gray-200 hover:border-fuchsia-300 hover:bg-gray-50'
                   )}
                 >
                   <span className={cn(
                     'w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm',
                     isCorrect && 'bg-green-500 text-white',
                     isWrong && 'bg-red-500 text-white',
-                    !submitted && isSelected && 'bg-indigo-500 text-white',
+                    !submitted && isSelected && 'bg-fuchsia-500 text-white',
                     !submitted && !isSelected && 'bg-gray-100 text-gray-600'
                   )}>
                     {isCorrect ? <CheckCircle2 className="h-4 w-4" /> :

@@ -86,8 +86,8 @@ export function AdminLayout({ children }: { children: ReactNode }) {
       </div>
 
       {/* Admin Mode Badge */}
-      <div className="flex items-center gap-2 mx-1 px-3 py-2 rounded-lg bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border border-indigo-500/20">
-        <ShieldCheck className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
+      <div className="flex items-center gap-2 mx-1 px-3 py-2 rounded-lg bg-fuchsia-500/10 text-fuchsia-500 dark:text-fuchsia-400 border border-fuchsia-500/20">
+        <ShieldCheck className="h-4 w-4 text-fuchsia-500 dark:text-fuchsia-400" />
         <span className="text-xs font-semibold">Chế độ quản trị</span>
       </div>
 
@@ -178,13 +178,13 @@ export function AdminLayout({ children }: { children: ReactNode }) {
 
         {/* Admin Badge */}
         {!isCollapsed ? (
-          <div className="flex items-center gap-2 mx-3 my-3 px-3 py-2 rounded-lg bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border border-indigo-500/20 animate-fade-in">
-            <ShieldCheck className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
+          <div className="flex items-center gap-2 mx-3 my-3 px-3 py-2 rounded-lg bg-fuchsia-500/10 text-fuchsia-500 dark:text-fuchsia-400 border border-fuchsia-500/20 animate-fade-in">
+            <ShieldCheck className="h-4 w-4 text-fuchsia-500 dark:text-fuchsia-400" />
             <span className="text-xs font-semibold">Chế độ quản trị</span>
           </div>
         ) : (
           <div className="flex justify-center my-3">
-            <ShieldCheck className="h-4 w-4 text-indigo-500" />
+            <ShieldCheck className="h-4 w-4 text-fuchsia-500" />
           </div>
         )}
 
@@ -274,7 +274,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
 
             {/* Breadcrumbs */}
             <div className="flex items-center gap-1.5 sm:gap-2 truncate">
-              <span className="text-3xs sm:text-2xs font-semibold px-2 py-0.5 rounded-full border border-indigo-500/20 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shrink-0">
+              <span className="text-3xs sm:text-2xs font-semibold px-2 py-0.5 rounded-full border border-fuchsia-500/20 bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 shrink-0">
                 Admin
               </span>
               <span className="text-muted-foreground/30 text-xs">/</span>
