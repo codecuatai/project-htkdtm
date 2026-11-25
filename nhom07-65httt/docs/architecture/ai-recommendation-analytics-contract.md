@@ -45,7 +45,7 @@ model/Alembic migration.
 | Thực thể | Trường đề xuất | Bắt buộc sau phát hành | Quy tắc |
 |---|---|---:|---|
 | `DatasetVersions` | `id` UUID PK, `version` string UNIQUE, `status`, `is_active`, `created_at`, `published_at`, `created_by`, `approved_by`, `approved_at`, `record_count`, `manifest_sha256`, `schema_version`, `change_summary` | `id`, `version`, `status`, `is_active`, `published_at`, `approved_by`, `approved_at`, `record_count`, `manifest_sha256`, `schema_version` | `status` tối thiểu `draft`, `published`, `retired`; chỉ version `published` được đọc bởi AI. `is_active` không thay thế `version` cố định của một request. Phải có ràng buộc bảo đảm tối đa một version active nếu nghiệp vụ cần con trỏ `current`. |
-| `CourseSnapshots` | `id` UUID PK, `dataset_version_id` FK, `source_name`, `source_course_id`, `canonical_url`, `title`, `description`, `provider`, `language`, `level`, `price_amount`, `price_currency`, `duration_minutes`, `offer_type`, `quality_status`, `quality_flags`, `approval_status`, `captured_at`, `snapshot_hash` | khóa, version, nguồn/định danh nguồn, `title`, `offer_type`, trạng thái duyệt/chất lượng, `captured_at`, `snapshot_hash` | Unique đề xuất `(dataset_version_id, source_name, source_course_id)`; chỉ snapshot được duyệt và version đã phát hành cấp cho mô hình. |
+| `CourseSnapshots` | `id` UUID PK, `dataset_version_id` FK, `source_name`, `source_course_id`, `canonical_url`, `title`, `description`, `provider`, `language`, `level`, `price_amount`, `price_currency`, `duration_minutes`, `required_hours_per_week`, `offer_type`, `quality_status`, `quality_flags`, `approval_status`, `captured_at`, `snapshot_hash` | khóa, version, nguồn/định danh nguồn, `title`, `offer_type`, trạng thái duyệt/chất lượng, `captured_at`, `snapshot_hash` | Unique đề xuất `(dataset_version_id, source_name, source_course_id)`; chỉ snapshot được duyệt và version đã phát hành cấp cho mô hình. `required_hours_per_week` phải là tải học/tuần có nguồn; không suy ra trực tiếp từ tổng `duration_minutes`. |
 | `CourseSnapshotSkills` | `course_snapshot_id` FK, `skill_id` FK, `skill_origin`, `confidence`, `review_status` | khóa hai phía, `skill_origin` | `skill_origin` phân biệt `direct` và `inferred`; unique `(course_snapshot_id, skill_id, skill_origin)`. |
 | `CourseSnapshotCategories` | `course_snapshot_id` FK, `category_id` FK, `source_category_label` | khóa hai phía | Bảng liên kết để không nhét danh sách nhiều giá trị vào một cột và tránh nhân dòng Fact khi join. |
 
@@ -158,6 +158,7 @@ kỹ năng.
 | `price_amount` | số không âm | Có | `null` không có nghĩa là miễn phí. |
 | `price_currency` | ISO 4217 | Có | Bắt buộc khi `price_amount` có giá trị. |
 | `duration_minutes` | số nguyên dương | Có | Giá trị thiếu giữ `null`; chỉ dùng lọc thời gian khi có quy tắc quy đổi được nhóm chấp thuận. |
+| `required_hours_per_week` | số không âm | Có | Tải học ước tính/tuần đã được nguồn cung cấp hoặc nhóm xác nhận; không thể suy ra chỉ từ `duration_minutes`. Nếu người học có giới hạn giờ/tuần mà trường này thiếu, ứng viên bị loại vì chưa xác minh được ràng buộc. |
 | `direct_skills` | mảng skill object | Có | Kỹ năng nêu trực tiếp trên nguồn; mỗi mục gồm `skill_id`, `source`, `confidence`. |
 | `inferred_skills` | mảng skill object | Có | Kỹ năng suy luận; giữ nguồn/confidence và cờ rà soát, không gộp âm thầm vào kỹ năng trực tiếp. |
 | `prerequisite_skill_ids` | mảng skill ID | Có | Tiên quyết khóa học đã ánh xạ taxonomy; `null` là chưa rõ, không đồng nghĩa không có tiên quyết. |
@@ -179,6 +180,30 @@ thiếu ngân sách hoặc thời lượng, bỏ riêng bộ lọc đó và tr�
 không loại hết ứng viên chỉ vì trường tùy chọn bị thiếu. Tiên quyết được kiểm tra
 theo đồ thị kỹ năng đã duyệt; trường tiên quyết chưa biết phải được gắn cảnh báo
 và xử lý theo quy tắc do nhóm chốt, không được ngầm xem là đã thỏa mãn.
+
+Với bộ lọc `available_hours_per_week`, chỉ so sánh với
+`required_hours_per_week` của khóa. Không coi tổng thời lượng khóa là tải học
+mỗi tuần. Nếu hồ sơ không khai báo giờ/tuần thì giữ ứng viên và phát cảnh báo;
+nếu hồ sơ có giới hạn nhưng khóa không có tải/tuần thì loại ứng viên với lý do
+thiếu dữ liệu kiểm chứng. `CoursePrerequisites` được nạp thành ánh xạ từ
+`course_id` sang danh sách khóa tiên quyết: danh sách rỗng là đã biết không có
+tiên quyết; thiếu mapping hoặc lịch sử hoàn thành của học viên khi khóa có
+tiên quyết thì fail-closed để không có vi phạm tiên quyết.
+
+Hồ sơ cold-start là hồ sơ không có mục tiêu, kỹ năng hiện tại và cấp độ mục
+tiêu. Khi cold-start hoặc ranker không trả kết quả, dùng `fallback_candidates`
+đã qua toàn bộ hard filters, sắp theo `popularity_score` giảm dần và tie-break
+bằng `course_id`. Nếu không có ứng viên hợp lệ, trả danh sách rỗng kèm
+`no_eligible_candidates`; tuyệt đối không nới trạng thái duyệt, loại khóa, sở
+hữu/ghi danh, ngân sách hay tiên quyết để tạo kết quả giả.
+
+Hiện thực hóa tại [candidate_filter.py](../../src/ai/src/recommendations/candidate_filter.py):
+orchestrator gọi `filter_candidates` **một lần trước khi chọn M0/M1/M2**, rồi
+truyền cùng `result.candidates` (cùng IDs, cùng thứ tự chuẩn hóa) cho từng
+ranker. `result.fallback_candidates` là pool đã qua các hard filters và chỉ
+dùng khi hồ sơ cold-start hoặc ranker không trả kết quả; `candidate_warnings`
+và `rejected_candidates` giữ lý do để API/telemetry giải thích được quyết định.
+Không gọi lại bộ lọc với tham số khác nhau cho từng mô hình.
 
 ### 3.4. Bản ghi tái lập lượt gợi ý
 
