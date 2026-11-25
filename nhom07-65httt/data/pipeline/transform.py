@@ -15,7 +15,7 @@ def transform_batch(batch_dir: Path, staging_root: Path, approved_root: Path, re
     staging_dir = staging_root / batch_id
     approved_dir = approved_root / batch_id
     if staging_dir.exists() or approved_dir.exists():
-        raise FileExistsError(f"Staging/approved batch already exists for {batch_id}")
+        raise FileExistsError(f"Lô staging/approved đã tồn tại: {batch_id}")
     taxonomy = load_taxonomy(taxonomy_path)
     records = []
     for raw in read_jsonl(raw_file):
@@ -49,37 +49,37 @@ def transform_batch(batch_dir: Path, staging_root: Path, approved_root: Path, re
         "field_non_null_counts": dict(source_coverage),
         "taxonomy_loaded": taxonomy is not None,
         "external_source_accuracy": None,
-        "note": "No live source validation was performed; see sources.md.",
+        "note": "Chưa xác minh trực tiếp với nguồn; xem sources.md.",
     }
     write_json_atomic(staging_dir / "manifest.json", summary)
     write_json_atomic(approved_dir / "manifest.json", {**summary, "approved_candidates": len(approved)})
     reports_root.mkdir(parents=True, exist_ok=True)
     report_path = reports_root / f"dq_{batch_id}.md"
     lines = [
-        f"# Data quality report: {batch_id}",
+        f"# Báo cáo chất lượng dữ liệu: {batch_id}",
         "",
-        f"Generated: {summary['generated_at']}",
+        f"Thời điểm tạo: {summary['generated_at']}",
         "",
-        f"- Records staged: {len(records)}",
-        f"- Approved candidates: {len(approved)}",
-        f"- Exact duplicates: {duplicates.get('exact_duplicate', 0)}",
-        f"- Near-duplicate records: {duplicates.get('near_duplicate', 0)}",
-        f"- Near-duplicate pairs: {len(near_pairs)}",
-        "- External source accuracy: not measured; automated source checks are disabled pending authorization.",
+        f"- Bản ghi đưa vào bước rà soát: {len(records)}",
+        f"- Ứng viên được duyệt: {len(approved)}",
+        f"- Bản ghi trùng hoàn toàn: {duplicates.get('exact_duplicate', 0)}",
+        f"- Bản ghi gần trùng: {duplicates.get('near_duplicate', 0)}",
+        f"- Cặp gần trùng: {len(near_pairs)}",
+        "- Độ chính xác so với nguồn: chưa đo; kiểm tra tự động bị tắt khi chưa có cho phép.",
         "",
-        "## Quality status",
+        "## Trạng thái chất lượng",
         "",
-        "| Status | Records |",
+        "| Trạng thái | Số bản ghi |",
         "|---|---:|",
     ]
     lines.extend(f"| {status} | {count} |" for status, count in sorted(statuses.items()))
-    lines.extend(["", "## Quality flags", "", "| Flag | Records |", "|---|---:|"])
+    lines.extend(["", "## Cờ chất lượng", "", "| Cờ | Số bản ghi |", "|---|---:|"])
     lines.extend(f"| {flag} | {count} |" for flag, count in sorted(flag_counts.items()))
-    lines.extend(["", "## Field coverage", "", "| Field | Present | Total | Coverage |", "|---|---:|---:|---:|"])
+    lines.extend(["", "## Mức độ đầy đủ của trường", "", "| Trường | Có dữ liệu | Tổng số | Tỷ lệ đầy đủ |", "|---|---:|---:|---:|"])
     for field, count in source_coverage.items():
         percentage = count / len(records) * 100 if records else 0
         lines.append(f"| {field} | {count} | {len(records)} | {percentage:.2f}% |")
-    lines.extend(["", "The dataset is not externally validated. Missing values remain null; no price, level, duration, description, or skill values were invented.", ""])
+    lines.extend(["", "Dataset chưa được xác minh với nguồn bên ngoài. Giá trị thiếu vẫn là null; không tự tạo giá, cấp độ, thời lượng, mô tả hoặc kỹ năng.", ""])
     report_path.write_text("\n".join(lines), encoding="utf-8")
     (reports_root / f"near_duplicates_{batch_id}.json").write_text(json.dumps(near_pairs, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return summary

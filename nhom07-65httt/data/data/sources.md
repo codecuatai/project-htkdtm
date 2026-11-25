@@ -1,28 +1,28 @@
-# Source inventory
+# Danh mục nguồn dữ liệu
 
 ## Udemy
 
-- Base URL: <https://www.udemy.com/>
-- Robots: <https://www.udemy.com/robots.txt>
-- Terms portal: <https://www.udemy.com/terms/terms-of-use/>
-- Sitemap advertised by robots: <https://www.udemy.com/sitemap.xml>
-- Current local data: `data/udemy_courses.csv`, 3,001 records captured on 2026-11-18.
-- Metadata seen in the existing CSV: title, canonical course URL/slug, rating, rating count, duration, lecture/section counts, image URL, and scrape timestamp.
-- Audit status: **blocked for further automated collection pending written authorization**. Udemy's currently indexed Terms of Use text prohibits scraping or other automated access. Robots advertises a sitemap and allows some URL patterns, but robots permission does not override the Terms. No API credential or written authorization was supplied.
-- Collection method for the existing CSV: legacy import only. This pipeline does not fetch Udemy pages.
-- Limitations: no raw HTML/JSON response was retained; price, instructor, category, language, level, description, and skill fields are missing from all or nearly all existing rows.
+- Trang chính: <https://www.udemy.com/>
+- Quy tắc robots: <https://www.udemy.com/robots.txt>
+- Điều khoản sử dụng: <https://www.udemy.com/terms/terms-of-use/>
+- Sitemap được khai báo trong robots: <https://www.udemy.com/sitemap.xml>
+- Dữ liệu hiện có: `data/udemy_courses.csv`, gồm 3.001 bản ghi được thu thập ngày 18/11/2026.
+- Các trường có trong CSV: tiêu đề, URL/slug khóa học, điểm đánh giá, số lượt đánh giá, thời lượng, số bài giảng/chương, URL ảnh và thời điểm thu thập.
+- Trạng thái: **tạm dừng thu thập tự động cho đến khi có văn bản cho phép**. Nội dung Điều khoản sử dụng Udemy được lập chỉ mục hiện nêu rằng không cho phép scraping hoặc truy cập tự động. Robots có khai báo sitemap và cho phép một số mẫu URL, nhưng điều đó không thay thế sự cho phép trong điều khoản. Chưa có thông tin API hoặc văn bản chấp thuận.
+- Cách nhập CSV hiện có: nhập dữ liệu cũ ngoại tuyến; pipeline này không tải trang Udemy.
+- Hạn chế: không lưu HTML/JSON gốc; giá, giảng viên, danh mục, ngôn ngữ, cấp độ, mô tả và kỹ năng thiếu ở toàn bộ hoặc gần như toàn bộ bản ghi.
 
 ## khoahocre.com
 
-- Base URL: <https://khoahocre.com/>
-- Status: **not assessed; not used**. The current robots resource could not be verified from the available source. No terms or authorization were provided, so this source is not crawled or included in the dataset.
+- Trang chính: <https://khoahocre.com/>
+- Trạng thái: **chưa đánh giá, không sử dụng**. Chưa xác minh được robots hiện tại và chưa có điều khoản hoặc văn bản cho phép; nguồn này không được crawl hay đưa vào dataset.
 
-## Additional sources
+## Nguồn bổ sung
 
-No additional source has been added. A source must pass robots and terms review and have an authorized public metadata path before integration.
+Chưa thêm nguồn nào khác. Trước khi tích hợp, cần rà soát robots, điều khoản và phương thức lấy metadata được cho phép.
 
-## Legal and operational references
+## Tài liệu tham khảo vận hành
 
-- Udemy robots currently advertises a sitemap, disallows most query-string URLs, and allows selected paths. This is recorded as URL guidance only, not as permission to scrape.
-- The indexed Udemy Terms of Use text states that automated scraping/spidering is not allowed. Recheck the official Terms and obtain written authorization or an approved API agreement before enabling collection.
-- The exact audit time and source statuses are included in each pipeline run's manifest/report.
+- Robots của Udemy hiện khai báo sitemap, chặn phần lớn URL có query và cho phép một số đường dẫn. Đây chỉ là hướng dẫn URL, không phải giấy phép crawl.
+- Nội dung Điều khoản Udemy được lập chỉ mục nêu hạn chế scraping/spidering tự động. Cần kiểm tra lại điều khoản chính thức và có văn bản cho phép hoặc API được phê duyệt trước khi bật thu thập.
+- Thời điểm kiểm tra và trạng thái nguồn được ghi trong manifest/báo cáo của mỗi lần chạy pipeline.

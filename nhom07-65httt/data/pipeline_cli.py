@@ -4,6 +4,7 @@ from pathlib import Path
 
 from pipeline.baseline import analyze_csv, write_baseline_report
 from pipeline.config import load_settings, resolve_path
+from pipeline.console import configure_utf8_console
 from pipeline.database_loader import load_release
 from pipeline.raw_ingest import ingest_legacy_csv
 from pipeline.release import create_release
@@ -12,27 +13,28 @@ from pipeline.transform import transform_batch
 
 def _latest_batch(root: Path) -> Path:
     if not root.exists():
-        raise FileNotFoundError(f"Batch directory does not exist: {root}")
+        raise FileNotFoundError(f"Không tìm thấy thư mục lô dữ liệu: {root}")
     batches = sorted(path for path in root.iterdir() if path.is_dir())
     if not batches:
-        raise FileNotFoundError(f"No batch exists under {root}")
+        raise FileNotFoundError(f"Không có lô dữ liệu nào trong {root}")
     return batches[-1]
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="SmartEdu offline course data pipeline")
+    configure_utf8_console()
+    parser = argparse.ArgumentParser(description="Pipeline xử lý dữ liệu khóa học SmartEdu chạy ngoại tuyến")
     parser.add_argument("--config", default="data/config.yaml")
     subparsers = parser.add_subparsers(dest="command", required=True)
-    subparsers.add_parser("audit", help="Analyze the legacy CSV without network access")
-    subparsers.add_parser("ingest", help="Create immutable raw batch from the existing CSV")
-    transform = subparsers.add_parser("transform", help="Normalize, map skills, deduplicate and quality-check a raw batch")
+    subparsers.add_parser("audit", help="Kiểm toán CSV hiện có, không truy cập mạng")
+    subparsers.add_parser("ingest", help="Tạo lô dữ liệu gốc bất biến từ CSV hiện tại")
+    transform = subparsers.add_parser("transform", help="Chuẩn hóa, ánh xạ kỹ năng, phát hiện trùng lặp và kiểm tra chất lượng")
     transform.add_argument("--batch-id")
-    release = subparsers.add_parser("release", help="Create a versioned release from approved records only")
+    release = subparsers.add_parser("release", help="Tạo bản phát hành phiên bản từ các bản ghi đã duyệt")
     release.add_argument("--batch-id")
     release.add_argument("--version")
-    db_load = subparsers.add_parser("db-load", help="Validate a release; dry-run is default")
+    db_load = subparsers.add_parser("db-load", help="Kiểm tra bản phát hành; mặc định chạy mô phỏng")
     db_load.add_argument("--version", required=True)
-    db_load.add_argument("--write", action="store_true", help="Attempt configured adapter (currently unavailable without schema/credentials)")
+    db_load.add_argument("--write", action="store_true", help="Thử dùng adapter đã cấu hình (hiện chưa khả dụng nếu thiếu schema/thông tin xác thực)")
     args = parser.parse_args(argv)
 
     settings, root = load_settings(args.config)

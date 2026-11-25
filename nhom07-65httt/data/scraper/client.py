@@ -20,7 +20,7 @@ class UdemyClient:
 
     def get(self, url: str) -> str:
         if not self.robots.allowed(url):
-            raise PermissionError(f"robots.txt disallows crawling: {url}")
+            raise PermissionError(f"robots.txt không cho phép truy cập URL này: {url}")
         error = None
         for attempt in range(1, self.config.retries + 1):
             try:
@@ -42,7 +42,7 @@ class UdemyClient:
                 return body.decode(encoding, errors="replace")
             except Exception as exc:
                 error = exc
-                logging.warning("Request attempt %s/%s failed: %s", attempt, self.config.retries, exc)
+                logging.warning("Lần gửi request %s/%s thất bại: %s", attempt, self.config.retries, exc)
                 if attempt < self.config.retries:
                     time.sleep(min(2 ** (attempt - 1), 8))
-        raise RuntimeError(f"Could not fetch {url}: {error}")
+        raise RuntimeError(f"Không tải được {url}: {error}")

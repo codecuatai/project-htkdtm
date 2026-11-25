@@ -7,7 +7,7 @@ def load_settings(path: str | Path = "data/config.yaml") -> tuple[dict, Path]:
     source = Path(path).resolve()
     values = yaml.safe_load(source.read_text(encoding="utf-8")) if source.exists() else {}
     if not isinstance(values, dict):
-        raise ValueError(f"Configuration must be a YAML mapping: {source}")
+        raise ValueError(f"Tệp cấu hình phải có dạng mapping YAML: {source}")
     project_root = source.parent.parent
     return values, project_root
 

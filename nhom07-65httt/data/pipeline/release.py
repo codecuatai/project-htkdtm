@@ -11,24 +11,24 @@ REQUIRED = ("course_id", "source_name", "source_course_id", "title", "canonical_
 def validate_approved(record: dict):
     missing = [field for field in REQUIRED if not record.get(field)]
     if missing:
-        return False, f"missing required fields: {', '.join(missing)}"
+        return False, f"Thiếu các trường bắt buộc: {', '.join(missing)}"
     if record["quality_status"] != "approved_candidate":
-        return False, "record is not an approved candidate"
+        return False, "Bản ghi chưa phải là ứng viên được duyệt"
     if not record.get("description") or not record.get("skills") or not record.get("level"):
-        return False, "required description, skills, or level is missing"
+        return False, "Thiếu description, skills hoặc level bắt buộc"
     if record.get("quality_flags"):
-        return False, "quality flags remain unresolved"
+        return False, "Vẫn còn cờ chất lượng chưa được xử lý"
     if record.get("duplicate_status") != "unique":
-        return False, "duplicate status is not unique"
+        return False, "Trạng thái trùng lặp không phải unique"
     if record["offer_type"] not in {"EXTERNAL_REFERENCE", "INTERNAL"}:
-        return False, "invalid offer_type"
+        return False, "offer_type không hợp lệ"
     return True, ""
 
 
 def create_release(approved_root: Path, releases_root: Path, version: str, batch_id: str | None = None, reviewer: str | None = None):
     destination = releases_root / version
     if destination.exists():
-        raise FileExistsError(f"Dataset release already exists: {destination}")
+        raise FileExistsError(f"Bản phát hành dataset đã tồn tại: {destination}")
     batches = [approved_root / batch_id] if batch_id else sorted(path for path in approved_root.iterdir() if path.is_dir()) if approved_root.exists() else []
     records = []
     for batch in batches:
@@ -39,10 +39,10 @@ def create_release(approved_root: Path, releases_root: Path, version: str, batch
     for record in records:
         valid, reason = validate_approved(record)
         if not valid:
-            raise ValueError(f"Refusing unapproved record {record.get('course_id')}: {reason}")
+            raise ValueError(f"Từ chối bản ghi chưa được duyệt {record.get('course_id')}: {reason}")
         key = (record["source_name"], record["source_course_id"], record["canonical_url"])
         if key in seen:
-            raise ValueError(f"Duplicate identity in release: {key}")
+            raise ValueError(f"Mã định danh bị trùng trong bản phát hành: {key}")
         seen.add(key)
 
     destination.mkdir(parents=True)
@@ -66,9 +66,9 @@ def create_release(approved_root: Path, releases_root: Path, version: str, batch
         "pipeline_version": "0.1.0",
         "reviewer": reviewer,
         "collection_limitations": [
-            "Only approved candidate records are included.",
-            "No additional Udemy crawling is performed without written authorization.",
-            "The legacy source CSV lacked descriptions and skills; records missing required fields remain outside releases.",
+            "Chỉ đưa các bản ghi ứng viên đã được duyệt vào bản phát hành.",
+            "Không crawl thêm Udemy khi chưa có văn bản cho phép.",
+            "CSV nguồn cũ thiếu description và skills; bản ghi thiếu trường bắt buộc không được đưa vào bản phát hành.",
         ],
         "release_status": "EMPTY" if not records else "RELEASED",
     }
