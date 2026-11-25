@@ -280,7 +280,7 @@ function AuthShell({ variant }: { variant: Variant }) {
       setErrors(errs)
       if (Object.keys(errs).length > 0) return
       setLecturerStep(2)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      document.getElementById('auth-form-scroll')?.scrollTo({ top: 0, behavior: 'smooth' })
       return
     }
 
@@ -347,18 +347,18 @@ function AuthShell({ variant }: { variant: Variant }) {
   return (
     <AuthLayout role={selectedRole}>
       {/* Header */}
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {isLecturerRegister && (
           <ol
-            className="flex items-center gap-2 text-[13px] font-medium text-muted-foreground"
+            className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-1"
             aria-label="Tiến trình đăng ký giảng viên"
           >
             <li aria-current={lecturerStep === 1 ? 'step' : undefined}>
               <span
                 className={cn(
-                  'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1',
+                  'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5',
                   lecturerStep === 1
-                    ? 'border-purple-500/40 bg-purple-500/10 text-purple-700 dark:text-purple-300'
+                    ? 'border-fuchsia-500/40 bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300'
                     : 'border-border text-muted-foreground'
                 )}
               >
@@ -366,7 +366,7 @@ function AuthShell({ variant }: { variant: Variant }) {
                   className={cn(
                     'flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold',
                     lecturerStep === 1
-                      ? 'bg-purple-600 text-white'
+                      ? 'bg-fuchsia-600 text-white'
                       : lecturerStep > 1
                         ? 'bg-success text-white'
                         : 'bg-muted text-muted-foreground'
@@ -377,20 +377,20 @@ function AuthShell({ variant }: { variant: Variant }) {
                 Tài khoản
               </span>
             </li>
-            <li aria-hidden="true" className="h-px w-6 bg-border" />
+            <li aria-hidden="true" className="h-px w-5 bg-border" />
             <li aria-current={lecturerStep === 2 ? 'step' : undefined}>
               <span
                 className={cn(
-                  'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1',
+                  'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5',
                   lecturerStep === 2
-                    ? 'border-purple-500/40 bg-purple-500/10 text-purple-700 dark:text-purple-300'
+                    ? 'border-fuchsia-500/40 bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300'
                     : 'border-border text-muted-foreground'
                 )}
               >
                 <span
                   className={cn(
                     'flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold',
-                    lecturerStep === 2 ? 'bg-purple-600 text-white' : 'bg-muted text-muted-foreground'
+                    lecturerStep === 2 ? 'bg-fuchsia-600 text-white' : 'bg-muted text-muted-foreground'
                   )}
                 >
                   2
@@ -400,19 +400,19 @@ function AuthShell({ variant }: { variant: Variant }) {
             </li>
           </ol>
         )}
-        <h1 className="font-display text-[clamp(1.625rem,1.35rem+1.25vw,2.125rem)] font-bold leading-tight tracking-tight text-foreground">
+        <h1 className="font-display text-2xl sm:text-[1.75rem] font-bold leading-tight tracking-tight text-foreground">
           {header.title}
         </h1>
-        <p className="text-[15px] leading-relaxed text-muted-foreground">{header.subtitle}</p>
+        <p className="text-sm leading-relaxed text-muted-foreground">{header.subtitle}</p>
       </div>
 
       {/* Role segmented control (register only) */}
       {isRegister && (
-        <div className="mt-6">
+        <div className="mt-4">
           <div
             role="tablist"
             aria-label="Chọn vai trò tài khoản"
-            className="grid grid-cols-2 gap-1 rounded-2xl border border-border bg-muted/60 p-1"
+            className="grid grid-cols-2 gap-1 rounded-xl border border-border bg-muted/60 p-1"
           >
             <button
               type="button"
@@ -420,20 +420,20 @@ function AuthShell({ variant }: { variant: Variant }) {
               aria-selected={isStudent}
               onClick={() => handleSelectRole('student')}
               className={cn(
-                'flex min-h-[52px] items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition-all duration-200',
+                'flex min-h-[44px] items-center justify-center gap-2 rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-200',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
                 isStudent
-                  ? 'bg-surface-elevated text-foreground shadow-soft ring-1 ring-border'
+                  ? 'bg-surface-elevated text-foreground shadow-soft ring-1 ring-pink-500/30'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
               <GraduationCap
-                className={cn('h-[18px] w-[18px]', isStudent ? 'text-pink-600' : 'text-muted-foreground')}
+                className={cn('h-4 w-4 shrink-0', isStudent ? 'text-pink-600' : 'text-muted-foreground')}
                 aria-hidden="true"
               />
-              <span>
+              <span className="text-left leading-tight">
                 Học viên
-                <span className="block text-xs font-normal text-muted-foreground">Học & luyện tập</span>
+                <span className="block text-[11px] font-normal text-muted-foreground">Học &amp; luyện tập</span>
               </span>
             </button>
             <button
@@ -442,26 +442,26 @@ function AuthShell({ variant }: { variant: Variant }) {
               aria-selected={!isStudent}
               onClick={() => handleSelectRole('lecturer')}
               className={cn(
-                'flex min-h-[52px] items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition-all duration-200',
+                'flex min-h-[44px] items-center justify-center gap-2 rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-200',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
                 !isStudent
-                  ? 'bg-surface-elevated text-foreground shadow-soft ring-1 ring-purple-500/30'
+                  ? 'bg-surface-elevated text-foreground shadow-soft ring-1 ring-fuchsia-500/30'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
               <Briefcase
-                className={cn('h-[18px] w-[18px]', !isStudent ? 'text-purple-600' : 'text-muted-foreground')}
+                className={cn('h-4 w-4 shrink-0', !isStudent ? 'text-fuchsia-600' : 'text-muted-foreground')}
                 aria-hidden="true"
               />
-              <span>
+              <span className="text-left leading-tight">
                 Giảng viên
-                <span className="block text-xs font-normal text-muted-foreground">Dạy & quản lý lớp</span>
+                <span className="block text-[11px] font-normal text-muted-foreground">Dạy &amp; quản lý lớp</span>
               </span>
             </button>
           </div>
           {!isStudent && lecturerStep === 1 && (
-            <p className="mt-2.5 flex items-start gap-1.5 rounded-xl border border-purple-500/20 bg-purple-500/[0.06] px-3 py-2 text-[13px] leading-relaxed text-muted-foreground">
-              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-purple-600" aria-hidden="true" />
+            <p className="mt-2 flex items-start gap-1.5 rounded-lg border border-fuchsia-500/20 bg-fuchsia-500/[0.06] px-3 py-1.5 text-xs leading-relaxed text-muted-foreground">
+              <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-fuchsia-600" aria-hidden="true" />
               <span>{lecturerBlurb}</span>
             </p>
           )}
@@ -469,7 +469,7 @@ function AuthShell({ variant }: { variant: Variant }) {
       )}
 
       {/* Social login */}
-      <div className="mt-6 grid grid-cols-1 gap-2.5 xs:grid-cols-2">
+      <div className="mt-4 grid grid-cols-2 gap-2.5">
         <SocialLoginButton
           provider="google"
           onClick={() => triggerGoogleLogin()}
@@ -484,7 +484,7 @@ function AuthShell({ variant }: { variant: Variant }) {
         />
       </div>
 
-      <div className="relative my-5 flex items-center justify-center" aria-hidden="true">
+      <div className="relative my-3.5 flex items-center justify-center" aria-hidden="true">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-border" />
         </div>
@@ -493,7 +493,7 @@ function AuthShell({ variant }: { variant: Variant }) {
         </span>
       </div>
 
-      <form onSubmit={handleSubmit} noValidate className="grid gap-4">
+      <form onSubmit={handleSubmit} noValidate className="grid gap-3">
         {errors.form && (
           <div
             className="rounded-xl border border-destructive/25 bg-destructive/[0.07] px-3.5 py-2.5 text-sm font-medium text-destructive"
@@ -601,7 +601,7 @@ function AuthShell({ variant }: { variant: Variant }) {
               prefixIcon={<Mail className="h-4 w-4" aria-hidden="true" />}
             />
 
-            <div className="grid gap-2">
+            <div className={cn('grid gap-3', isRegister && 'sm:grid-cols-2')}>
               <AuthInput
                 name="password"
                 label="Mật khẩu"
@@ -614,23 +614,23 @@ function AuthShell({ variant }: { variant: Variant }) {
                 autoComplete={isRegister ? 'new-password' : 'current-password'}
                 prefixIcon={<Lock className="h-4 w-4" aria-hidden="true" />}
               />
-              {isRegister && <PasswordStrength password={password} />}
-            </div>
 
-            {isRegister && (
-              <AuthInput
-                name="confirmPassword"
-                label="Xác nhận mật khẩu"
-                type="password"
-                placeholder="Nhập lại mật khẩu"
-                value={confirmPassword}
-                onChange={setConfirmPassword}
-                error={errors.confirmPassword}
-                required
-                autoComplete="new-password"
-                prefixIcon={<Lock className="h-4 w-4" aria-hidden="true" />}
-              />
-            )}
+              {isRegister && (
+                <AuthInput
+                  name="confirmPassword"
+                  label="Xác nhận mật khẩu"
+                  type="password"
+                  placeholder="Nhập lại mật khẩu"
+                  value={confirmPassword}
+                  onChange={setConfirmPassword}
+                  error={errors.confirmPassword}
+                  required
+                  autoComplete="new-password"
+                  prefixIcon={<Lock className="h-4 w-4" aria-hidden="true" />}
+                />
+              )}
+            </div>
+            {isRegister && password.length > 0 && <PasswordStrength password={password} />}
           </>
         )}
 
@@ -692,10 +692,7 @@ function AuthShell({ variant }: { variant: Variant }) {
             loading={loading}
             size="lg"
             fullWidth
-            className={cn(
-              'font-semibold',
-              !isStudent && 'bg-purple-600 text-white hover:bg-purple-700 focus-visible:ring-purple-500'
-            )}
+            className="font-semibold bg-gradient-to-r from-primary via-fuchsia-600 to-accent text-white shadow-md shadow-primary/20 hover:opacity-95"
             iconRight={!loading ? <ArrowRight className="h-4 w-4" aria-hidden="true" /> : undefined}
           >
             {loading ? 'Đang xác thực…' : ctaLabel}
@@ -704,7 +701,7 @@ function AuthShell({ variant }: { variant: Variant }) {
       </form>
 
       {/* Toggle link — giữ ?role= để không rớt vai trò khi chuyển trang */}
-      <div className="mt-6 flex min-h-[44px] items-center justify-center gap-1.5 text-sm text-muted-foreground">
+      <div className="mt-4 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
         <span>{content.alt}</span>
         <Link
           className="font-semibold text-primary transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
