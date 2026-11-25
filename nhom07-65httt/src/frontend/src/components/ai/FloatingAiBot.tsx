@@ -6,6 +6,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
 import { usePathname } from 'next/navigation'
@@ -34,10 +35,31 @@ function clampPosition(pos: Position): Position {
   }
 }
 
+function getInitialPosition(): Position {
+  if (typeof window === 'undefined') return { x: MARGIN, y: MARGIN }
+  const defaultPos = clampPosition({
+    x: window.innerWidth - BOT_SIZE - 24,
+    y: window.innerHeight - BOT_SIZE - 28,
+  })
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      const parsed = JSON.parse(saved) as Position
+      if (typeof parsed.x === 'number' && typeof parsed.y === 'number') {
+        return clampPosition(parsed)
+      }
+    }
+  } catch {
+    // Ignore storage read errors
+  }
+  return defaultPos
+}
+
+const emptySubscribe = () => () => {}
+
 function LearningHubMascot({ isOpen, isDragging }: { isOpen: boolean; isDragging: boolean }) {
   return (
     <div className="relative flex flex-col items-center select-none pointer-events-none">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/ai-mascot.png"
         alt="Learning Hub AI Mascot"
@@ -68,11 +90,16 @@ export function FloatingAiBot() {
   const user = useAppStore((s) => s.auth.user)
   const addSession = useAppStore((s) => s.chat.addSession)
 
-  const [mounted, setMounted] = useState(false)
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  )
   const [isOpen, setIsOpen] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
-  const [position, setPosition] = useState<Position>({ x: 0, y: 0 })
+  const [customPosition, setCustomPosition] = useState<Position | null>(null)
+  const position = customPosition ?? (mounted ? getInitialPosition() : { x: MARGIN, y: MARGIN })
 
   const dragStateRef = useRef<{
     pointerId: number
@@ -86,32 +113,9 @@ export function FloatingAiBot() {
   const shouldRender = Boolean(user) && pathname.startsWith('/app') && !pathname.startsWith('/app/student/chat')
 
   useEffect(() => {
-    const defaultPos = clampPosition({
-      x: window.innerWidth - BOT_SIZE - 24,
-      y: window.innerHeight - BOT_SIZE - 28,
-    })
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) {
-        const parsed = JSON.parse(saved) as Position
-        if (typeof parsed.x === 'number' && typeof parsed.y === 'number') {
-          setPosition(clampPosition(parsed))
-        } else {
-          setPosition(defaultPos)
-        }
-      } else {
-        setPosition(defaultPos)
-      }
-    } catch {
-      setPosition(defaultPos)
-    }
-    setMounted(true)
-  }, [])
-
-  useEffect(() => {
     if (!mounted) return
     const handleResize = () => {
-      setPosition((prev) => clampPosition(prev))
+      setCustomPosition((prev) => clampPosition(prev ?? getInitialPosition()))
     }
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
@@ -155,7 +159,7 @@ export function FloatingAiBot() {
     }
 
     if (drag.moved) {
-      setPosition(
+      setCustomPosition(
         clampPosition({
           x: drag.startPosX + dx,
           y: drag.startPosY + dy,
@@ -179,13 +183,14 @@ export function FloatingAiBot() {
     setIsDragging(false)
 
     if (wasMoved) {
-      setPosition((current) => {
+      setCustomPosition((current) => {
+        const next = current ?? getInitialPosition()
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(current))
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
         } catch {
           // Ignore storage quota errors
         }
-        return current
+        return next
       })
     } else {
       setIsOpen((prev) => !prev)
