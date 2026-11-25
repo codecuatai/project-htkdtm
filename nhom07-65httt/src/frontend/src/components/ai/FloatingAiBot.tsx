@@ -25,6 +25,18 @@ interface Position {
   y: number
 }
 
+interface ViewportSize {
+  w: number
+  h: number
+}
+
+const GAP = 12
+
+function getViewportSize(): ViewportSize {
+  if (typeof window === 'undefined') return { w: 1280, h: 800 }
+  return { w: window.innerWidth, h: window.innerHeight }
+}
+
 function clampPosition(pos: Position): Position {
   if (typeof window === 'undefined') return pos
   const maxX = Math.max(MARGIN, window.innerWidth - BOT_SIZE - MARGIN)
@@ -33,6 +45,53 @@ function clampPosition(pos: Position): Position {
     x: Math.min(Math.max(MARGIN, pos.x), maxX),
     y: Math.min(Math.max(MARGIN, pos.y), maxY),
   }
+}
+
+function computeDialogRect(
+  botPos: Position,
+  viewport: ViewportSize,
+  isExpanded: boolean
+): { x: number; y: number; width: number; height: number } {
+  const width = isExpanded
+    ? Math.min(720, viewport.w - MARGIN * 2)
+    : Math.min(430, viewport.w - MARGIN * 2)
+  const height = isExpanded
+    ? Math.min(700, viewport.h - MARGIN * 2)
+    : Math.min(560, viewport.h - BOT_SIZE - MARGIN * 2 - GAP)
+
+  const safeHeight = Math.max(320, Math.min(height, viewport.h - MARGIN * 2))
+  const botCenterX = botPos.x + BOT_SIZE / 2
+
+  const spaceAbove = botPos.y - MARGIN - GAP
+  const spaceBelow = viewport.h - (botPos.y + BOT_SIZE) - MARGIN - GAP
+  const spaceLeft = botPos.x - MARGIN - GAP
+  const spaceRight = viewport.w - (botPos.x + BOT_SIZE) - MARGIN - GAP
+
+  let x: number
+  let y: number
+
+  if (spaceAbove >= safeHeight) {
+    // Open above the bot
+    y = botPos.y - safeHeight - GAP
+    x = botCenterX > viewport.w / 2 ? botPos.x + BOT_SIZE - width : botPos.x
+  } else if (spaceBelow >= safeHeight) {
+    // Open below the bot
+    y = botPos.y + BOT_SIZE + GAP
+    x = botCenterX > viewport.w / 2 ? botPos.x + BOT_SIZE - width : botPos.x
+  } else if (spaceLeft >= width || spaceLeft >= spaceRight) {
+    // Open to the left of the bot
+    x = botPos.x - width - GAP
+    y = botPos.y + BOT_SIZE - safeHeight
+  } else {
+    // Open to the right of the bot
+    x = botPos.x + BOT_SIZE + GAP
+    y = botPos.y + BOT_SIZE - safeHeight
+  }
+
+  x = Math.min(Math.max(MARGIN, x), Math.max(MARGIN, viewport.w - width - MARGIN))
+  y = Math.min(Math.max(MARGIN, y), Math.max(MARGIN, viewport.h - safeHeight - MARGIN))
+
+  return { x, y, width, height: safeHeight }
 }
 
 function getInitialPosition(): Position {
@@ -98,6 +157,7 @@ export function FloatingAiBot() {
   const [isOpen, setIsOpen] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
+  const [viewport, setViewport] = useState<ViewportSize>(getViewportSize)
   const [customPosition, setCustomPosition] = useState<Position | null>(null)
   const position = customPosition ?? (mounted ? getInitialPosition() : { x: MARGIN, y: MARGIN })
 
@@ -108,6 +168,7 @@ export function FloatingAiBot() {
     startPosX: number
     startPosY: number
     moved: boolean
+    isHeaderDrag: boolean
   } | null>(null)
 
   const shouldRender = Boolean(user) && pathname.startsWith('/app') && !pathname.startsWith('/app/student/chat')
@@ -115,6 +176,7 @@ export function FloatingAiBot() {
   useEffect(() => {
     if (!mounted) return
     const handleResize = () => {
+      setViewport(getViewportSize())
       setCustomPosition((prev) => clampPosition(prev ?? getInitialPosition()))
     }
     window.addEventListener('resize', handleResize)
@@ -130,9 +192,10 @@ export function FloatingAiBot() {
     return () => window.removeEventListener('keydown', handleEsc)
   }, [isOpen])
 
-  const handlePointerDown = useCallback(
-    (e: ReactPointerEvent<HTMLButtonElement>) => {
+  const startDrag = useCallback(
+    (e: ReactPointerEvent<HTMLElement>, isHeaderDrag: boolean) => {
       if (e.button !== 0 && e.pointerType === 'mouse') return
+      if (isHeaderDrag && (e.target as HTMLElement).closest('button')) return
       e.currentTarget.setPointerCapture(e.pointerId)
       dragStateRef.current = {
         pointerId: e.pointerId,
@@ -141,12 +204,23 @@ export function FloatingAiBot() {
         startPosX: position.x,
         startPosY: position.y,
         moved: false,
+        isHeaderDrag,
       }
     },
     [position.x, position.y]
   )
 
-  const handlePointerMove = useCallback((e: ReactPointerEvent<HTMLButtonElement>) => {
+  const handlePointerDown = useCallback(
+    (e: ReactPointerEvent<HTMLButtonElement>) => startDrag(e, false),
+    [startDrag]
+  )
+
+  const handleHeaderPointerDown = useCallback(
+    (e: ReactPointerEvent<HTMLDivElement>) => startDrag(e, true),
+    [startDrag]
+  )
+
+  const handlePointerMove = useCallback((e: ReactPointerEvent<HTMLElement>) => {
     const drag = dragStateRef.current
     if (!drag || drag.pointerId !== e.pointerId) return
 
@@ -168,7 +242,7 @@ export function FloatingAiBot() {
     }
   }, [])
 
-  const handlePointerUp = useCallback((e: ReactPointerEvent<HTMLButtonElement>) => {
+  const handlePointerUp = useCallback((e: ReactPointerEvent<HTMLElement>) => {
     const drag = dragStateRef.current
     if (!drag || drag.pointerId !== e.pointerId) return
 
@@ -179,6 +253,7 @@ export function FloatingAiBot() {
     }
 
     const wasMoved = drag.moved
+    const wasHeaderDrag = drag.isHeaderDrag
     dragStateRef.current = null
     setIsDragging(false)
 
@@ -192,29 +267,43 @@ export function FloatingAiBot() {
         }
         return next
       })
-    } else {
+    } else if (!wasHeaderDrag) {
       setIsOpen((prev) => !prev)
     }
   }, [])
 
   if (!mounted || !shouldRender) return null
 
+  const dialogRect = computeDialogRect(position, viewport, isExpanded)
+
   return (
     <>
-      {/* Floating Chat Panel */}
+      {/* Floating Chat Panel anchored dynamically to the bot */}
       {isOpen && (
         <div
           role="dialog"
           aria-label="Trợ lý AI Learning Hub"
+          style={{
+            transform: `translate3d(${dialogRect.x}px, ${dialogRect.y}px, 0)`,
+            width: `${dialogRect.width}px`,
+            height: `${dialogRect.height}px`,
+          }}
           className={cn(
-            'fixed z-[60] flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-fuchsia-950/20 dark:shadow-black/50 transition-all duration-200 animate-zoom-in-95',
-            isExpanded
-              ? 'bottom-4 right-4 h-[min(760px,calc(100vh-32px))] w-[min(740px,calc(100vw-32px))]'
-              : 'bottom-24 right-5 h-[min(600px,calc(100vh-120px))] w-[min(430px,calc(100vw-28px))]'
+            'fixed left-0 top-0 z-[60] flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-fuchsia-950/20 dark:shadow-black/50',
+            !isDragging && 'transition-[width,height] duration-200'
           )}
         >
-          {/* Floating Window Header */}
-          <div className="flex items-center justify-between gap-2 bg-gradient-to-r from-primary via-fuchsia-600 to-accent px-4 py-2.5 text-white shrink-0">
+          {/* Draggable Floating Window Header */}
+          <div
+            onPointerDown={handleHeaderPointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+            className={cn(
+              'flex items-center justify-between gap-2 bg-gradient-to-r from-primary via-fuchsia-600 to-accent px-4 py-2.5 text-white shrink-0 select-none touch-none',
+              isDragging ? 'cursor-grabbing' : 'cursor-grab'
+            )}
+          >
             <div className="flex items-center gap-2 min-w-0">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm">
                 <Sparkles className="h-4 w-4 text-white" />
