@@ -15,7 +15,6 @@ import { useAppStore } from '../../stores/appStore'
 import { ChatPanel } from '../../features/chat/ChatPanel'
 import { cn } from '../../utils/cn'
 
-const STORAGE_KEY = 'learninghub_ai_bot_pos'
 const BOT_SIZE = 72
 const MARGIN = 16
 const DRAG_THRESHOLD = 6
@@ -94,24 +93,12 @@ function computeDialogRect(
   return { x, y, width, height: safeHeight }
 }
 
-function getInitialPosition(): Position {
+function getDefaultPosition(): Position {
   if (typeof window === 'undefined') return { x: MARGIN, y: MARGIN }
-  const defaultPos = clampPosition({
+  return clampPosition({
     x: window.innerWidth - BOT_SIZE - 24,
     y: window.innerHeight - BOT_SIZE - 28,
   })
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) {
-      const parsed = JSON.parse(saved) as Position
-      if (typeof parsed.x === 'number' && typeof parsed.y === 'number') {
-        return clampPosition(parsed)
-      }
-    }
-  } catch {
-    // Ignore storage read errors
-  }
-  return defaultPos
 }
 
 const emptySubscribe = () => () => {}
@@ -159,7 +146,7 @@ export function FloatingAiBot() {
   const [isDragging, setIsDragging] = useState(false)
   const [viewport, setViewport] = useState<ViewportSize>(getViewportSize)
   const [customPosition, setCustomPosition] = useState<Position | null>(null)
-  const position = customPosition ?? (mounted ? getInitialPosition() : { x: MARGIN, y: MARGIN })
+  const position = customPosition ?? (mounted ? getDefaultPosition() : { x: MARGIN, y: MARGIN })
 
   const dragStateRef = useRef<{
     pointerId: number
@@ -177,7 +164,7 @@ export function FloatingAiBot() {
     if (!mounted) return
     const handleResize = () => {
       setViewport(getViewportSize())
-      setCustomPosition((prev) => clampPosition(prev ?? getInitialPosition()))
+      setCustomPosition((prev) => (prev ? clampPosition(prev) : null))
     }
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
@@ -257,17 +244,7 @@ export function FloatingAiBot() {
     dragStateRef.current = null
     setIsDragging(false)
 
-    if (wasMoved) {
-      setCustomPosition((current) => {
-        const next = current ?? getInitialPosition()
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-        } catch {
-          // Ignore storage quota errors
-        }
-        return next
-      })
-    } else if (!wasHeaderDrag) {
+    if (!wasMoved && !wasHeaderDrag) {
       setIsOpen((prev) => !prev)
     }
   }, [])
