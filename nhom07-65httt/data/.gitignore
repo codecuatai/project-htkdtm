@@ -6,3 +6,8 @@ __pycache__/
 .venv/
 data/*.csv
 logs/*.log
+/data/raw/
+/data/staging/
+/data/approved/
+/data/releases/
+/data/reports/
