@@ -9,6 +9,14 @@ from app.schemas.recommendation import (
     RecommendationRunReceipt,
     RecommendationRunTrace,
 )
+from app.schemas.model_evaluation import (
+    ModelEvaluationBatch,
+    ModelEvaluationBatchReceipt,
+)
+from app.services.model_evaluation_service import (
+    ModelEvaluationConflictError,
+    persist_model_evaluation_batch,
+)
 from app.services.recommendation_service import (
     RecommendationTraceConflictError,
     persist_recommendation_trace,
@@ -59,4 +67,31 @@ async def record_recommendation_run(
         trace_sha256=run.trace_sha256,
         item_count=len(run.items),
         created_at=run.created_at,
+    )
+
+
+@router.post(
+    "/evaluations",
+    response_model=ModelEvaluationBatchReceipt,
+    status_code=status.HTTP_201_CREATED,
+)
+async def record_model_evaluation(
+    batch: ModelEvaluationBatch,
+    db: AsyncSession = Depends(get_db),
+    _: None = Depends(require_recommender_service),
+) -> ModelEvaluationBatchReceipt:
+    try:
+        rows, digest = await persist_model_evaluation_batch(db, batch)
+    except ModelEvaluationConflictError as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error),
+        ) from error
+    return ModelEvaluationBatchReceipt(
+        evaluation_batch_id=batch.evaluation_batch_id,
+        batch_sha256=digest,
+        model_count=len(rows),
+        dataset_version_id=batch.dataset_version_id,
+        evaluation_split=batch.evaluation_split,
+        created_at=batch.created_at,
     )

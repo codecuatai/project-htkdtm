@@ -17,6 +17,8 @@ class ModelEvaluationRun:
     filtered_candidate_ids: Mapping[str, Sequence[str]]
     ranked_course_ids: Mapping[str, Sequence[str]]
     latency_ms_by_profile: Mapping[str, float]
+    latency_samples_ms: Sequence[float] = ()
+    prerequisite_violations_by_profile: Mapping[str, int] | None = None
 
 
 @dataclass(frozen=True)
@@ -115,12 +117,34 @@ def compare_model_runs(
             )
             for profile_id in sorted(reference_profiles)
         ]
+        latency_samples = tuple(run.latency_samples_ms) or tuple(latencies)
+        if any(
+            not math.isfinite(latency) or latency < 0
+            for latency in latency_samples
+        ):
+            raise ValueError("latency measurements must be finite and non-negative")
+        prerequisite_violations = 0
+        if run.prerequisite_violations_by_profile is not None:
+            if set(run.prerequisite_violations_by_profile) != reference_profiles:
+                raise ValueError(
+                    f"{run.model_name}.prerequisite_violations_by_profile must "
+                    "contain exactly the evaluation profiles"
+                )
+            violations = tuple(run.prerequisite_violations_by_profile.values())
+            if any(
+                isinstance(count, bool) or not isinstance(count, int) or count < 0
+                for count in violations
+            ):
+                raise ValueError("prerequisite violations must be non-negative integers")
+            prerequisite_violations = sum(violations)
+
         metrics[run.model_name] = RankingMetrics(
             ndcg_at_k=math.fsum(item[0] for item in per_profile) / len(per_profile),
             precision_at_k=math.fsum(item[1] for item in per_profile) / len(per_profile),
-            p50_latency_ms=_percentile(latencies, 0.50),
-            p95_latency_ms=_percentile(latencies, 0.95),
+            p50_latency_ms=_percentile(latency_samples, 0.50),
+            p95_latency_ms=_percentile(latency_samples, 0.95),
             profiles_under_top_k=sum(item[2] for item in per_profile),
+            prerequisite_violations=prerequisite_violations,
         )
     return metrics
 

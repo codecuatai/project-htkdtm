@@ -122,15 +122,55 @@ or infer that graph.
 
 ## Fair offline evaluation
 
-Use the same held-out learner profiles, dataset version, and filtered candidate
-IDs for M0, M1, and M2. `compare_model_runs()` rejects runs with different
-candidate sets or dataset versions, duplicate results, or results outside the
-shared candidate set. It reports macro `NDCG@K`, `Precision@K`, profiles
-returning fewer than K items, and P50/P95 latency. `benchmark_latency()`
-collects end-to-end timings after warmup; precompute the M1 catalog before
-benchmarking and use at least 100 measured calls for a P95 report.
+`run_model_evaluation.py` runs the M0/M1/M2 comparison on exactly the `test`
+learners, computes macro `NDCG@5`, `Precision@5`, prerequisite violations, and
+profiles with fewer than five results, then benchmarks each model after
+warmup. The benchmark requires at least 100 measured calls and a catalog of at
+least 250 courses (approximately 300); M1 course embeddings are precomputed
+before timing. It also reports M2 ablations with `G` and `L` removed. Ablation
+weights are renormalized across the remaining components.
 
-The repository includes M0 and the shared metric comparator, but no approved
-held-out relevance labels or production prerequisite taxonomy. Therefore no
-real M0/M1/M2 quality comparison or group consensus is claimed until those
-inputs are supplied and evaluated on the same splits.
+The JSON input contract is intentionally explicit:
+
+- The course catalog is an array, or an object containing a `courses` array.
+  Every course must provide `approval_status` and
+  `prerequisite_course_ids`; course skill IDs and level must use the approved
+  taxonomy and may be `null`.
+- The ground-truth object uses `schema_version: 1`,
+  `split_strategy: "group_by_learner"`, and `profiles`. Each learner appears
+  exactly once, with `split` set to `dev` or `test`; each profile includes a
+  `relevance` object mapping judged course IDs to integer grades `0`, `1`, or
+  `2`. M2 data (`target_skills`, `current_skill_ids`, and
+  `skill_prerequisites`) is explicit and is never inferred from free text.
+- Unjudged pairs are treated as non-relevant for ranking metrics. The report
+  records judgment coverage and the number of positive labels removed by hard
+  filters so sparse judgments are visible.
+
+Example (paths and versions must identify approved, immutable inputs):
+
+```powershell
+python -m src.recommendations.run_model_evaluation `
+  --courses path\to\approved-courses.json `
+  --ground-truth path\to\mai-ground-truth.json `
+  --dataset-version DATASET_VERSION_ID `
+  --output-dir reports\recommendations `
+  --tune-m2-on-dev
+```
+
+The optional tuning flag uses only `dev` labels; final metrics and ablations use
+only `test`. Without it, the prescribed `0.50/0.35/0.15` weights are retained.
+The runner writes JSON and Markdown reports. P95 measures the in-process shared
+hard-filter plus rank call; it does not include HTTP/database time because an
+online recommendation orchestrator is not yet connected. To persist the same batch to
+`ModelEvaluations`, set `AI_EVALUATION_API_URL` to
+`/api/v1/recommendations/evaluations` and `AI_INTERNAL_API_KEY` to the backend's
+internal key. The endpoint stores one row per model/ablation, with versions,
+metrics, threshold outcomes, latency samples, data hashes, and run metadata.
+Apply the backend Alembic migration before posting results.
+
+No experiment outcome is asserted without the reviewed Ground Truth. The
+repository's current internal demo catalog has only five courses, marked
+`needs_review`, and no Mai ground-truth labels; the runner correctly refuses it
+as evidence for the requested benchmark. Real target status therefore remains
+unmeasured until the approved ~300-course catalog and learner-disjoint labels
+are supplied.

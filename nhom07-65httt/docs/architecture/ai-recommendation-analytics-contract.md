@@ -25,12 +25,12 @@ Hợp đồng này dựa trên:
   [Course](../../src/backend/app/models/course.py),
   [Enrollment](../../src/backend/app/models/enrollment.py),
   [Payment](../../src/backend/app/models/payment.py).
-- Hồ sơ học tập, kỹ năng, tiên quyết, đơn hàng, hoàn tiền, `LearningEvents`,
-  `DatasetVersions` và `ModelEvaluations` vẫn là các bảng trong kế hoạch mở
-  rộng chưa được đăng ký trong
-  [models/__init__.py](../../src/backend/app/models/__init__.py).
-  `RecommendationRuns` và `RecommendationItems` đã được triển khai để lưu
-  snapshot bất biến, phiên bản mô hình/dữ liệu và bằng chứng giải thích.
+- Hồ sơ học tập, kỹ năng, tiên quyết, đơn hàng, hoàn tiền, `LearningEvents`
+  và `DatasetVersions` vẫn là các bảng trong kế hoạch mở rộng chưa được đăng
+  ký trong [models/__init__.py](../../src/backend/app/models/__init__.py).
+  `RecommendationRuns`, `RecommendationItems` và `ModelEvaluations` đã có
+  model/migration; hai bảng đầu lưu snapshot gợi ý, bảng đánh giá lưu kết quả
+  test set, ablation, benchmark và metadata tái lập.
 
 Tài liệu phân biệt rõ phần đã có schema/lưu vết với các bảng mở rộng chưa triển
 khai; việc tạo bảng không có nghĩa đã có dữ liệu lịch sử hoặc luồng gợi ý online.
@@ -557,7 +557,7 @@ erDiagram
 | `FactCashTransaction` | Một khoản thu hoặc hoàn tiền gắn với một dòng đơn hàng/giao dịch | `signed_amount_minor` (thu dương, hoàn âm), `currency_code`, `transaction_type`, `environment` (`REAL`/`SANDBOX`/`DEMO`) | Mục tiêu: `Orders`, `OrderItems`, thanh toán, `Refunds`; hiện tại có `payments` gắn `course_id`/`student_id`/`amount_vnd`, chưa có Refunds/OrderItems. |
 | `FactEnrollment` | Một ghi danh vào một khóa học | `enrolled_count = 1`, trạng thái ghi danh | `enrollments`; khóa tự do cần xử lý theo quy tắc thống nhất, không ghi nhận doanh thu giả. Số tiền chỉ tính từ `FactCashTransaction`, không cộng tiền ở Fact này. |
 | `FactLearningDaily` | Một học viên × một ghi danh/khóa × một ngày hoạt động | Phút học hợp lệ, số bài học/tài liệu hoàn thành trong ngày, số lượt quiz, điểm quiz theo quy ước thống nhất | Mục tiêu: `LearningEvents`; hiện tại có tiến độ tài liệu/bài học và `quiz_attempts`, chưa có nhật ký sự kiện học chuẩn hóa. |
-| `FactRecommendationEvent` | Một recommendation item hiển thị trong một request/run; `source_recommendation_item_key` là duy nhất | `impression_count = 1`, `click_count` (0/1 item được click), `enrollment_count` (0/1 nếu attribution xác nhận), vị trí xếp hạng, điểm/thành phần điểm, mô hình | `RecommendationRuns`, `RecommendationItems` và event tracking; các bảng này hiện chưa có. |
+| `FactRecommendationEvent` | Một recommendation item hiển thị trong một request/run; `source_recommendation_item_key` là duy nhất | `impression_count = 1`, `click_count` (0/1 item được click), `enrollment_count` (0/1 nếu attribution xác nhận), vị trí xếp hạng, điểm/thành phần điểm, mô hình | `RecommendationRuns` và `RecommendationItems` đã lưu output; event tracking cho impression/click/enrollment attribution chưa được triển khai. |
 
 ### 5.2. Dimension, khóa và lịch sử
 

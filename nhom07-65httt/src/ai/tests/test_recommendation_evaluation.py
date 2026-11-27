@@ -99,3 +99,25 @@ def test_latency_benchmark_runs_warmup_and_returns_measured_samples():
 def test_latency_benchmark_requires_measured_runs():
     with pytest.raises(ValueError, match="at least 1"):
         benchmark_latency(lambda: None, measured_runs=0)
+
+
+def test_comparison_uses_repeated_latency_samples_and_counts_violations():
+    run = ModelEvaluationRun(
+        model_name="M0",
+        model_version="M0-v1",
+        dataset_version_id=VERSION_ID,
+        filtered_candidate_ids={"learner-1": ("course-a", "course-b")},
+        ranked_course_ids={"learner-1": ("course-a",)},
+        latency_ms_by_profile={"learner-1": 999.0},
+        latency_samples_ms=(10.0, 20.0, 30.0, 40.0, 50.0),
+        prerequisite_violations_by_profile={"learner-1": 2},
+    )
+
+    metrics = compare_model_runs(
+        relevance_by_profile={"learner-1": {"course-a": 1}},
+        runs=(run,),
+    )["M0"]
+
+    assert metrics.p50_latency_ms == 30.0
+    assert metrics.p95_latency_ms == 50.0
+    assert metrics.prerequisite_violations == 2

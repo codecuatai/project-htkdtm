@@ -35,6 +35,7 @@ from app.models import (  # noqa: F401
     FlashcardItem,
     Lesson,
     MaterialProgress,
+    ModelEvaluation,
     Payment,
     Question,
     Quiz,

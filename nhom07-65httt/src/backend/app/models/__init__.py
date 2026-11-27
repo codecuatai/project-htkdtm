@@ -25,6 +25,7 @@ from app.models.essay import EssaySubmission
 from app.models.flashcard import Flashcard, FlashcardItem
 from app.models.lesson_progress import LessonProgress
 from app.models.material_progress import MaterialProgress
+from app.models.model_evaluation import ModelEvaluation
 from app.models.note import Note
 from app.models.notification import Notification
 from app.models.payment import Payment
@@ -76,4 +77,5 @@ __all__ = [
     "AiProviderSetting",
     "RecommendationRun",
     "RecommendationItem",
+    "ModelEvaluation",
 ]
