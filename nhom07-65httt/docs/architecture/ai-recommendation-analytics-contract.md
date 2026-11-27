@@ -69,10 +69,31 @@ approved_candidate AND approval_status = approved` trong version `published`
 mới đủ điều kiện cấp cho recommender. Không cho phép trạng thái không nhận diện
 lọt qua mặc định.
 
+### 1.2. Phân biệt hiện trạng và thiết kế mục tiêu
+
+- Từ điển dữ liệu chuẩn hóa cho phép nhiều trường tùy chọn là `null`, nhưng
+  pipeline hiện tại chỉ phát hành bản ghi khi `description`, `skills` và
+  `level` có giá trị, `quality_status = approved_candidate`, không còn
+  `quality_flags` và `duplicate_status = unique`. `quality_check.py` đánh dấu
+  thiếu description/skills/level là `needs_review`; `release.py` kiểm tra lại
+  các điều kiện này. Vì vậy, nullable trong schema không đồng nghĩa bản ghi
+  thiếu trường đủ điều kiện vào release. Muốn nới quality gate cần được Huy và
+  nhóm chốt trước; không tự thay đổi điều kiện phát hành trong hợp đồng này.
+- Release hiện là artifact theo file (`courses.jsonl`, `courses.csv`,
+  `metadata.json`), chưa phải bảng PostgreSQL `DatasetVersions`/
+  `CourseSnapshots`. Pipeline hiện cũng chưa có trường `approval_status` cho
+  quyết định duyệt thủ công độc lập với `quality_status`; phần này là thiết kế
+  mục tiêu theo phân công nhóm.
+- Trong repository hiện chỉ có baseline `M0` TF-IDF. Chưa có triển khai bộ lọc
+  ứng viên, `M1`, `M2`, API online, `RecommendationRuns`/`RecommendationItems`
+  hay schema `analytics`; các phần dưới là hợp đồng và kiến trúc mục tiêu, không
+  phải mô tả trạng thái đã chạy.
+
 ## 2. Nguyên tắc hợp đồng
 
-1. Dùng `snake_case`, UUID cho khóa định danh nội bộ, thời gian ISO-8601 UTC,
-   tiền dạng số nguyên theo đơn vị tiền tệ đã khai báo.
+1. Dùng `snake_case`, UUID cho khóa định danh nội bộ và thời gian ISO-8601 UTC.
+   Giá khóa lưu dạng số chính xác (`NUMERIC`/`Decimal`) kèm currency; không dùng
+   binary float để tính tiền. Fact giao dịch DW chuẩn hóa sang minor unit integer.
 2. `null` nghĩa là **không biết/không được cung cấp**; không đổi `null` thành
    `0`, chuỗi rỗng, `BEGINNER`, hoặc giá trị mặc định suy đoán.
 3. Với danh sách: `null` nghĩa là chưa biết/chưa nạp; `[]` nghĩa là đã biết và
@@ -154,11 +175,12 @@ kỹ năng.
 | `provider` | string | Có | Trường mục tiêu của pipeline Crawl. |
 | `category_ids` | mảng ID | Có | Kết hợp taxonomy nội bộ và mapping danh mục nguồn nếu có. |
 | `language` | mã ngôn ngữ | Có | Chuẩn hóa BCP 47/ISO đã thống nhất; không suy đoán từ tên khóa. |
-| `level` | enum chuẩn | Có | Giá trị nguồn phải ánh xạ taxonomy; giữ `null` nếu không ánh xạ được. |
+| `level` | `BEGINNER`, `INTERMEDIATE`, `ADVANCED`, `ALL_LEVELS` | Có | Chuẩn hóa `Beginner`/`All Levels` từ nguồn sang enum; giữ `null` nếu thiếu hoặc không ánh xạ được. Không dùng `UNKNOWN` thay cho `null`. |
 | `price_amount` | số không âm | Có | `null` không có nghĩa là miễn phí. |
 | `price_currency` | ISO 4217 | Có | Bắt buộc khi `price_amount` có giá trị. |
 | `duration_minutes` | số nguyên dương | Có | Giá trị thiếu giữ `null`; chỉ dùng lọc thời gian khi có quy tắc quy đổi được nhóm chấp thuận. |
 | `required_hours_per_week` | số không âm | Có | Tải học ước tính/tuần đã được nguồn cung cấp hoặc nhóm xác nhận; không thể suy ra chỉ từ `duration_minutes`. Nếu người học có giới hạn giờ/tuần mà trường này thiếu, ứng viên bị loại vì chưa xác minh được ràng buộc. |
+| `popularity_score` | số không âm | Có | Chỉ dùng cho tie-break/fallback; nguồn và cách tính phải được nhóm chốt, không mặc định đồng nhất với rating hoặc lượt đăng ký. Thiếu dữ liệu giữ `null`. |
 | `direct_skills` | mảng skill object | Có | Kỹ năng nêu trực tiếp trên nguồn; mỗi mục gồm `skill_id`, `source`, `confidence`. |
 | `inferred_skills` | mảng skill object | Có | Kỹ năng suy luận; giữ nguồn/confidence và cờ rà soát, không gộp âm thầm vào kỹ năng trực tiếp. |
 | `prerequisite_skill_ids` | mảng skill ID | Có | Tiên quyết khóa học đã ánh xạ taxonomy; `null` là chưa rõ, không đồng nghĩa không có tiên quyết. |
@@ -197,13 +219,12 @@ bằng `course_id`. Nếu không có ứng viên hợp lệ, trả danh sách r�
 `no_eligible_candidates`; tuyệt đối không nới trạng thái duyệt, loại khóa, sở
 hữu/ghi danh, ngân sách hay tiên quyết để tạo kết quả giả.
 
-Hiện thực hóa tại [candidate_filter.py](../../src/ai/src/recommendations/candidate_filter.py):
-orchestrator gọi `filter_candidates` **một lần trước khi chọn M0/M1/M2**, rồi
-truyền cùng `result.candidates` (cùng IDs, cùng thứ tự chuẩn hóa) cho từng
-ranker. `result.fallback_candidates` là pool đã qua các hard filters và chỉ
-dùng khi hồ sơ cold-start hoặc ranker không trả kết quả; `candidate_warnings`
-và `rejected_candidates` giữ lý do để API/telemetry giải thích được quyết định.
-Không gọi lại bộ lọc với tham số khác nhau cho từng mô hình.
+Thiết kế mục tiêu là orchestrator gọi bộ lọc **một lần trước khi chọn M0/M1/M2**,
+rồi truyền cùng IDs ứng viên và cùng thứ tự chuẩn hóa cho từng ranker. Tuy nhiên,
+module bộ lọc ứng viên chưa tồn tại trong repository; hiện chưa có triển
+khai hay kiểm thử chứng minh các hard filter, fallback pool và cảnh báo hoạt
+động đúng như thiết kế. Không được coi các quy tắc ở đoạn này là tính năng đã
+được thực thi.
 
 ### 3.4. Bản ghi tái lập lượt gợi ý
 
@@ -273,7 +294,15 @@ này. Nếu chưa biết trạng thái danh sách loại trừ thì phải gửi
 
 Hiện thực M0 trong [tfidf_baseline.py](../../src/ai/src/recommendations/tfidf_baseline.py)
 xếp hạng `goals`, `current_skills` và `target_text` của hồ sơ so với `title`,
-`description`, `skills`, `direct_skills` và `inferred_skills` của snapshot khóa.
+`description`, `skills`, `direct_skills` và `inferred_skills` của khóa. Đây là
+đầu vào trực tiếp của baseline hiện tại, không phải toàn bộ payload API đề xuất:
+`LearnerProfile` chưa nhận `target_level`, proficiency, ngân sách, thời lượng,
+dataset version hay trạng thái duyệt; `CourseDocument` cũng chưa nhận các thuộc
+tính đó. Adapter/orchestrator phải xác thực version, chọn snapshot đã duyệt và
+áp dụng hard filters trước khi gọi ranker. `M0` chỉ giới hạn tập xếp hạng khi
+nhận `candidate_course_ids`; nếu trường này là `null`, baseline dùng toàn bộ
+catalog được nạp vào, không tự xác minh catalog đã qua lọc.
+
 `null` và nội dung rỗng không được thay bằng văn bản giả. Vectorizer giữ Unicode,
 hạ chữ thường, dùng unigram/bigram và TF-IDF L2; cosine similarity là điểm
 `[0,1]`, không phải xác suất. Hồ sơ không có token hoặc không khớp token nào
@@ -305,10 +334,20 @@ vectorizer, phiên bản scikit-learn/Python, phiên bản dữ liệu, hash đ�
 ra, hash tập ứng viên theo hồ sơ và thống kê fallback. M0 không có ngẫu nhiên;
 cùng đầu vào, phiên bản dependency và cấu hình cho kết quả/xếp hạng lặp lại.
 Để so sánh M1/M2, cấp cho mỗi ranker cùng `dataset_version_id` và
-`candidate_course_ids`; hash ứng viên được xuất để kiểm tra điều đó. Dataset
-Crawl hiện tại chỉ có tiêu đề/danh mục và không phải bộ hồ sơ benchmark; cần
-chuẩn bị catalog đã duyệt có metadata và tập profile kiểm thử thực trước khi
-chạy đánh giá dự án.
+`candidate_course_ids`; hash ứng viên được xuất để kiểm tra điều đó. CSV Crawl
+lịch sử có tiêu đề, URL, giá, danh mục và thời điểm crawl nhưng thiếu
+mô tả/kỹ năng và không phải bộ hồ sơ benchmark; cần chuẩn bị catalog đã duyệt
+có metadata cùng tập profile kiểm thử thực trước khi chạy đánh giá dự án.
+
+Ở ranh giới API, cần giữ nguyên khác biệt `null` (chưa biết/chưa nạp) và `[]`
+(đã biết danh sách rỗng) để tạo cảnh báo và áp dụng filter đúng. Adapter hiện
+tại của M0 chuyển cả hai trường hợp thành tuple rỗng cho mục đích tạo văn bản
+xếp hạng; baseline vì vậy không thể tự phân biệt hai trạng thái hoặc phát cảnh
+báo thiếu dữ liệu. Không dùng output của riêng baseline để khẳng định đã bảo
+tồn nullability end-to-end. Tương tự, M0 hiện chỉ dùng nhãn kỹ năng để tạo văn
+bản, không sử dụng `proficiency`, `source` hay `confidence`; muốn các feature
+này tác động tới điểm cần thiết kế và đánh giá trọng số riêng ở ranker, không
+được giả định chúng đã có hiệu lực.
 
 ## 4. Luồng dữ liệu OLTP, Crawl, AI và DW
 
@@ -318,7 +357,7 @@ flowchart LR
         SRC["Nguồn khóa học công khai"] --> RAW["Raw bất biến theo batch"]
         RAW --> STG["Staging: chuẩn hóa, khử trùng, kiểm tra chất lượng"]
         STG --> REVIEW["Duyệt thủ công / quality gate"]
-        REVIEW --> RELEASE["DatasetVersions + CourseSnapshots đã phát hành"]
+        REVIEW -->         RELEASE["File release đã duyệt (DB DatasetVersions/CourseSnapshots là mục tiêu)"]
     end
 
     subgraph OLTP["PostgreSQL OLTP (Tài)"]
@@ -384,6 +423,7 @@ erDiagram
     DIM_COURSE ||--o{ FACT_ENROLLMENT : course
     DIM_COURSE ||--o{ FACT_LEARNING_DAILY : course
     DIM_COURSE ||--o{ FACT_RECOMMENDATION_EVENT : recommended_course
+    DIM_DATASET_VERSION ||--o{ FACT_RECOMMENDATION_EVENT : dataset_version
 
     DIM_COURSE ||--o{ BRIDGE_COURSE_CATEGORY : maps
     DIM_CATEGORY ||--o{ BRIDGE_COURSE_CATEGORY : maps
@@ -406,7 +446,6 @@ erDiagram
         string source_name
         string level
         string language
-        string dataset_version
     }
     DIM_CATEGORY {
         bigint category_key PK
@@ -417,6 +456,13 @@ erDiagram
         bigint model_key PK
         string model_name
         string model_version
+    }
+    DIM_DATASET_VERSION {
+        bigint dataset_version_key PK
+        string version UK
+        string schema_version
+        string status
+        timestamp published_at
     }
     BRIDGE_COURSE_CATEGORY {
         bigint course_key PK, FK
@@ -440,6 +486,7 @@ erDiagram
         bigint student_key FK
         bigint course_key FK
         string source_enrollment_key
+        string enrollment_status
         int enrolled_count
     }
     FACT_LEARNING_DAILY {
@@ -461,6 +508,7 @@ erDiagram
         bigint student_key FK
         bigint course_key FK
         bigint model_key FK
+        bigint dataset_version_key FK
         string source_recommendation_item_key UK
         int impression_count
         int click_count
@@ -487,8 +535,8 @@ erDiagram
   phân tích tối thiểu cần thiết. Hash là HMAC có secret ngoài DW; không lưu
   email, tên, token hoặc hash email thường.
 - `DimCourse`: `course_key` surrogate PK, `course_natural_key`, `offer_type`,
-  trạng thái duyệt, nguồn, nhà cung cấp, cấp độ, ngôn ngữ, version dữ liệu và
-  thuộc tính cần lọc. SCD Type 2 dùng `effective_from`, `effective_to`,
+  trạng thái duyệt, nguồn, nhà cung cấp, cấp độ, ngôn ngữ và thuộc tính cần lọc.
+  SCD Type 2 dùng `effective_from`, `effective_to`,
   `is_current`; facts trỏ đúng bản ghi dimension có hiệu lực tại sự kiện.
 - `DimCategory`: `category_key` surrogate PK, `category_natural_key`,
   `category_name`, `parent_category_key` nếu taxonomy phân cấp.
@@ -497,10 +545,13 @@ erDiagram
   tổng tiền/tổng học tập nếu chưa loại trùng hoặc phân bổ trọng số.
 - `DimModel`: `model_key` surrogate PK, `model_name`, `model_version`,
   `embedding_model_version` và cấu hình/score scale cần cho tái lập.
-- `dataset_version` và `source_name` phải có sẵn trong `DimCourse` (hoặc dimension
-  riêng khi volume/BI yêu cầu); dashboard có thể lọc D1 theo dataset/source mà
-  không cần nối dữ liệu raw. `etl_batch_logs` là bảng kiểm soát tải, không phải
-  dimension/fact hành vi.
+- `DimDatasetVersion`: `dataset_version_key` surrogate PK, `version` unique,
+  `schema_version`, `status` và `published_at`; `FactRecommendationEvent` tham
+  chiếu version đã cấp cho lượt gợi ý để tái lập cả khi khóa nội bộ không thuộc
+  một release Crawl. `DimCourse` vẫn giữ `source_name` và thuộc tính snapshot
+  cần lọc; với khóa Crawl, version snapshot phải khớp version của dimension này.
+  Dashboard D1 lọc theo source/version qua dimensions, không nối raw.
+  `etl_batch_logs` là bảng kiểm soát tải, không phải dimension/fact hành vi.
 
 ### 5.3. Khóa và grain duy nhất để UPSERT
 
@@ -509,7 +560,12 @@ erDiagram
 | `FactCashTransaction` | `source_transaction_line_key` (order item + payment/refund line; với schema cũ có thể là payment ID cho giao dịch thu) | `date_key`, `student_key`, `course_key` | `signed_amount_minor`, `currency_code`, `transaction_type`, `environment`; chỉ giao dịch đã xác nhận. Hoàn tiền là amount âm. |
 | `FactEnrollment` | `source_enrollment_key` (`enrollments.id`) | `date_key`, `student_key`, `course_key` | `enrolled_count = 1`; không có measure doanh thu. |
 | `FactLearningDaily` | `(source_enrollment_key, date_key)` | `date_key`, `student_key`, `course_key` | Tổng theo enrollment/ngày; `learning_minutes`, `lessons_completed`, `materials_completed`, `quiz_attempt_count`, `quiz_score_sum`, `quiz_score_count`. |
-| `FactRecommendationEvent` | `source_recommendation_item_key` (ổn định và duy nhất trong một run) | `date_key`, `student_key`, `course_key`, `model_key` | Một dòng cho một recommendation item thực sự được hiển thị; impression bằng 1; click/enrollment attribution chỉ cập nhật khi event được ghi nhận. Gửi event lặp phải idempotent theo recommendation item. |
+| `FactRecommendationEvent` | `source_recommendation_item_key` (ID duy nhất, ổn định toàn cục cho item được hiển thị) | `date_key`, `student_key`, `course_key`, `model_key`, `dataset_version_key` | Một dòng cho một recommendation item thực sự được hiển thị; impression bằng 1; click/enrollment attribution chỉ cập nhật khi event được ghi nhận. Gửi event lặp phải idempotent theo recommendation item. |
+
+Recommendation response/run không tự chứng minh item đã được hiển thị. Chỉ ghi
+`impression_count = 1` khi có exposure event xác nhận item được render/hiển thị;
+nếu hệ thống chỉ lưu `RecommendationItems` lúc sinh Top-K thì cần event tracking
+riêng trước khi dùng bảng này để tính impression, CTR hoặc conversion.
 
 Mọi Fact có surrogate PK để join nội bộ và unique constraint trên khóa nguồn/grain
 ở trên. Event impression/click phải mang recommendation item ID ổn định và
