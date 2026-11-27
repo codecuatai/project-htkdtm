@@ -3,13 +3,16 @@
 import Link from 'next/link'
 import { ShieldAlert, ArrowLeft, Home } from 'lucide-react'
 import { useAppStore } from '@/stores/appStore'
+import { normalizeRole } from '@/components/auth/ProtectedRoute'
 
 export default function UnauthorizedRoutePage() {
   const user = useAppStore((s) => s.auth.user)
+  const role = normalizeRole(user?.role)
+
   const dashboardHref =
-    user?.role === 'admin'
+    role === 'admin' || role === 'staff'
       ? '/app/admin'
-      : user?.role === 'lecturer'
+      : role === 'lecturer'
         ? '/app/lecturer/dashboard'
         : '/app/student/dashboard'
 
@@ -20,7 +23,9 @@ export default function UnauthorizedRoutePage() {
           <ShieldAlert className="h-7 w-7" />
         </div>
         <div className="space-y-2">
-          <p className="text-xs font-bold uppercase tracking-widest text-destructive">403 · Không có quyền truy cập</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-destructive">
+            403 · Không có quyền truy cập
+          </p>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Bạn không có quyền xem trang này
           </h1>
