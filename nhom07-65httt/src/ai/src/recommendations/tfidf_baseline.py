@@ -30,6 +30,8 @@ class CourseDocument:
     direct_skills: tuple[str, ...] = ()
     inferred_skills: tuple[str, ...] = ()
     popularity_score: float | None = None
+    skill_ids: tuple[str, ...] | None = None
+    level: str | None = None
 
     def __post_init__(self) -> None:
         if not self.course_id.strip():
@@ -126,19 +128,7 @@ class TfidfBaseline:
         if top_k < 1:
             raise ValueError("top_k must be at least 1")
 
-        if profile.candidate_course_ids is None:
-            candidates = self.courses
-        else:
-            unknown_ids = set(profile.candidate_course_ids) - self.course_index.keys()
-            if unknown_ids:
-                raise ValueError(
-                    "candidate_course_ids contain unknown courses: "
-                    + ", ".join(sorted(unknown_ids))
-                )
-            candidates = tuple(
-                self.courses[self.course_index[course_id]]
-                for course_id in sorted(profile.candidate_course_ids)
-            )
+        candidates = select_candidate_courses(self.courses, profile.candidate_course_ids)
 
         if not candidates:
             return ()
@@ -187,6 +177,29 @@ class TfidfBaseline:
             )
             for rank, (course, score) in enumerate(scored_courses, start=1)
         )
+
+
+def select_candidate_courses(
+    courses: Sequence[CourseDocument],
+    candidate_course_ids: Sequence[str] | None,
+) -> tuple[CourseDocument, ...]:
+    """Resolve the caller's shared, pre-filtered candidate IDs deterministically."""
+    course_index = {course.course_id: course for course in courses}
+    if len(course_index) != len(courses):
+        raise ValueError("course_id values must be unique")
+    if candidate_course_ids is None:
+        selected_ids = sorted(course_index)
+    else:
+        if len(candidate_course_ids) != len(set(candidate_course_ids)):
+            raise ValueError("candidate_course_ids must be unique")
+        unknown_ids = set(candidate_course_ids) - course_index.keys()
+        if unknown_ids:
+            raise ValueError(
+                "candidate_course_ids contain unknown courses: "
+                + ", ".join(sorted(unknown_ids))
+            )
+        selected_ids = sorted(candidate_course_ids)
+    return tuple(course_index[course_id] for course_id in selected_ids)
 
 
 def terms_from_value(value: object, *, field_name: str) -> tuple[str, ...]:
