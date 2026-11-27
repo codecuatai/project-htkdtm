@@ -26,13 +26,14 @@ Hợp đồng này dựa trên:
   [Enrollment](../../src/backend/app/models/enrollment.py),
   [Payment](../../src/backend/app/models/payment.py).
 - Hồ sơ học tập, kỹ năng, tiên quyết, đơn hàng, hoàn tiền, `LearningEvents`,
-  `DatasetVersions`, `RecommendationRuns`, `RecommendationItems` và
-  `ModelEvaluations` là các bảng được nêu trong kế hoạch mở rộng tại
-  [phân công nhóm](../../danhsachnhom.md), chưa được đăng ký trong
+  `DatasetVersions` và `ModelEvaluations` vẫn là các bảng trong kế hoạch mở
+  rộng chưa được đăng ký trong
   [models/__init__.py](../../src/backend/app/models/__init__.py).
+  `RecommendationRuns` và `RecommendationItems` đã được triển khai để lưu
+  snapshot bất biến, phiên bản mô hình/dữ liệu và bằng chứng giải thích.
 
-Tài liệu này thiết kế hợp đồng và kiến trúc, không tạo migration hay khẳng định
-đã có dữ liệu lịch sử cho các bảng chưa triển khai.
+Tài liệu phân biệt rõ phần đã có schema/lưu vết với các bảng mở rộng chưa triển
+khai; việc tạo bảng không có nghĩa đã có dữ liệu lịch sử hoặc luồng gợi ý online.
 
 ### 1.1. Hợp đồng phát hành `DatasetVersions` (đề xuất)
 
@@ -84,10 +85,12 @@ lọt qua mặc định.
   `CourseSnapshots`. Pipeline hiện cũng chưa có trường `approval_status` cho
   quyết định duyệt thủ công độc lập với `quality_status`; phần này là thiết kế
   mục tiêu theo phân công nhóm.
-- Trong repository hiện chỉ có baseline `M0` TF-IDF. Chưa có triển khai bộ lọc
-  ứng viên, `M1`, `M2`, API online, `RecommendationRuns`/`RecommendationItems`
-  hay schema `analytics`; các phần dưới là hợp đồng và kiến trúc mục tiêu, không
-  phải mô tả trạng thái đã chạy.
+- Repository hiện có `M0`, `M1`, `M2`, candidate filter, bộ dựng explanation
+  có nguồn và bảng lưu `RecommendationRuns`/`RecommendationItems`. Backend có
+  endpoint nội bộ nhận trace tại `POST /api/v1/recommendations/runs`. Chưa có
+  online recommender orchestrator gọi các ranker rồi gửi trace, cũng chưa có
+  các bảng `DatasetVersions`/`CourseSnapshots` hay schema `analytics`; không
+  được xem endpoint lưu trace là bằng chứng ranking production đã chạy.
 
 ## 2. Nguyên tắc hợp đồng
 
@@ -124,11 +127,15 @@ danh thay cho UUID người dùng.
 | `profile.current_skills` | mảng skill object | Có | Kỹ năng đã có từ hồ sơ hoặc intake; mỗi phần tử theo cấu trúc bên dưới. |
 | `profile.target_level` | enum `BEGINNER`, `INTERMEDIATE`, `ADVANCED` | Có | Cấp độ do người học khai báo hoặc quy đổi theo intake; lưu nguồn riêng. |
 | `profile.level_source` | enum `self_report`, `intake_test`, `null` | Có | Không suy ra nguồn khi thiếu dữ liệu. |
+| `constraints.allowed_offer_types` | mảng `INTERNAL` / `EXTERNAL_REFERENCE` | Có | `null` thì bỏ riêng lọc loại khóa và cảnh báo; `[]` nghĩa là không cho phép loại nào. |
 | `constraints.max_budget_amount` | decimal/integer | Có | Ngân sách tối đa; `null` thì bỏ lọc ngân sách, không phải miễn phí. |
 | `constraints.currency` | ISO 4217 | Có | Bắt buộc nếu ngân sách có giá trị; chưa xác định thì `null`. |
 | `constraints.available_hours_per_week` | số dương | Có | `null` thì không áp dụng lọc theo quỹ thời gian. |
 | `constraints.exclude_enrolled_or_completed` | boolean | Không | Giá trị do Backend cung cấp theo chính sách; trạng thái ghi danh lấy từ OLTP. |
-| `constraints.exclude_course_ids` | mảng UUID | Có | Khóa đã mua/đã học hoặc bị loại bởi người dùng; `null` là chưa biết, `[]` là không có. |
+| `constraints.exclude_course_ids` | mảng UUID | Có | Khóa bị loại bởi người dùng/chính sách; `null` là chưa biết, `[]` là không có. |
+| `constraints.purchased_course_ids` | mảng course ID | Có | Khóa đã mua; `null` là chưa biết, `[]` là đã xác minh chưa mua khóa nào. |
+| `constraints.enrolled_course_ids` | mảng course ID | Có | Đọc khi `exclude_enrolled_or_completed=true`; `null` là chưa biết, không đồng nghĩa danh sách rỗng. |
+| `constraints.completed_course_ids` | mảng course ID | Có | Lịch sử hoàn thành dùng để xác minh `CoursePrerequisites`; `null` khi chưa biết, `[]` khi đã xác minh chưa hoàn thành khóa nào. |
 | `top_k` | số nguyên dương | Không | Số kết quả tối đa. |
 | `model` | `M0`, `M1`, hoặc `M2` | Không | Cho phép chọn mô hình để đánh giá/demo. |
 
@@ -184,6 +191,7 @@ kỹ năng.
 | `direct_skills` | mảng skill object | Có | Kỹ năng nêu trực tiếp trên nguồn; mỗi mục gồm `skill_id`, `source`, `confidence`. |
 | `inferred_skills` | mảng skill object | Có | Kỹ năng suy luận; giữ nguồn/confidence và cờ rà soát, không gộp âm thầm vào kỹ năng trực tiếp. |
 | `prerequisite_skill_ids` | mảng skill ID | Có | Tiên quyết khóa học đã ánh xạ taxonomy; `null` là chưa rõ, không đồng nghĩa không có tiên quyết. |
+| `prerequisite_course_ids` | mảng course ID | Có | Mapping đã chuẩn hóa từ `CoursePrerequisites`; `[]` là đã xác minh không có tiên quyết, `null`/thiếu mapping là chưa biết. |
 | `offer_type` | `INTERNAL` / `EXTERNAL_REFERENCE` | Không | Phân biệt khóa nội bộ và khóa tham khảo ngoài. |
 | `approval_status` | enum trạng thái | Không | Chỉ `approved` được đưa vào tập ứng viên. |
 | `quality_flags` | mảng string | Có | Cờ thiếu trường/chất lượng; `[]` khi đã kiểm tra và không có cờ. |
@@ -196,12 +204,19 @@ kỹ năng.
 | `M1` — Embedding | Cùng nội dung đầu vào văn bản với `M0`, mã hóa đa ngữ; cache embedding theo `course_id` + `dataset_version_id` + model embedding version. | Không dùng embedding của version cũ cho khóa đã đổi nội dung. |
 | `M2` — Hybrid | `S` khớp ngữ nghĩa, `G` độ bao phủ kỹ năng còn thiếu, `L` mức phù hợp cấp độ; điểm `100 × (0.50×S + 0.35×G + 0.15×L)` với thành phần trong `[0,1]`. | Giá/hoa hồng không tác động tăng điểm; thiếu dữ liệu không được biến thành điểm mặc định giả. |
 
-Lọc trạng thái duyệt, loại khóa, khóa đã học/đã mua, ngân sách, thời gian và
-tiên quyết được chạy **trước** xếp hạng và dùng chung cho cả ba mô hình. Khi
-thiếu ngân sách hoặc thời lượng, bỏ riêng bộ lọc đó và trả `missing_fields_warning`;
-không loại hết ứng viên chỉ vì trường tùy chọn bị thiếu. Tiên quyết được kiểm tra
-theo đồ thị kỹ năng đã duyệt; trường tiên quyết chưa biết phải được gắn cảnh báo
-và xử lý theo quy tắc do nhóm chốt, không được ngầm xem là đã thỏa mãn.
+`candidate_filter.py` chạy lọc trước khi xếp hạng. Orchestrator gọi
+`filter_candidates()` một lần rồi truyền cùng `CandidateFilterResult` cho M0,
+M1 và M2. Bộ lọc chỉ nhận `approval_status = approved`; loại khóa được so với
+`allowed_offer_types`; đã mua và `exclude_course_ids` bị loại; nếu
+`exclude_enrolled_or_completed=true`, danh sách ghi danh/hoàn thành cũng bị
+loại. Giá chỉ so sánh khi có ngân sách và cùng currency; tải học chỉ so sánh
+với `required_hours_per_week`, không suy ra từ tổng thời lượng.
+
+Nếu một trường ràng buộc tùy chọn của hồ sơ là `null`, chỉ bỏ qua bộ lọc tương
+ứng và thêm đường dẫn trường vào `missing_fields_warning`. Nếu hồ sơ có ngân
+sách/giới hạn giờ nhưng khóa thiếu giá, currency hoặc tải giờ/tuần, khóa đó bị
+loại và cảnh báo; không xem dữ liệu thiếu là miễn phí hoặc vừa thời gian.
+Trạng thái duyệt thiếu/không phải `approved` luôn bị loại.
 
 Với bộ lọc `available_hours_per_week`, chỉ so sánh với
 `required_hours_per_week` của khóa. Không coi tổng thời lượng khóa là tải học
@@ -210,7 +225,8 @@ nếu hồ sơ có giới hạn nhưng khóa không có tải/tuần thì loại
 thiếu dữ liệu kiểm chứng. `CoursePrerequisites` được nạp thành ánh xạ từ
 `course_id` sang danh sách khóa tiên quyết: danh sách rỗng là đã biết không có
 tiên quyết; thiếu mapping hoặc lịch sử hoàn thành của học viên khi khóa có
-tiên quyết thì fail-closed để không có vi phạm tiên quyết.
+tiên quyết thì fail-closed để không có vi phạm tiên quyết. Đây là ngoại lệ an
+toàn cho nguyên tắc giữ ứng viên khi thiếu trường tùy chọn của hồ sơ.
 
 Hồ sơ cold-start là hồ sơ không có mục tiêu, kỹ năng hiện tại và cấp độ mục
 tiêu. Khi cold-start hoặc ranker không trả kết quả, dùng `fallback_candidates`
@@ -219,12 +235,13 @@ bằng `course_id`. Nếu không có ứng viên hợp lệ, trả danh sách r�
 `no_eligible_candidates`; tuyệt đối không nới trạng thái duyệt, loại khóa, sở
 hữu/ghi danh, ngân sách hay tiên quyết để tạo kết quả giả.
 
-Thiết kế mục tiêu là orchestrator gọi bộ lọc **một lần trước khi chọn M0/M1/M2**,
-rồi truyền cùng IDs ứng viên và cùng thứ tự chuẩn hóa cho từng ranker. Tuy nhiên,
-module bộ lọc ứng viên chưa tồn tại trong repository; hiện chưa có triển
-khai hay kiểm thử chứng minh các hard filter, fallback pool và cảnh báo hoạt
-động đúng như thiết kế. Không được coi các quy tắc ở đoạn này là tính năng đã
-được thực thi.
+`CandidateFilterResult` giữ cùng IDs đã lọc, thứ tự chuẩn hóa, hash, lý do loại,
+cảnh báo, dataset version và fallback pool. M0/M1/M2 nhận cùng kết quả; nếu có
+`LearnerProfile.candidate_course_ids` bổ sung thì chỉ được thu hẹp tập đã lọc,
+không thể đưa khóa bị loại trở lại. M0 evaluator cũng chạy bộ lọc và ghi warning
+cùng rejection reasons vào manifest. Các test `src/ai/tests/test_candidate_filter.py`
+kiểm tra 0 ứng viên vi phạm tiên quyết, đồng nhất tập đầu vào giữa ba ranker,
+cold-start, trường thiếu, và fallback không nới hard filter.
 
 ### 3.4. Bản ghi tái lập lượt gợi ý
 
@@ -258,6 +275,22 @@ công thức hiện được phân công cho ra thang `[0,100]`. Thang điểm �
 `M0/M1` cần được chốt trong hợp đồng API trước khi so sánh điểm số; không được
 nhầm điểm phù hợp là xác suất thành công. Lời giải thích chỉ được dẫn từ dữ liệu
 hồ sơ/khóa hoặc cờ thiếu trường đã ghi nhận.
+
+`src/ai/src/recommendations/explanation_builder.py` tạo các `claims` có
+`source_fields` và giá trị dữ liệu kèm theo; không gọi LLM hoặc suy diễn khi
+nguồn là `null`. Kỹ năng chỉ được nêu khi skill mục tiêu chưa có trong hồ sơ và
+ID skill tồn tại trong metadata khóa. Level, tiên quyết, giá, thời lượng và
+giới hạn hồ sơ được lưu thành các fact riêng; `missing_fields_to_confirm` giữ
+các đường dẫn trường thiếu. Bộ lọc đóng dấu snapshot hồ sơ và CoursePrerequisites
+đã dùng để explanation không thể vô tình dùng một phiên bản input khác.
+
+Backend lưu profile/filter/model config snapshot và hash toàn trace trong
+`recommendation_runs`; mỗi dòng `recommendation_items` lưu rank, score/thang
+điểm, score components, phiên bản model/dataset, snapshot khóa và explanation
+JSON. `request_id` là khóa idempotency: gửi lại cùng trace không tạo bản ghi
+mới; tái sử dụng ID với nội dung khác trả HTTP 409. Trace chỉ được nhận qua
+`X-Internal-API-Key`. Không lưu tên/email học viên trong snapshot; quyền truy cập
+các trace chứa mục tiêu/kỹ năng phải theo chính sách truy cập dữ liệu người học.
 
 Ví dụ payload chuẩn dưới đây minh họa `null` khác với danh sách rỗng; ID chỉ là
 giá trị minh họa, không phải seed dữ liệu:

@@ -14,6 +14,7 @@ from app.api.v1 import (
     notes,
     payments,
     progress,
+    recommendations,
     study,
 )
 from app.api.v1.announcements import router as announcements_router
@@ -53,6 +54,11 @@ api_router.include_router(enrollments.router, tags=["enrollments"])
 api_router.include_router(notes.router)
 api_router.include_router(payments.router, prefix="/payments", tags=["payments"])
 api_router.include_router(progress.router, tags=["progress"])
+api_router.include_router(
+    recommendations.router,
+    prefix="/recommendations",
+    tags=["recommendations"],
+)
 api_router.include_router(documents.router, prefix="/documents", tags=["documents"])
 api_router.include_router(chat.router, prefix="/chat", tags=["chat"])
 api_router.include_router(study.router, prefix="/study", tags=["study"])

@@ -29,6 +29,7 @@ from app.models.note import Note
 from app.models.notification import Notification
 from app.models.payment import Payment
 from app.models.quota import Quota
+from app.models.recommendation import RecommendationItem, RecommendationRun
 from app.models.quiz_set import QuizQuestion, QuizSet
 from app.models.social_chat import SocialChatMember, SocialChatMessage, SocialChatRoom
 from app.models.user import User
@@ -73,4 +74,6 @@ __all__ = [
     "SocialChatMessage",
     "AiApiKey",
     "AiProviderSetting",
+    "RecommendationRun",
+    "RecommendationItem",
 ]

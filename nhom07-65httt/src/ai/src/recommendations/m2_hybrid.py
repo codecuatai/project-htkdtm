@@ -8,6 +8,12 @@ import math
 from dataclasses import dataclass, replace
 from typing import Collection, Mapping, Sequence
 
+from src.recommendations.candidate_filter import (
+    CandidateFilterResult,
+    fallback_ordered_candidate_ids,
+    resolve_candidate_course_ids,
+    validate_filter_dataset_version,
+)
 from src.recommendations.evaluation import ModelEvaluationRun, compare_model_runs
 from src.recommendations.m1_semantic import M1SemanticRanker
 from src.recommendations.tfidf_baseline import (
@@ -119,6 +125,7 @@ class M2RecommendationResult:
     skill_roadmap: tuple[RoadmapStep, ...] | None
     roadmap_warning: str | None
     semantic_fallback_reason: str | None
+    missing_fields_warning: tuple[str, ...] = ()
     score_scale: str = "0-100"
 
 
@@ -149,9 +156,11 @@ class M2HybridRanker:
         target_level: str | None,
         skill_prerequisites: Mapping[str, Collection[str] | None] | None,
         top_k: int = 5,
+        candidate_filter_result: CandidateFilterResult | None = None,
     ) -> M2RecommendationResult:
         if not isinstance(dataset_version_id, str) or not dataset_version_id.strip():
             raise ValueError("dataset_version_id must not be empty")
+        dataset_version_id = dataset_version_id.strip()
         if top_k < 1:
             raise ValueError("top_k must be at least 1")
         normalized_targets = _validate_target_skills(target_skills)
@@ -159,7 +168,12 @@ class M2HybridRanker:
             current_skill_ids, field_name="current_skill_ids"
         )
         normalized_level = _normalize_target_level(target_level)
-        candidates = select_candidate_courses(courses, profile.candidate_course_ids)
+        validate_filter_dataset_version(candidate_filter_result, dataset_version_id)
+        filtered_candidate_ids = resolve_candidate_course_ids(
+            profile.candidate_course_ids,
+            candidate_filter_result,
+        )
+        candidates = select_candidate_courses(courses, filtered_candidate_ids)
         candidate_ids = tuple(course.course_id for course in candidates)
         candidate_set_hash = hashlib.sha256(
             "\n".join(sorted(candidate_ids)).encode("utf-8")
@@ -167,6 +181,7 @@ class M2HybridRanker:
 
         semantic_profile = replace(
             profile,
+            candidate_course_ids=candidate_ids,
             goals=profile.goals
             + tuple(skill.label for skill in normalized_targets or ()),
             target_text=" ".join(
@@ -207,10 +222,20 @@ class M2HybridRanker:
             )
             for course in candidates
         }
-        ranked_courses = _rank_courses(candidates, components_by_course, top_k)
+        fallback_ids = (
+            fallback_ordered_candidate_ids(candidate_filter_result, candidate_ids)
+            if candidate_filter_result is not None
+            else None
+        )
+        ranked_courses = _rank_courses(
+            candidates,
+            components_by_course,
+            top_k,
+            fallback_candidate_ids=fallback_ids,
+        )
 
         return M2RecommendationResult(
-            dataset_version_id=dataset_version_id.strip(),
+            dataset_version_id=dataset_version_id,
             model_version=self.model_version,
             candidate_set_hash=candidate_set_hash,
             eligible_candidate_ids=semantic_result.eligible_candidate_ids,
@@ -218,6 +243,11 @@ class M2HybridRanker:
             skill_roadmap=roadmap,
             roadmap_warning=roadmap_warning,
             semantic_fallback_reason=semantic_result.fallback_reason,
+            missing_fields_warning=(
+                candidate_filter_result.missing_fields_warning
+                if candidate_filter_result is not None
+                else ()
+            ),
         )
 
 
@@ -583,6 +613,8 @@ def _rank_courses(
     candidates: Sequence[CourseDocument],
     components_by_course: Mapping[str, M2ScoreComponents],
     top_k: int,
+    *,
+    fallback_candidate_ids: Sequence[str] | None = None,
 ) -> tuple[M2RankedCourse, ...]:
     scores = [components_by_course[course.course_id].score for course in candidates]
     if any(score is not None for score in scores):
@@ -599,14 +631,21 @@ def _rank_courses(
             ),
         )
     else:
-        ordered = sorted(
-            candidates,
-            key=lambda course: (
-                course.popularity_score is None,
-                -(course.popularity_score or 0.0),
-                course.course_id,
-            ),
-        )
+        if fallback_candidate_ids is None:
+            ordered = sorted(
+                candidates,
+                key=lambda course: (
+                    course.popularity_score is None,
+                    -(course.popularity_score or 0.0),
+                    course.course_id,
+                ),
+            )
+        else:
+            course_index = {course.course_id: course for course in candidates}
+            ordered = [
+                course_index[course_id]
+                for course_id in fallback_candidate_ids
+            ]
     return tuple(
         M2RankedCourse(
             course=course,

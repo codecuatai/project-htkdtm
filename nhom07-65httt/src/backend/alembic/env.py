@@ -40,6 +40,8 @@ from app.models import (  # noqa: F401
     Quiz,
     QuizAttempt,
     Quota,
+    RecommendationItem,
+    RecommendationRun,
     Review,
     Section,
     SocialChatMember,

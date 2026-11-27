@@ -7,6 +7,13 @@ from typing import Mapping, Sequence
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+from src.recommendations.candidate_filter import (
+    CandidateFilterResult,
+    fallback_ordered_candidate_ids,
+    resolve_candidate_course_ids,
+    validate_filter_dataset_version,
+)
+
 
 MODEL_VERSION = "m0-tfidf-v1"
 VECTORIZER_CONFIG = {
@@ -97,9 +104,21 @@ class RankedCourse:
 class TfidfBaseline:
     """Fit once per released course snapshot and rank each test profile."""
 
-    def __init__(self, courses: Sequence[CourseDocument]) -> None:
+    def __init__(
+        self,
+        courses: Sequence[CourseDocument],
+        *,
+        dataset_version_id: str | None = None,
+    ) -> None:
         if not courses:
             raise ValueError("courses must contain at least one course")
+        if dataset_version_id is not None and (
+            not isinstance(dataset_version_id, str) or not dataset_version_id.strip()
+        ):
+            raise ValueError("dataset_version_id must be a non-empty string or null")
+        self.dataset_version_id = (
+            dataset_version_id.strip() if dataset_version_id is not None else None
+        )
         course_ids = [course.course_id for course in courses]
         if len(course_ids) != len(set(course_ids)):
             raise ValueError("course_id values must be unique")
@@ -123,12 +142,29 @@ class TfidfBaseline:
             raise
 
     def rank(
-        self, profile: LearnerProfile, *, top_k: int = 5
+        self,
+        profile: LearnerProfile,
+        *,
+        top_k: int = 5,
+        candidate_filter_result: CandidateFilterResult | None = None,
     ) -> tuple[RankedCourse, ...]:
         if top_k < 1:
             raise ValueError("top_k must be at least 1")
+        if candidate_filter_result is not None:
+            if self.dataset_version_id is None:
+                raise ValueError(
+                    "dataset_version_id is required when using candidate_filter_result"
+                )
+            validate_filter_dataset_version(
+                candidate_filter_result,
+                self.dataset_version_id,
+            )
 
-        candidates = select_candidate_courses(self.courses, profile.candidate_course_ids)
+        candidate_ids = resolve_candidate_course_ids(
+            profile.candidate_course_ids,
+            candidate_filter_result,
+        )
+        candidates = select_candidate_courses(self.courses, candidate_ids)
 
         if not candidates:
             return ()
@@ -145,14 +181,26 @@ class TfidfBaseline:
                 if not profile.query_text
                 else "no_tfidf_match"
             )
-            fallback_courses = sorted(
-                candidates,
-                key=lambda course: (
-                    course.popularity_score is None,
-                    -(course.popularity_score or 0.0),
-                    course.course_id,
-                ),
-            )[:top_k]
+            if candidate_filter_result is None:
+                fallback_courses = sorted(
+                    candidates,
+                    key=lambda course: (
+                        course.popularity_score is None,
+                        -(course.popularity_score or 0.0),
+                        course.course_id,
+                    ),
+                )[:top_k]
+            else:
+                course_index = {
+                    course.course_id: course for course in candidates
+                }
+                fallback_ids = fallback_ordered_candidate_ids(
+                    candidate_filter_result,
+                    tuple(course_index),
+                )
+                fallback_courses = [
+                    course_index[course_id] for course_id in fallback_ids[:top_k]
+                ]
             return tuple(
                 RankedCourse(
                     course=course,

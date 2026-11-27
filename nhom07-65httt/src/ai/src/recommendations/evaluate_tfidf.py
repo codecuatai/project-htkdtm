@@ -5,12 +5,19 @@ import csv
 import hashlib
 import json
 import math
+from dataclasses import replace
 from pathlib import Path
 import platform
 from typing import Mapping, Sequence
 
 import sklearn
 
+from src.recommendations.candidate_filter import (
+    CourseCandidate,
+    StudentProfile as FilterStudentProfile,
+    filter_candidates,
+    resolve_candidate_course_ids,
+)
 from src.recommendations.tfidf_baseline import (
     MODEL_VERSION,
     VECTORIZER_CONFIG,
@@ -79,9 +86,193 @@ def _parse_courses(records: Sequence[Mapping[str, object]]) -> tuple[CourseDocum
                     field_name=f"{source}.inferred_skills",
                 ),
                 popularity_score=_popularity_score(record, source),
+                skill_ids=_optional_string_tuple(record, "skill_ids", source),
+                level=_optional_string(record, "level", source),
             )
         )
     return tuple(courses)
+
+
+def _optional_number(
+    record: Mapping[str, object],
+    field: str,
+    source: str,
+) -> float | None:
+    value = record.get(field)
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{source}.{field} must be a number or null")
+    number = float(value)
+    if not math.isfinite(number) or number < 0:
+        raise ValueError(f"{source}.{field} must be finite and non-negative")
+    return number
+
+
+def _optional_integer(
+    record: Mapping[str, object],
+    field: str,
+    source: str,
+) -> int | None:
+    value = record.get(field)
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise ValueError(f"{source}.{field} must be a non-negative integer or null")
+    return value
+
+
+def _optional_string_tuple(
+    record: Mapping[str, object],
+    field: str,
+    source: str,
+) -> tuple[str, ...] | None:
+    value = record.get(field)
+    if value is None:
+        return None
+    if not isinstance(value, list) or any(
+        not isinstance(item, str) or not item.strip() for item in value
+    ):
+        raise ValueError(f"{source}.{field} must be a list of non-empty strings or null")
+    return tuple(item.strip() for item in value)
+
+
+def _parse_candidates(
+    records: Sequence[Mapping[str, object]],
+) -> tuple[CourseCandidate, ...]:
+    candidates = []
+    for index, record in enumerate(records):
+        source = f"courses[{index}]"
+        candidates.append(
+            CourseCandidate(
+                course_id=_required_string(record, "course_id", source),
+                approval_status=_optional_string(record, "approval_status", source),
+                offer_type=_optional_string(record, "offer_type", source),
+                price_amount=_optional_number(record, "price_amount", source),
+                price_currency=_optional_string(record, "price_currency", source),
+                required_hours_per_week=_optional_number(
+                    record, "required_hours_per_week", source
+                ),
+                duration_minutes=_optional_integer(
+                    record, "duration_minutes", source
+                ),
+                popularity_score=_popularity_score(record, source),
+            )
+        )
+    return tuple(candidates)
+
+
+def _parse_course_prerequisites(
+    records: Sequence[Mapping[str, object]],
+) -> dict[str, tuple[str, ...] | None]:
+    prerequisites: dict[str, tuple[str, ...] | None] = {}
+    for index, record in enumerate(records):
+        source = f"courses[{index}]"
+        course_id = _required_string(record, "course_id", source)
+        raw_ids = record.get("prerequisite_course_ids")
+        if raw_ids is None:
+            prerequisites[course_id] = None
+        elif not isinstance(raw_ids, list) or any(
+            not isinstance(prerequisite_id, str) for prerequisite_id in raw_ids
+        ):
+            raise ValueError(
+                f"{source}.prerequisite_course_ids must be a list of strings or null"
+            )
+        else:
+            prerequisites[course_id] = tuple(raw_ids)
+    return prerequisites
+
+
+def _string_ids(
+    record: Mapping[str, object],
+    field: str,
+    source: str,
+) -> tuple[str, ...] | None:
+    value = record.get(field)
+    if value is None:
+        return None
+    if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
+        raise ValueError(f"{source}.{field} must be a list of strings or null")
+    return tuple(value)
+
+
+def _filter_profile(record: Mapping[str, object], source: str) -> FilterStudentProfile:
+    raw_constraints = record.get("constraints")
+    if raw_constraints is None:
+        constraints: Mapping[str, object] = {}
+    elif isinstance(raw_constraints, dict):
+        constraints = raw_constraints
+    else:
+        raise ValueError(f"{source}.constraints must be an object or null")
+    profile_record_value = record.get("profile")
+    if profile_record_value is None:
+        profile_record = record
+    elif isinstance(profile_record_value, dict):
+        profile_record = profile_record_value
+    else:
+        raise ValueError(f"{source}.profile must be an object or null")
+
+    raw_allowed_types = constraints.get("allowed_offer_types")
+    if raw_allowed_types is None:
+        allowed_types = None
+    elif not isinstance(raw_allowed_types, list) or any(
+        not isinstance(value, str) for value in raw_allowed_types
+    ):
+        raise ValueError(
+            f"{source}.constraints.allowed_offer_types must be a list of strings or null"
+        )
+    else:
+        allowed_types = tuple(raw_allowed_types)
+
+    raw_exclude_history = constraints.get("exclude_enrolled_or_completed")
+    if raw_exclude_history is not None and not isinstance(raw_exclude_history, bool):
+        raise ValueError(
+            f"{source}.constraints.exclude_enrolled_or_completed must be a boolean or null"
+        )
+    goals_value = profile_record.get("goals")
+    skills_value = profile_record.get("current_skills")
+    goals = (
+        None
+        if goals_value is None
+        else terms_from_value(goals_value, field_name=f"{source}.profile.goals")
+    )
+    current_skills = (
+        None
+        if skills_value is None
+        else terms_from_value(
+            skills_value, field_name=f"{source}.profile.current_skills"
+        )
+    )
+    return FilterStudentProfile(
+        goals=goals,
+        current_skills=current_skills,
+        target_level=_optional_string(
+            profile_record, "target_level", f"{source}.profile"
+        ),
+        allowed_offer_types=allowed_types,
+        purchased_course_ids=_string_ids(
+            constraints, "purchased_course_ids", f"{source}.constraints"
+        ),
+        enrolled_course_ids=_string_ids(
+            constraints, "enrolled_course_ids", f"{source}.constraints"
+        ),
+        completed_course_ids=_string_ids(
+            constraints, "completed_course_ids", f"{source}.constraints"
+        ),
+        exclude_course_ids=_string_ids(
+            constraints, "exclude_course_ids", f"{source}.constraints"
+        ),
+        exclude_enrolled_or_completed=raw_exclude_history,
+        max_budget_amount=_optional_number(
+            constraints, "max_budget_amount", f"{source}.constraints"
+        ),
+        budget_currency=_optional_string(
+            constraints, "currency", f"{source}.constraints"
+        ),
+        available_hours_per_week=_optional_number(
+            constraints, "available_hours_per_week", f"{source}.constraints"
+        ),
+    )
 
 
 def _parse_profiles(
@@ -90,7 +281,17 @@ def _parse_profiles(
     profiles = []
     for index, record in enumerate(records):
         source = f"profiles[{index}]"
-        candidate_ids = record.get("candidate_course_ids")
+        raw_profile = record.get("profile")
+        if raw_profile is None:
+            profile_record = record
+        elif isinstance(raw_profile, dict):
+            profile_record = raw_profile
+        else:
+            raise ValueError(f"{source}.profile must be an object or null")
+        candidate_ids = record.get(
+            "candidate_course_ids",
+            profile_record.get("candidate_course_ids"),
+        )
         if candidate_ids is not None and (
             not isinstance(candidate_ids, list)
             or any(not isinstance(course_id, str) for course_id in candidate_ids)
@@ -101,11 +302,17 @@ def _parse_profiles(
         profiles.append(
             LearnerProfile(
                 learner_key=_required_string(record, "learner_key", source),
-                goals=terms_from_value(record.get("goals"), field_name=f"{source}.goals"),
-                current_skills=terms_from_value(
-                    record.get("current_skills"), field_name=f"{source}.current_skills"
+                goals=terms_from_value(
+                    profile_record.get("goals"),
+                    field_name=f"{source}.profile.goals",
                 ),
-                target_text=_optional_string(record, "target_text", source),
+                current_skills=terms_from_value(
+                    profile_record.get("current_skills"),
+                    field_name=f"{source}.profile.current_skills",
+                ),
+                target_text=_optional_string(
+                    profile_record, "target_text", f"{source}.profile"
+                ),
                 candidate_course_ids=(
                     tuple(candidate_ids) if candidate_ids is not None else None
                 ),
@@ -144,9 +351,17 @@ def evaluate(
     if top_k < 1:
         raise ValueError("top_k must be at least 1")
 
-    courses = _parse_courses(_read_json_records(courses_path, "courses"))
-    profiles = _parse_profiles(_read_json_records(profiles_path, "profiles"))
-    ranker = TfidfBaseline(courses)
+    course_records = _read_json_records(courses_path, "courses")
+    courses = _parse_courses(course_records)
+    profile_records = _read_json_records(profiles_path, "profiles")
+    profiles = _parse_profiles(profile_records)
+    filter_profiles = tuple(
+        _filter_profile(record, f"profiles[{index}]")
+        for index, record in enumerate(profile_records)
+    )
+    filter_candidates_data = _parse_candidates(course_records)
+    course_prerequisites = _parse_course_prerequisites(course_records)
+    ranker = TfidfBaseline(courses, dataset_version_id=dataset_version_id)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     metadata_path = output_path.with_suffix(".metadata.json")
     protected_paths = {
@@ -177,26 +392,58 @@ def evaluate(
             ),
         )
         writer.writeheader()
-        for profile in profiles:
-            candidates = (
-                tuple(course.course_id for course in courses)
-                if profile.candidate_course_ids is None
-                else profile.candidate_course_ids
+        for profile, filter_profile in zip(profiles, filter_profiles):
+            candidate_filter_result = filter_candidates(
+                filter_candidates_data,
+                filter_profile,
+                course_prerequisites,
+                fallback_limit=top_k,
+                dataset_version_id=dataset_version_id,
             )
-            candidate_hash = _candidate_set_hash(candidates)
-            ranked = ranker.rank(profile, top_k=top_k)
+            effective_candidate_ids = resolve_candidate_course_ids(
+                profile.candidate_course_ids,
+                candidate_filter_result,
+            )
+            effective_profile = replace(
+                profile,
+                candidate_course_ids=effective_candidate_ids,
+            )
+            candidate_hash = _candidate_set_hash(effective_candidate_ids or ())
+            ranked = ranker.rank(
+                effective_profile,
+                top_k=top_k,
+                candidate_filter_result=candidate_filter_result,
+            )
             fallback_reason = (
-                ranked[0].fallback_reason if ranked else "no_eligible_candidates"
+                ranked[0].fallback_reason
+                if ranked
+                else "no_eligible_candidates"
             )
+            if not ranked and candidate_filter_result.fallback_reason is not None:
+                fallback_reason = candidate_filter_result.fallback_reason
             if fallback_reason is not None and ranked:
                 fallback_profile_count += 1
             profile_results.append(
                 {
                     "learner_key": profile.learner_key,
                     "candidate_set_hash": candidate_hash,
-                    "candidate_count": len(candidates),
+                    "candidate_count": len(effective_candidate_ids or ()),
+                    "eligible_candidate_ids": list(effective_candidate_ids or ()),
                     "result_count": len(ranked),
                     "fallback_reason": fallback_reason,
+                    "prerequisite_violations": (
+                        candidate_filter_result.prerequisite_violations
+                    ),
+                    "missing_fields_warning": list(
+                        candidate_filter_result.missing_fields_warning
+                    ),
+                    "rejected_candidates": [
+                        {
+                            "course_id": rejected.course_id,
+                            "reasons": list(rejected.reasons),
+                        }
+                        for rejected in candidate_filter_result.rejected_candidates
+                    ],
                 }
             )
             if not ranked:

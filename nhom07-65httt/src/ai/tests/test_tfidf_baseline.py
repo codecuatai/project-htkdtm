@@ -116,12 +116,24 @@ def test_evaluator_exports_top_k_for_every_profile_and_reproducibility_metadata(
                     "description": None,
                     "direct_skills": [{"skill_id": "python", "source": "verified"}],
                     "popularity_score": 2,
+                    "approval_status": "approved",
+                    "offer_type": "INTERNAL",
+                    "price_amount": 1000,
+                    "price_currency": "VND",
+                    "required_hours_per_week": 3,
+                    "prerequisite_course_ids": [],
                 },
                 {
                     "course_id": "sql",
                     "title": "SQL cơ bản",
                     "skills": ["database"],
                     "popularity_score": 3,
+                    "approval_status": "approved",
+                    "offer_type": "INTERNAL",
+                    "price_amount": 1000,
+                    "price_currency": "VND",
+                    "required_hours_per_week": 3,
+                    "prerequisite_course_ids": [],
                 },
             ]
         ),
@@ -134,12 +146,34 @@ def test_evaluator_exports_top_k_for_every_profile_and_reproducibility_metadata(
                     "learner_key": "learner-1",
                     "goals": [{"goal_id": "data-analyst", "label": "phân tích dữ liệu"}],
                     "current_skills": [{"skill_id": "python"}],
+                    "constraints": {
+                        "allowed_offer_types": ["INTERNAL"],
+                        "purchased_course_ids": [],
+                        "enrolled_course_ids": [],
+                        "completed_course_ids": [],
+                        "exclude_course_ids": [],
+                        "exclude_enrolled_or_completed": True,
+                        "max_budget_amount": 10000,
+                        "currency": "VND",
+                        "available_hours_per_week": 5,
+                    },
                 },
                 {
                     "learner_key": "learner-2",
                     "goals": None,
                     "current_skills": None,
                     "candidate_course_ids": [],
+                    "constraints": {
+                        "allowed_offer_types": ["INTERNAL"],
+                        "purchased_course_ids": [],
+                        "enrolled_course_ids": [],
+                        "completed_course_ids": [],
+                        "exclude_course_ids": [],
+                        "exclude_enrolled_or_completed": True,
+                        "max_budget_amount": 10000,
+                        "currency": "VND",
+                        "available_hours_per_week": 5,
+                    },
                 },
             ]
         ),
@@ -165,6 +199,12 @@ def test_evaluator_exports_top_k_for_every_profile_and_reproducibility_metadata(
     assert metadata["deterministic"] is True
     assert metadata["profiles"]["count"] == 2
     assert metadata["output"]["profiles"][1]["result_count"] == 0
+    assert metadata["output"]["profiles"][0]["eligible_candidate_ids"] == [
+        "python",
+        "sql",
+    ]
+    assert metadata["output"]["profiles"][0]["prerequisite_violations"] == 0
+    assert metadata["output"]["profiles"][0]["missing_fields_warning"] == []
     assert metadata["vectorizer_config"]["ngram_range"] == [1, 2]
 
     original_output = output_path.read_bytes()

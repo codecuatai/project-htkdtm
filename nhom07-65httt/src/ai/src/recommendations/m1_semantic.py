@@ -13,6 +13,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Mapping, Protocol, Sequence, TypeGuard
 
+from src.recommendations.candidate_filter import (
+    CandidateFilterResult,
+    fallback_ordered_candidate_ids,
+    resolve_candidate_course_ids,
+    validate_filter_dataset_version,
+)
 from src.recommendations.tfidf_baseline import (
     CourseDocument,
     LearnerProfile,
@@ -53,6 +59,7 @@ class M1RecommendationResult:
     eligible_candidate_ids: tuple[str, ...]
     ranked_courses: tuple[SemanticRankedCourse, ...]
     fallback_reason: str | None
+    missing_fields_warning: tuple[str, ...] = ()
     score_scale: str = "0-1"
 
 
@@ -163,11 +170,17 @@ class M1SemanticRanker:
         courses: Sequence[CourseDocument],
         profile: LearnerProfile,
         top_k: int = 5,
+        candidate_filter_result: CandidateFilterResult | None = None,
     ) -> M1RecommendationResult:
         """Rank the caller's shared, pre-filtered candidate set."""
         _validate_request(profile, top_k)
         version_id = _canonical_version_id(dataset_version_id)
-        candidates = select_candidate_courses(courses, profile.candidate_course_ids)
+        validate_filter_dataset_version(candidate_filter_result, version_id)
+        candidate_ids_from_filter = resolve_candidate_course_ids(
+            profile.candidate_course_ids,
+            candidate_filter_result,
+        )
+        candidates = select_candidate_courses(courses, candidate_ids_from_filter)
         candidate_ids = tuple(course.course_id for course in candidates)
         candidate_hash = hashlib.sha256(
             "\n".join(sorted(candidate_ids)).encode("utf-8")
@@ -182,16 +195,33 @@ class M1SemanticRanker:
                 eligible_candidate_ids=candidate_ids,
                 ranked_courses=(),
                 fallback_reason="no_eligible_candidates",
+                missing_fields_warning=(
+                    candidate_filter_result.missing_fields_warning
+                    if candidate_filter_result is not None
+                    else ()
+                ),
             )
         if not query:
-            fallback = sorted(
-                candidates,
-                key=lambda course: (
-                    course.popularity_score is None,
-                    -(course.popularity_score or 0.0),
-                    course.course_id,
-                ),
-            )[:top_k]
+            if candidate_filter_result is None:
+                fallback = sorted(
+                    candidates,
+                    key=lambda course: (
+                        course.popularity_score is None,
+                        -(course.popularity_score or 0.0),
+                        course.course_id,
+                    ),
+                )[:top_k]
+            else:
+                course_index = {
+                    course.course_id: course for course in candidates
+                }
+                fallback_ids = fallback_ordered_candidate_ids(
+                    candidate_filter_result,
+                    tuple(course_index),
+                )
+                fallback = [
+                    course_index[course_id] for course_id in fallback_ids[:top_k]
+                ]
             return M1RecommendationResult(
                 dataset_version_id=version_id,
                 model_version=self.model_version,
@@ -204,6 +234,11 @@ class M1SemanticRanker:
                     for index, course in enumerate(fallback, start=1)
                 ),
                 fallback_reason="cold_start",
+                missing_fields_warning=(
+                    candidate_filter_result.missing_fields_warning
+                    if candidate_filter_result is not None
+                    else ()
+                ),
             )
 
         self.precompute_catalog(version_id, courses)
@@ -240,6 +275,11 @@ class M1SemanticRanker:
             eligible_candidate_ids=candidate_ids,
             ranked_courses=ranked,
             fallback_reason=None,
+            missing_fields_warning=(
+                candidate_filter_result.missing_fields_warning
+                if candidate_filter_result is not None
+                else ()
+            ),
         )
 
     def _get_encoder(self) -> SentenceEncoder:
