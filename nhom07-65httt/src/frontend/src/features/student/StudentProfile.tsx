@@ -2,9 +2,12 @@
 
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Award,
+  BookOpen,
   Check,
+  ClipboardCheck,
   Database,
   Eye,
   EyeOff,
@@ -14,6 +17,7 @@ import {
   Save,
   ShieldCheck,
   Sparkles,
+  Target,
   User,
   Zap,
 } from 'lucide-react'
@@ -26,8 +30,10 @@ import { Card } from '../../components/ui/Card'
 import { Input } from '../../components/ui/Input'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { useToast } from '../../components/ui/useToast'
+import { getIntakeStorageKey, type IntakeTestResult } from './IntakeTest'
 
 export function StudentProfile() {
+  const router = useRouter()
   const toast = useToast()
   const user = useAppStore((s) => s.auth.user)
   const loadUser = useAppStore((s) => s.auth.loadUser)
@@ -35,6 +41,12 @@ export function StudentProfile() {
   const [fullName, setFullName] = useState('')
   const [savingProfile, setSavingProfile] = useState(false)
   const [loading, setLoading] = useState(true)
+
+  // Learning profile & Intake Test states
+  const [learningGoal, setLearningGoal] = useState('Hoàn thành lộ trình Full-stack & AI ứng dụng')
+  const [dailyMinutes, setDailyMinutes] = useState('45')
+  const [learningStyle, setLearningStyle] = useState<'practice' | 'video' | 'reading'>('practice')
+  const [intakeResult, setIntakeResult] = useState<IntakeTestResult | null>(null)
 
   // Change password states
   const [currentPassword, setCurrentPassword] = useState('')
@@ -55,6 +67,26 @@ export function StudentProfile() {
         .catch(() => setLoading(false))
     }
   }, [user, loadUser])
+
+  useEffect(() => {
+    const profileKey = `smartedu_learning_profile_${user?.email || user?.id || 'guest'}`
+    const intakeKey = getIntakeStorageKey(user?.email || user?.id)
+    try {
+      const savedProfile = localStorage.getItem(profileKey)
+      if (savedProfile) {
+        const parsed = JSON.parse(savedProfile)
+        if (parsed.learningGoal) setLearningGoal(parsed.learningGoal)
+        if (parsed.dailyMinutes) setDailyMinutes(parsed.dailyMinutes)
+        if (parsed.learningStyle) setLearningStyle(parsed.learningStyle)
+      }
+      const savedIntake = localStorage.getItem(intakeKey)
+      if (savedIntake) {
+        setIntakeResult(JSON.parse(savedIntake) as IntakeTestResult)
+      }
+    } catch {
+      // Ignore storage errors
+    }
+  }, [user?.email, user?.id])
 
   const displayName = fullName.trim() || user?.name || user?.email || 'Học viên'
   const initials = useMemo(() => {
@@ -93,6 +125,23 @@ export function StudentProfile() {
       toast({ type: 'error', title: 'Không thể cập nhật hồ sơ' })
     } finally {
       setSavingProfile(false)
+    }
+  }
+
+  const handleSaveLearningProfile = () => {
+    const profileKey = `smartedu_learning_profile_${user?.email || user?.id || 'guest'}`
+    try {
+      localStorage.setItem(
+        profileKey,
+        JSON.stringify({
+          learningGoal: learningGoal.trim(),
+          dailyMinutes,
+          learningStyle,
+        })
+      )
+      toast({ type: 'success', title: 'Đã lưu hồ sơ học tập' })
+    } catch {
+      toast({ type: 'error', title: 'Không thể lưu hồ sơ học tập' })
     }
   }
 
@@ -237,6 +286,90 @@ export function StudentProfile() {
                 className="font-medium"
               >
                 Lưu thông tin
+              </Button>
+            </div>
+          </Card>
+
+          {/* Learning Profile & Intake Test Card */}
+          <Card padding="responsive" className="space-y-5 border-border shadow-soft bg-surface-elevated">
+            <div className="flex items-center justify-between gap-2.5 border-b border-border pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                  <Target className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-foreground">Hồ sơ học tập & Đánh giá đầu vào</h2>
+                  <p className="text-xs text-muted-foreground">Cá nhân hóa mục tiêu học và xem kết quả Intake Test.</p>
+                </div>
+              </div>
+              {intakeResult && <Badge variant="success" label={`Trình độ: ${intakeResult.level}`} />}
+            </div>
+
+            {/* Intake Test Status Box */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4">
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <ClipboardCheck className="h-4 w-4 text-primary" />
+                  {intakeResult
+                    ? `Đã hoàn thành Intake Test: ${intakeResult.score}/${intakeResult.total} (${intakeResult.percentage}%)`
+                    : 'Bạn chưa làm bài kiểm tra đầu vào'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {intakeResult
+                    ? intakeResult.recommendedTrack
+                    : 'Làm nhanh 5 câu trắc nghiệm để hệ thống gợi ý lộ trình học phù hợp.'}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => router.push('/app/student/intake-test')}
+                className="shrink-0"
+              >
+                {intakeResult ? 'Làm lại bài test' : 'Làm bài ngay'}
+              </Button>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5 sm:col-span-2">
+                <label className="text-sm font-medium text-foreground">Mục tiêu học tập</label>
+                <Input
+                  value={learningGoal}
+                  onChange={setLearningGoal}
+                  placeholder="Ví dụ: Thành thạo Next.js & AI trong 3 tháng"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-foreground">Thời lượng học mỗi ngày (phút)</label>
+                <select
+                  value={dailyMinutes}
+                  onChange={(e) => setDailyMinutes(e.target.value)}
+                  className="w-full rounded-lg border border-input bg-surface-elevated px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+                >
+                  <option value="15">15 phút / ngày (Nhẹ nhàng)</option>
+                  <option value="30">30 phút / ngày (Đều đặn)</option>
+                  <option value="45">45 phút / ngày (Tiêu chuẩn)</option>
+                  <option value="60">60+ phút / ngày (Tăng tốc)</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-foreground">Phong cách học ưu tiên</label>
+                <select
+                  value={learningStyle}
+                  onChange={(e) => setLearningStyle(e.target.value as 'practice' | 'video' | 'reading')}
+                  className="w-full rounded-lg border border-input bg-surface-elevated px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+                >
+                  <option value="practice">Thực hành dự án & Quiz</option>
+                  <option value="video">Xem video bài giảng</option>
+                  <option value="reading">Đọc tài liệu & Flashcards</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="pt-2 flex items-center justify-end">
+              <Button onClick={handleSaveLearningProfile} icon={<BookOpen className="h-4 w-4" />}>
+                Lưu hồ sơ học tập
               </Button>
             </div>
           </Card>
