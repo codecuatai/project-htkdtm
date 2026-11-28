@@ -1,6 +1,7 @@
 'use client'
 
 /* eslint-disable react-hooks/set-state-in-effect */
+import { addCourseToCart } from '../student/cartStore'
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
@@ -404,6 +405,18 @@ export function CourseDetail() {
                       </Button>
                     ) : (
                       <>
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        size="lg"
+                        onClick={() => {
+                        const res = addCourseToCart(course)
+                         alert(res.message)
+                        if (res.ok) router.push('/app/student/cart')
+                         }}
+                        >
+                        Thêm vào giỏ hàng
+                        </Button>
                         <Button
                           className="w-full"
                           size="lg"
