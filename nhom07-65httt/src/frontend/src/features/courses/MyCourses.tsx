@@ -3,7 +3,17 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import Link from 'next/link'
-import { ArrowRight, BookOpen, CheckCircle2, Clock, GraduationCap, PlayCircle, Search } from 'lucide-react'
+import {
+  ArrowRight,
+  Award,
+  BookOpen,
+  CheckCircle2,
+  Clock,
+  GraduationCap,
+  Lock,
+  PlayCircle,
+  Search,
+} from 'lucide-react'
 import { enrollmentsApi, type Enrollment } from '../../services/api'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
@@ -13,7 +23,7 @@ import { Input } from '../../components/ui/Input'
 import { Progress } from '../../components/ui/Progress'
 import { Skeleton } from '../../components/ui/Skeleton'
 
-type CourseFilter = 'all' | 'not-started' | 'in-progress' | 'completed'
+type CourseFilter = 'all' | 'not-started' | 'in-progress' | 'completed' | 'locked'
 type CourseSort = 'recent' | 'progress-desc' | 'progress-asc' | 'title'
 
 function formatDate(dateStr: string | null) {
@@ -33,7 +43,13 @@ function getCourseProgress(enrollment: Enrollment) {
   return Math.round(enrollment.progress_percent || 0)
 }
 
-function getEnrollmentState(enrollment: Enrollment): CourseFilter {
+function isEnrollmentUnlocked(enrollment: Enrollment): boolean {
+  const status = String(enrollment.status || '').toLowerCase()
+  return status === 'active' || status === 'completed'
+}
+
+function getEnrollmentState(enrollment: Enrollment): Exclude<CourseFilter, 'all'> {
+  if (!isEnrollmentUnlocked(enrollment)) return 'locked'
   if (enrollment.status === 'completed' || getCourseProgress(enrollment) >= 100) return 'completed'
   if (getCourseProgress(enrollment) === 0) return 'not-started'
   return 'in-progress'
@@ -66,8 +82,10 @@ export function MyCourses() {
     const notStarted = enrollments.filter((item) => getEnrollmentState(item) === 'not-started').length
     const inProgress = enrollments.filter((item) => getEnrollmentState(item) === 'in-progress').length
     const completed = enrollments.filter((item) => getEnrollmentState(item) === 'completed').length
-    const avgProgress = enrollments.length
-      ? Math.round(enrollments.reduce((sum, item) => sum + getCourseProgress(item), 0) / enrollments.length)
+    const locked = enrollments.filter((item) => getEnrollmentState(item) === 'locked').length
+    const unlocked = enrollments.filter(isEnrollmentUnlocked)
+    const avgProgress = unlocked.length
+      ? Math.round(unlocked.reduce((sum, item) => sum + getCourseProgress(item), 0) / unlocked.length)
       : 0
 
     return {
@@ -75,13 +93,17 @@ export function MyCourses() {
       notStarted,
       inProgress,
       completed,
+      locked,
       avgProgress,
     }
   }, [enrollments])
 
   const continueEnrollment = useMemo(() => {
     return [...enrollments]
-      .filter((item) => getEnrollmentState(item) !== 'completed')
+      .filter((item) => {
+        const state = getEnrollmentState(item)
+        return state === 'in-progress' || state === 'not-started'
+      })
       .sort((a, b) => {
         const aProgress = getCourseProgress(a)
         const bProgress = getCourseProgress(b)
@@ -96,11 +118,11 @@ export function MyCourses() {
 
     const filtered = enrollments.filter((enrollment) => {
       const matchesTab = activeTab === 'all' || getEnrollmentState(enrollment) === activeTab
-      const matchesQuery = !normalizedQuery || [
-        getCourseTitle(enrollment),
-        getCourseDescription(enrollment),
-        enrollment.lecturer_name,
-      ].some((value) => value?.toLowerCase().includes(normalizedQuery))
+      const matchesQuery =
+        !normalizedQuery ||
+        [getCourseTitle(enrollment), getCourseDescription(enrollment), enrollment.lecturer_name].some(
+          (value) => value?.toLowerCase().includes(normalizedQuery)
+        )
 
       return matchesTab && matchesQuery
     })
@@ -120,7 +142,8 @@ export function MyCourses() {
           <p className="text-sm font-medium text-primary">Không gian học tập</p>
           <h1 className="mt-1 text-fluid-2xl font-bold text-foreground">Khóa Học Của Tôi</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Theo dõi các khóa học bạn đã ghi danh, tiếp tục học tập và xem lại lộ trình đã hoàn thành.
+            Nội dung học chỉ mở sau khi hệ thống xác nhận ghi danh hợp lệ. Hoàn thành bài bắt buộc và đạt mốc Quiz cuối khóa{' '}
+            <strong className="text-foreground">70/100</strong> để nhận huy hiệu hoàn thành.
           </p>
         </div>
         <Link href="/app/student/browse">
@@ -154,7 +177,9 @@ export function MyCourses() {
                 aria-label="Tìm kiếm khóa học đã ghi danh"
                 className="sm:w-72"
               />
-              <label className="sr-only" htmlFor="course-sort">Sắp xếp khóa học</label>
+              <label className="sr-only" htmlFor="course-sort">
+                Sắp xếp khóa học
+              </label>
               <select
                 id="course-sort"
                 value={sortBy}
@@ -196,11 +221,11 @@ export function MyCourses() {
                   ? 'Khám phá danh mục và ghi danh vào một khóa học để bắt đầu học tập.'
                   : 'Các khóa học thuộc trạng thái này sẽ xuất hiện tại đây.'
             }
-            action={(
+            action={
               <Link href="/app/student/browse">
                 <Button>Khám phá khóa học</Button>
               </Link>
-            )}
+            }
             className="m-4"
           />
         ) : (
@@ -235,7 +260,7 @@ function FilterPills({
   onChange,
 }: {
   activeTab: CourseFilter
-  counts: { all: number; notStarted: number; inProgress: number; completed: number; avgProgress: number }
+  counts: { all: number; notStarted: number; inProgress: number; completed: number; locked: number }
   onChange: (filter: CourseFilter) => void
 }) {
   const filters: Array<{ id: CourseFilter; label: string; count: number }> = [
@@ -243,6 +268,7 @@ function FilterPills({
     { id: 'not-started', label: 'Chưa bắt đầu', count: counts.notStarted },
     { id: 'in-progress', label: 'Đang học', count: counts.inProgress },
     { id: 'completed', label: 'Đã hoàn thành', count: counts.completed },
+    ...(counts.locked > 0 ? [{ id: 'locked' as const, label: 'Chờ thanh toán', count: counts.locked }] : []),
   ]
 
   return (
@@ -297,7 +323,9 @@ function ContinueLearningHero({ enrollment }: { enrollment: Enrollment }) {
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-wider text-primary">Tiếp tục bài học</p>
             <h2 className="mt-1 line-clamp-2 text-lg font-semibold text-foreground">{title}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Tiếp tục bài học gần nhất để duy trì nhịp độ học tập của bạn.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Tiếp tục bài học gần nhất để duy trì nhịp độ học tập của bạn.
+            </p>
             <div className="mt-3 max-w-md">
               <div className="mb-1 flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">Tiến độ</span>
@@ -320,20 +348,30 @@ function ContinueLearningHero({ enrollment }: { enrollment: Enrollment }) {
 function EnrollmentCard({ enrollment }: { enrollment: Enrollment }) {
   const progress = getCourseProgress(enrollment)
   const state = getEnrollmentState(enrollment)
+  const unlocked = isEnrollmentUnlocked(enrollment)
   const title = getCourseTitle(enrollment)
   const thumbnail = enrollment.course?.thumbnail_url || enrollment.course_thumbnail
 
   return (
-    <Card padding="responsive" interactive className="group">
+    <Card padding="responsive" interactive={unlocked} className="group">
       <div className="flex flex-col gap-4 sm:flex-row">
         <Link
           href={`/app/student/courses/${enrollment.course_id}`}
-          className="flex h-32 w-full shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 sm:h-28 sm:w-40"
+          className="relative flex h-32 w-full shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 sm:h-28 sm:w-40"
         >
           {thumbnail ? (
-            <img src={thumbnail} alt={title} className="h-full w-full object-cover transition duration-200 group-hover:scale-105" />
+            <img
+              src={thumbnail}
+              alt={title}
+              className="h-full w-full object-cover transition duration-200 group-hover:scale-105"
+            />
           ) : (
             <BookOpen className="h-9 w-9 text-primary" />
+          )}
+          {!unlocked && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/75 backdrop-blur-[1px]">
+              <Lock className="h-6 w-6 text-amber-600" />
+            </div>
           )}
         </Link>
 
@@ -346,22 +384,52 @@ function EnrollmentCard({ enrollment }: { enrollment: Enrollment }) {
               >
                 {title}
               </Link>
-              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{getCourseDescription(enrollment)}</p>
+              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                {unlocked
+                  ? getCourseDescription(enrollment)
+                  : 'Khóa học đang bị khóa nội dung do chưa xác nhận thanh toán hợp lệ từ hệ thống.'}
+              </p>
             </div>
             <Badge
-              variant={state === 'completed' ? 'success' : state === 'in-progress' ? 'primary' : 'default'}
-              label={state === 'not-started' ? 'Chưa bắt đầu' : state === 'in-progress' ? 'Đang học' : 'Đã hoàn thành'}
+              variant={
+                state === 'completed'
+                  ? 'success'
+                  : state === 'in-progress'
+                    ? 'primary'
+                    : state === 'locked'
+                      ? 'warning'
+                      : 'default'
+              }
+              label={
+                state === 'locked'
+                  ? 'Chưa thanh toán'
+                  : state === 'not-started'
+                    ? 'Chưa bắt đầu'
+                    : state === 'in-progress'
+                      ? 'Đang học'
+                      : 'Đã hoàn thành'
+              }
               className="shrink-0"
             />
           </div>
 
-          <div className="mt-4">
-            <div className="mb-1 flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Tiến độ</span>
-              <span className="font-medium text-foreground">{progress}%</span>
+          {unlocked ? (
+            <div className="mt-4">
+              <div className="mb-1 flex items-center justify-between text-xs">
+                <span className="text-muted-foreground flex items-center gap-1">
+                  {state === 'completed' && <Award className="h-3.5 w-3.5 text-emerald-500" />}
+                  Tiến độ
+                </span>
+                <span className="font-medium text-foreground">{progress}%</span>
+              </div>
+              <Progress value={progress} />
             </div>
-            <Progress value={progress} />
-          </div>
+          ) : (
+            <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300 flex items-center gap-1.5">
+              <Lock className="h-3.5 w-3.5 shrink-0" />
+              <span>Nội dung bài học bị ẩn cho đến khi thanh toán được xác minh.</span>
+            </div>
+          )}
 
           <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -370,11 +438,21 @@ function EnrollmentCard({ enrollment }: { enrollment: Enrollment }) {
             </div>
             <div className="flex gap-2">
               <Link href={`/app/student/courses/${enrollment.course_id}`}>
-                <Button variant="outline" size="sm">Chi tiết</Button>
+                <Button variant="outline" size="sm">
+                  Chi tiết
+                </Button>
               </Link>
-              {state !== 'completed' && (
+              {unlocked ? (
                 <Link href={`/app/student/courses/${enrollment.course_id}/learn`}>
-                  <Button size="sm">{progress === 0 ? 'Bắt đầu' : 'Tiếp tục'}</Button>
+                  <Button size="sm">
+                    {state === 'completed' ? 'Xem lại' : progress === 0 ? 'Bắt đầu' : 'Tiếp tục'}
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/app/student/cart">
+                  <Button size="sm" variant="primary">
+                    Thanh toán ngay
+                  </Button>
                 </Link>
               )}
             </div>
