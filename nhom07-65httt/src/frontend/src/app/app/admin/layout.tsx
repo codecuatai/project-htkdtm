@@ -4,7 +4,7 @@ import { AdminLayout } from '@/layouts/AdminLayout'
 
 export default function AdminGroupLayout({ children }: { children: ReactNode }) {
   return (
-    <RoleRoute allowedRoles={['admin']}>
+    <RoleRoute allowedRoles={['admin', 'staff']}>
       <AdminLayout>{children}</AdminLayout>
     </RoleRoute>
   )

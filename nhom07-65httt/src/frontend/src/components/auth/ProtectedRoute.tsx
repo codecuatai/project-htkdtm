@@ -9,6 +9,20 @@ interface ProtectedRouteProps {
   allowedRoles?: string[]
 }
 
+/** Chuẩn hóa tên vai trò giữa Backend SmartEdu (STUDENT/INSTRUCTOR/ADMIN/STAFF) và FE cũ */
+export function normalizeRole(role?: string | null): string {
+  const normalized = role?.trim().toLowerCase() ?? ''
+  if (normalized === 'instructor') return 'lecturer'
+  return normalized
+}
+
+function isRoleAllowed(userRole?: string | null, allowedRoles?: string[]): boolean {
+  if (!allowedRoles || allowedRoles.length === 0) return true
+  const current = normalizeRole(userRole)
+  if (!current) return false
+  return allowedRoles.map((r) => normalizeRole(r)).includes(current)
+}
+
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const isAuthenticated = useAppStore((s) => s.auth.isAuthenticated)
   const isLoadingUser = useAppStore((s) => s.auth.isLoadingUser)
@@ -16,7 +30,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   const router = useRouter()
   const pathname = usePathname()
 
-  const roleAllowed = !allowedRoles || (user?.role ? allowedRoles.includes(user.role) : true)
+  const roleAllowed = isRoleAllowed(user?.role, allowedRoles)
 
   useEffect(() => {
     if (isLoadingUser) return
@@ -26,8 +40,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
       return
     }
     if (!roleAllowed) {
-      const rolePath = user.role === 'lecturer' ? '/app/lecturer' : '/app/student'
-      router.replace(rolePath)
+      router.replace('/unauthorized')
     }
   }, [isLoadingUser, isAuthenticated, user, roleAllowed, router, pathname])
 
@@ -36,7 +49,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
       <div className="flex h-screen w-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <p className="text-xs text-muted-foreground animate-pulse">Loading...</p>
+          <p className="text-xs text-muted-foreground animate-pulse">Đang kiểm tra quyền truy cập...</p>
         </div>
       </div>
     )
@@ -50,32 +63,30 @@ export function RoleRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const isLoadingUser = useAppStore((s) => s.auth.isLoadingUser)
   const user = useAppStore((s) => s.auth.user)
   const router = useRouter()
+  const pathname = usePathname()
 
-  const userRole = user?.role?.toLowerCase()
   const isAuthorized = Boolean(
-    isAuthenticated &&
-    user &&
-    userRole &&
-    (!allowedRoles || allowedRoles.map((r) => r.toLowerCase()).includes(userRole))
+    isAuthenticated && user && isRoleAllowed(user.role, allowedRoles)
   )
 
   useEffect(() => {
     if (isLoadingUser) return
     if (!isAuthenticated || !user) {
-      router.replace('/welcome')
+      const fromQuery = pathname ? `?from=${encodeURIComponent(pathname)}` : ''
+      router.replace(`/welcome${fromQuery}`)
       return
     }
     if (!isAuthorized) {
       router.replace('/unauthorized')
     }
-  }, [isLoadingUser, isAuthenticated, user, isAuthorized, router])
+  }, [isLoadingUser, isAuthenticated, user, isAuthorized, router, pathname])
 
   if (isLoadingUser || !isAuthenticated || !user || !isAuthorized) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <p className="text-xs text-muted-foreground animate-pulse">Loading workspace...</p>
+          <p className="text-xs text-muted-foreground animate-pulse">Đang tải không gian làm việc...</p>
         </div>
       </div>
     )
