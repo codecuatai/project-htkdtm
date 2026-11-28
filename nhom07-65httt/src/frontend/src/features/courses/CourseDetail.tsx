@@ -22,6 +22,7 @@ import { Skeleton } from '../../components/ui/Skeleton'
 import { ReviewSection } from './ReviewSection'
 import { Announcements } from './Announcements'
 import { normalizeCourseMeta } from './courseMeta'
+import { trackCourseView } from '../../utils/eventTracker'
 
 const TRUSTED_PAYMENT_HOSTS = new Set([
   'sandbox.vnpay.vn',
@@ -106,6 +107,12 @@ export function CourseDetail() {
   useEffect(() => {
     loadCourse()
   }, [loadCourse])
+
+  useEffect(() => {
+    if (course?.id) {
+      trackCourseView(course.id)
+    }
+  }, [course?.id])
 
   const handleEnroll = async (paymentMethod?: 'vnpay' | 'momo' | 'free') => {
     if (!id) return
@@ -405,17 +412,17 @@ export function CourseDetail() {
                       </Button>
                     ) : (
                       <>
-                      <Button
-                        variant="outline"
-                        className="w-full"
-                        size="lg"
-                        onClick={() => {
-                        const res = addCourseToCart(course)
-                         alert(res.message)
-                        if (res.ok) router.push('/app/student/cart')
-                         }}
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          size="lg"
+                          onClick={() => {
+                            const res = addCourseToCart(course)
+                            alert(res.message)
+                            if (res.ok) router.push('/app/student/cart')
+                          }}
                         >
-                        Thêm vào giỏ hàng
+                          Thêm vào giỏ hàng
                         </Button>
                         <Button
                           className="w-full"

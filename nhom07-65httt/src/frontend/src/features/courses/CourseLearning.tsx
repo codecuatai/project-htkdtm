@@ -32,6 +32,7 @@ import { Card } from '../../components/ui/Card'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { cn } from '../../utils/cn'
+import { useLearningHeartbeat } from '../../utils/eventTracker'
 
 import { FocusTopBar } from './learning/FocusTopBar'
 import { CurriculumSidebar } from './learning/CurriculumSidebar'
@@ -225,6 +226,8 @@ export function CourseLearning() {
   }, [currentItem])
 
   const currentLesson = currentItem?.kind === 'lesson' ? currentLessonDetail || currentItem.lesson : null
+
+  useLearningHeartbeat(course?.id, currentLesson?.id, Boolean(course ? enrollment : false))
 
   // Fetch quiz and assignment status for current lesson
   const loadLessonExtras = useCallback(async () => {
