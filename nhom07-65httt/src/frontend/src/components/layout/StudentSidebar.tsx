@@ -37,6 +37,7 @@ interface NavItem {
 const mainNavItems: NavItem[] = [
   { id: 'dashboard', label: 'Bảng điều khiển', icon: Home, path: '/app/student/dashboard' },
   { id: 'intake-test', label: 'Kiểm tra đầu vào', icon: ClipboardCheck, path: '/app/student/intake-test', badge: 'Đầu vào', badgeVariant: 'success' },
+  { id: 'recommendations', label: 'Gợi ý khóa học AI', icon: Sparkles, path: '/app/student/recommendations', badge: 'AI', badgeVariant: 'purple' },
   { id: 'courses', label: 'Khóa học của tôi', icon: BookOpen, path: '/app/student/courses' },
   { id: 'browse', label: 'Khám phá khóa học', icon: Compass, path: '/app/student/browse' },
   { id: 'wishlist', label: 'Đã lưu yêu thích', icon: Heart, path: '/app/student/wishlist' },
