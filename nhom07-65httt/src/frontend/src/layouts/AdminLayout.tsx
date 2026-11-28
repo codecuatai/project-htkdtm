@@ -15,7 +15,9 @@ import {
   Sparkles,
   Bot,
   Menu,
-  User as UserIcon
+  User as UserIcon,
+  ClipboardCheck,
+  Database,
 } from 'lucide-react'
 import { useAppStore } from '../stores/appStore'
 import { Avatar } from '../components/ui/Avatar'
@@ -29,6 +31,8 @@ import { Dropdown } from '../components/ui/Dropdown'
 
 const adminNavItems = [
   { id: 'dashboard', label: 'Bảng điều khiển', icon: Home, path: '/app/admin' },
+  { id: 'approvals', label: 'Duyệt khóa nội bộ', icon: ClipboardCheck, path: '/app/admin/approvals' },
+  { id: 'datasets', label: 'Quản trị Dataset', icon: Database, path: '/app/admin/datasets' },
   { id: 'users', label: 'Người dùng', icon: Users, path: '/app/admin/users' },
   { id: 'courses', label: 'Khóa học', icon: BookOpen, path: '/app/admin/courses' },
   { id: 'categories', label: 'Danh mục', icon: Layers, path: '/app/admin/categories' },
