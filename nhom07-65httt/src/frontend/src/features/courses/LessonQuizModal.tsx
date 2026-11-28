@@ -136,7 +136,6 @@ export function LessonQuizModal({
     if (view !== 'taking' || timeLeftSeconds === null) return
 
     if (timeLeftSeconds <= 0) {
-      // Auto submit on time expired
       handleSubmitAttempt()
       return
     }
@@ -148,12 +147,12 @@ export function LessonQuizModal({
     return () => clearInterval(timer)
   }, [view, timeLeftSeconds, handleSubmitAttempt])
 
+  const passingScore = quiz?.passing_score || 70
   const questions = quiz?.questions || []
   const maxAttempts = quiz?.max_attempts || 3
   const attemptsCount = attempts.length
   const canAttempt = attemptsCount < maxAttempts
 
-  // Calculate highest and latest score
   const bestAttempt = useMemo(() => {
     if (attempts.length === 0) return null
     return [...attempts].sort((a, b) => (b.score || 0) - (a.score || 0))[0]
@@ -205,7 +204,6 @@ export function LessonQuizModal({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
 
-  // Number of answered questions
   const answeredCount = questions.filter((q) => (selectedAnswers[q.id] || []).length > 0).length
 
   return (
@@ -288,7 +286,7 @@ export function LessonQuizModal({
 
               <div className="rounded-xl border border-border/80 bg-muted/20 p-3.5 text-center">
                 <div className="text-xs text-muted-foreground">Điểm cần đạt</div>
-                <div className="mt-1 text-lg font-bold text-primary">{quiz.passing_score}%</div>
+                <div className="mt-1 text-lg font-bold text-primary">{passingScore}/100</div>
               </div>
 
               <div className="rounded-xl border border-border/80 bg-muted/20 p-3.5 text-center">
@@ -566,7 +564,7 @@ export function LessonQuizModal({
               <p className="mt-1 text-sm text-muted-foreground">
                 {lastResult?.passed
                   ? 'Bạn đã hoàn thành bài kiểm tra và đạt chuẩn kiến thức của bài học này.'
-                  : `Bạn cần đạt tối thiểu ${quiz.passing_score}% để hoàn thành bài trắc nghiệm này.`}
+                  : `Bạn cần đạt tối thiểu ${passingScore}/100 để hoàn thành bài trắc nghiệm này.`}
               </p>
             </div>
 
@@ -580,10 +578,10 @@ export function LessonQuizModal({
                   lastResult?.passed ? 'text-success' : 'text-destructive'
                 )}
               >
-                {Math.round(lastResult?.score || 0)}%
+                {Math.round(lastResult?.score || 0)}/100
               </div>
               <div className="mt-2 text-xs text-muted-foreground">
-                Lần làm bài thứ {lastResult?.attempt_number} · Điểm đạt: {quiz.passing_score}%
+                Lần làm bài thứ {lastResult?.attempt_number} · Điểm đạt: {passingScore}/100
               </div>
             </div>
 

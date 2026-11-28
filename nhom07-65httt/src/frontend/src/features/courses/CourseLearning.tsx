@@ -61,7 +61,7 @@ export function CourseLearning() {
   const [course, setCourse] = useState<Course | null>(null)
   const [sections, setSections] = useState<Section[]>([])
   const [enrollment, setEnrollment] = useState<Enrollment | null>(null)
-  const [progress, setProgress] = useState<Map<string, MaterialProgress>>(new Map())
+ const [progress, setProgress] = useState(new Map<string, MaterialProgress>())
   const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set())
   const [currentItemKey, setCurrentItemKey] = useState<string | null>(null)
   const [currentLessonDetail, setCurrentLessonDetail] = useState<Lesson | null>(null)
@@ -92,7 +92,7 @@ export function CourseLearning() {
       const [courseRes, sectionsRes, enrollRes] = await Promise.all([
         coursesApi.get(id),
         sectionsApi.list(id).catch(() => ({ data: [] as Section[] })),
-        enrollmentsApi.list({ status: 'active' }).catch(() => ({ data: { items: [] as Enrollment[] } })),
+        enrollmentsApi.list({ page_size: 100 }).catch(() => ({ data: { items: [] as Enrollment[] } })),
       ])
 
       setCourse(courseRes.data)
@@ -395,17 +395,27 @@ export function CourseLearning() {
     )
   }
 
-  // Un-enrolled State
-  if (!course || !enrollment) {
+  const enrollmentStatus = String(enrollment?.status || '').toLowerCase()
+  const isValidEnrollment = enrollmentStatus === 'active' || enrollmentStatus === 'completed'
+
+  // Un-enrolled or Unpaid State
+  if (!course || !enrollment || !isValidEnrollment) {
+    const isPendingPayment = Boolean(enrollment && !isValidEnrollment)
     return (
       <div className="h-screen w-screen flex items-center justify-center p-4 bg-background">
         <EmptyState
           icon={<BookOpen className="h-8 w-8 text-muted-foreground" />}
-          title="Bạn chưa ghi danh vào khóa học này"
-          description="Vui lòng đăng ký khóa học trước khi mở không gian học tập."
+          title={isPendingPayment ? 'Khóa học chưa được xác nhận thanh toán' : 'Bạn chưa ghi danh vào khóa học này'}
+          description={
+            isPendingPayment
+              ? 'Nội dung học tập chỉ mở sau khi Backend xác nhận thanh toán hợp lệ. Vui lòng hoàn tất thanh toán tại giỏ hàng.'
+              : 'Vui lòng đăng ký khóa học trước khi mở không gian học tập.'
+          }
           action={
-            <Link href={`/app/student/courses/${id}`}>
-              <Button variant="outline">Quay lại thông tin khóa học</Button>
+            <Link href={isPendingPayment ? '/app/student/cart' : `/app/student/courses/${id}`}>
+              <Button variant="outline">
+                {isPendingPayment ? 'Đi tới giỏ hàng thanh toán' : 'Quay lại thông tin khóa học'}
+              </Button>
             </Link>
           }
         />
