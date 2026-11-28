@@ -20,6 +20,7 @@ import {
   ChevronRight,
   FileCheck2,
   ClipboardCheck,
+  ShoppingCart,
 } from 'lucide-react'
 import { useAppStore } from '../../stores/appStore'
 import { Avatar } from '../ui/Avatar'
@@ -42,6 +43,7 @@ const mainNavItems: NavItem[] = [
   { id: 'courses', label: 'Khóa học của tôi', icon: BookOpen, path: '/app/student/courses' },
   { id: 'browse', label: 'Khám phá khóa học', icon: Compass, path: '/app/student/browse' },
   { id: 'wishlist', label: 'Đã lưu yêu thích', icon: Heart, path: '/app/student/wishlist' },
+  { id: 'cart', label: 'Giỏ hàng', icon: ShoppingCart, path: '/app/student/cart' },
   { id: 'friends-chat', label: 'Trò chuyện bạn bè', icon: MessagesSquare, path: '/app/student/friends-chat' },
 ]
 
