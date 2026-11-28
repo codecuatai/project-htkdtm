@@ -20,6 +20,7 @@ import { Button } from '../../components/ui/Button'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { cn } from '../../utils/cn'
 import { normalizeCourseMeta, type CourseKind, type CourseLevel } from './courseMeta'
+import { trackRecommendationClick, trackRecommendationImpression } from '../../utils/eventTracker'
 
 type PriceFilter = 'all' | 'free' | 'under_500k' | 'over_500k'
 type DurationFilter = 'all' | 'short' | 'medium' | 'long'
@@ -147,6 +148,18 @@ export function CourseCatalog() {
       return true
     })
   }, [courses, courseType, levelFilter, priceFilter, durationFilter, skillFilter])
+
+  useEffect(() => {
+    if (loading || filteredCourses.length === 0) return
+    filteredCourses.slice(0, 8).forEach((course, idx) => {
+      trackRecommendationImpression({
+        courseId: course.id,
+        runId: 'catalog_browse',
+        rank: idx + 1,
+        modelVersion: 'catalog_v1',
+      })
+    })
+  }, [loading, filteredCourses])
 
   const hasActiveFilters = Boolean(
     selectedCategory ||
@@ -370,14 +383,27 @@ export function CourseCatalog() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredCourses.map((course) => {
+          {filteredCourses.map((course, idx) => {
             const meta = normalizeCourseMeta(course)
+            const handleCourseClick = () => {
+              trackRecommendationClick({
+                courseId: course.id,
+                runId: 'catalog_browse',
+                rank: idx + 1,
+                modelVersion: 'catalog_v1',
+              })
+            }
+
             return (
               <div
                 key={course.id}
                 className="group flex flex-col justify-between rounded-2xl border border-border/70 bg-surface-elevated overflow-hidden hover:border-primary/40 hover:shadow-soft hover:-translate-y-1 transition-all duration-200"
               >
-                <Link href={`/app/student/courses/${course.id}`} className="block">
+                <Link
+                  href={`/app/student/courses/${course.id}`}
+                  onClick={handleCourseClick}
+                  className="block"
+                >
                   {/* Thumbnail */}
                   <div className="relative aspect-video bg-gradient-to-br from-primary/10 to-rose-500/10 overflow-hidden">
                     {course.thumbnail_url ? (
@@ -467,6 +493,7 @@ export function CourseCatalog() {
                         href={meta.externalUrl}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={handleCourseClick}
                         className="inline-flex items-center gap-1 shrink-0 text-amber-600 dark:text-amber-400 font-semibold hover:underline"
                       >
                         <span>Xem nguồn</span>
@@ -475,6 +502,7 @@ export function CourseCatalog() {
                     ) : (
                       <Link
                         href={`/app/student/courses/${course.id}`}
+                        onClick={handleCourseClick}
                         className="inline-flex items-center gap-1 shrink-0 text-primary font-semibold hover:underline"
                       >
                         <span>Chi tiết</span>
