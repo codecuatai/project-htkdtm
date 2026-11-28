@@ -4,6 +4,7 @@ uvicorn[standard]==0.27.0
 google-genai==2.33.0
 
 qdrant-client==1.7.0
+scikit-learn==1.6.1
 pydantic>=2.7.4,<3.0
 pydantic-settings==2.1.0
 python-dotenv==1.0.0
